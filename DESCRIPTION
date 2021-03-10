@@ -1,16 +1,27 @@
 Package: flevr
-Title: What the Package Does (One Line, Title Case)
+Title: Flexible, Ensemble-based Variable Selection
 Version: 0.0.0.9000
-Authors@R: 
-    person(given = "First",
-           family = "Last",
+Authors@R:
+    person(given = "Brian D.",
+           family = "Williamson",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+           email = "bwillia2@fredhutch.org",
+           comment = c(ORCID = "0000-0002-7024-548X"))
+Description: Perform variable selection based on extrinsic (algorithm-specific)
+    and intrinsic (population-level) variable importance.
+    Uses a Super Learner ensemble to estimate the underlying prediction functions
+    that give rise to estimates of variable importance.
+License: `use_mit_license()`
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.0
+Depends:
+    R (>= 3.1.0)
+Imports:
+    SuperLearner,
+    vimp
+Suggests:
+    stabs
+URL: https://github.com/bdwilliamson/flevr
+BugReports: https://github.com/bdwilliamson/flevr/issues
