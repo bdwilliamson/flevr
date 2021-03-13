@@ -20,8 +20,13 @@ Depends:
     R (>= 3.1.0)
 Imports:
     SuperLearner,
-    vimp
+    vimp,
+    data.table,
+    dplyr,
+    magrittr,
+    tibble
 Suggests:
-    stabs
+    stabs,
+    testthat
 URL: https://github.com/bdwilliamson/flevr
 BugReports: https://github.com/bdwilliamson/flevr/issues
