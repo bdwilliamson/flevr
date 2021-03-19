@@ -3,8 +3,8 @@
 #' Based on estimated SPVIM values, do variable selection using the 
 #' specified error-controlling method.
 #'
-#' @param spvim_ests the estimated SPVIM values (a tibble, resulting from a 
-#'   call to \code{vimp::sp_vim}).
+#' @param spvim_ests the estimated SPVIM values (an object of class \code{vim}, 
+#'   resulting from a call to \code{vimp::sp_vim}).
 #' @param sample_size the number of independent observations used to estimate
 #'   the SPVIM values.
 #' @param alpha the nominal generalized family-wise error rate, proportion of 
@@ -22,32 +22,45 @@
 #' @importFrom magrittr `%>%`
 #' @export
 intrinsic_selection <- function(spvim_ests, sample_size, 
-                                alpha = 0.05, control = list()) {
+                                alpha = 0.05, 
+                                control = list(quantity = "gFWER", 
+                                               base_method = "Holm",
+                                               fdr_method = NULL, q = NULL, 
+                                               k = NULL)) {
   # make sure that control is in the correct format; if nothing was entered,
   # get default values
   control <- do.call(intrinsic_control, control)
-  
+  test_statistics <- spvim_ests$test_statistic
+  p_values <- spvim_ests$p_value
   if (control$fdr_method == "BY") {
-    # get k
-    k <- benjamini_yekutieli(p_values = spvim_ests$p_value, q = control$q)
-    selected_set <- rep(0, length(spvim_ests$p_value))
-    if (k > 0) {
-      # return indices with with p-value less than or equal to p[k]
-      selected_set <- as.numeric(
-        spvim_ests$p_value <= sort(spvim_ests$p_value, decreasing = FALSE)[k]
-      )
-    }
+    selected_set_lst <- get_base_set(test_statistics = test_statistics, 
+                                     p_values = p_values, alpha = alpha,
+                                     method = control$fdr_method, B = control$B,
+                                     Sigma = NULL, q = control$q)
+    selected_set <- selected_set_lst$decision
+    adj_p <- selected_set$p_values
   } else {
     var_contrib_v <- spvim_ests$ic$contrib_v[-1, ] %*% 
       t(spvim_ests$ic$contrib_v[-1, ])
     var_contrib_s <- (1 / spvim_ests$gamma) * spvim_ests$ic$contrib_s[-1, ] %*% 
       t(spvim_ests$ic$contrib_s[-1, ])
     cov_mat <- var_contrib_v + var_contrib_s
-    test_statistics <- spvim_ests$test_statistic
-    p_values <- spvim_ests$p_values
     initial_set_lst <- get_base_set(test_statistics = test_statistics, 
                                     p_values = p_values, alpha = alpha,
-                                    method = control$method, B = control$B, 
+                                    method = control$base_method, B = control$B, 
                                     Sigma = cov_mat / sample_size)
+    initial_selected_set <- initial_set_lst$decision
+    adj_p <- initial_set_lst$p_values
+    if (control$quantity == "FDR") {
+      q_1 <- alpha
+      alpha <- q <- 1 - sqrt(1 - q_1)
+    } else {
+      q <- control$q
+    }
+    augmented_set <- get_augmented_set(p_values, sum(initial_selected_set),
+                                       alpha, control$quantity, q, control$k)
+    selected_set <- ifelse((initial_selected_set == 1) | (augmented_set$set == 1), 
+                           1, 0)
   }
+  list(set = selected_set, adjusted_pvals = adj_p)
 }
