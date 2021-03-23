@@ -15,7 +15,7 @@
 #'     
 #' @return a vector denoting the final set of selected variables (1 denotes
 #'     selected, 0 denotes not selected)
-#' @importFrom data.table rbindList
+#' @importFrom data.table rbindlist
 #' @export
 pool_selected_sets <- function(sets = list(), threshold = 0.8) {
   set_tib <- data.table::rbindlist(sets)
