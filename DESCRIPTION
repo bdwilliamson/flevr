@@ -1,5 +1,5 @@
 Package: flevr
-Title: Flexible, Ensemble-based Variable Selection
+Title: Flexible, Ensemble-based Variable Selection With Potentially Missing Data
 Version: 0.0.0.9000
 Authors@R:
     person(given = "Brian D.",
@@ -7,10 +7,10 @@ Authors@R:
            role = c("aut", "cre"),
            email = "bwillia2@fredhutch.org",
            comment = c(ORCID = "0000-0002-7024-548X"))
-Description: Perform variable selection based on extrinsic (algorithm-specific)
-    and intrinsic (population-level) variable importance.
-    Uses a Super Learner ensemble to estimate the underlying prediction functions
-    that give rise to estimates of variable importance.
+Description: Perform variable selection in settings with possibly missing data 
+    based on extrinsic (algorithm-specific) and intrinsic (population-level) 
+    variable importance. Uses a Super Learner ensemble to estimate the 
+    underlying prediction functions that give rise to estimates of variable importance.
 License: `use_mit_license()`
 Encoding: UTF-8
 LazyData: true

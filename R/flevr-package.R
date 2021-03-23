@@ -39,5 +39,5 @@
 #' knitr, rmarkdown,and RCurl help with the vignettes and examples.
 #'
 #' @docType package
-#' @name vimp
+#' @name flevr
 NULL
