@@ -3,9 +3,8 @@
 # load required functions and packages
 library("testthat")
 library("SuperLearner")
-library("xgboost")
 library("ranger")
-library("glmnet")
+library("kernlab")
 
 # generate the data -- note that this is a simple setting, for speed
 set.seed(4747)
@@ -18,36 +17,36 @@ x_names <- names(x_df)
 y <- 1 + 0.5 * x[, 1] + 0.75 * x[, 2] + stats::rnorm(n, 0, 1)
 
 # fit a Super Learner ensemble
-learners <- c("SL.xgboost", "SL.ranger.imp", "SL.glmnet", "SL.glm", "SL.mean")
+learners <- c("SL.ranger.imp", "SL.glm", "SL.ksvm")
 V <- 2
 fit <- SuperLearner::SuperLearner(Y = y, X = x_df,
-                                  SL.library = learners, 
+                                  SL.library = learners,
                                   cvControl = list(V = V))
 
 # extract algorithm-specific importance
 test_that("algorithm-specific importance extraction works", {
   mean_importance <- extract_importance_mean(
-    fit = fit$fitLibrary$SL.mean_All$object, coef = fit$coef[5], 
+    fit = fit$fitLibrary$SL.mean_All$object, coef = fit$coef[5],
     feature_names = x_names
   )
   expect_equal(mean_importance$rank, c(1.5, 1.5))
   glm_importance <- extract_importance_glm(
-    fit = fit$fitLibrary$SL.glm_All$object, coef = fit$coef[4], 
+    fit = fit$fitLibrary$SL.glm_All$object, coef = fit$coef[4],
     feature_names = x_names
   )
   expect_equal(glm_importance$feature, c("V2", "V1"))
   glmnet_importance <- extract_importance_glmnet(
-    fit = fit$fitLibrary$SL.glmnet_All$object, coef = fit$coef[3], 
+    fit = fit$fitLibrary$SL.glmnet_All$object, coef = fit$coef[3],
     feature_names = x_names
   )
   expect_equal(glmnet_importance$feature, c("V2", "V1"))
   ranger_importance <- extract_importance_ranger(
-    fit = fit$fitLibrary$SL.ranger.imp_All$object, coef = fit$coef[2], 
+    fit = fit$fitLibrary$SL.ranger.imp_All$object, coef = fit$coef[2],
     feature_names = x_names
   )
   expect_equal(ranger_importance$feature, c("V2", "V1"))
   xgboost_importance <- extract_importance_xgboost(
-    fit = fit$fitLibrary$SL.xgboost_All$object, coef = fit$coef[1], 
+    fit = fit$fitLibrary$SL.xgboost_All$object, coef = fit$coef[1],
     feature_names = x_names
   )
   expect_equal(xgboost_importance$feature, c("V2", "V1"))

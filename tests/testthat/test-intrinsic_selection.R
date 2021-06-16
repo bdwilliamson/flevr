@@ -3,9 +3,6 @@
 # load required functions and packages
 library("testthat")
 library("SuperLearner")
-library("xgboost")
-library("ranger")
-library("glmnet")
 library("vimp")
 
 # generate the data -- note that this is a simple setting, for speed
@@ -45,7 +42,7 @@ test_that("obtaining an FWER-controlling base set works", {
   by_set <- get_base_set(test_statistics = est$test_statistic,
                          p_values = est$p_value, alpha = 0.2,
                          method = "BY", q = 0.2)$decision
-  
+
   expect_equal(holm_set, true_set)
   expect_equal(maxT_set, true_set)
   expect_equal(minP_set, true_set)
@@ -61,13 +58,13 @@ test_that("obtaining an augmented set works", {
                                  num_rejected = sum(holm_set$decision),
                                  alpha = 0.2, quantity = "gFWER", k = 1)$set
   expect_equal(gfwer_set, c(0, 0, 1, 0))
-  
+
   pfp_set <- get_augmented_set(p_values = holm_set$p_values,
                                num_rejected = sum(holm_set$decision),
                                alpha = 0.2, quantity = "PFP", k = 1,
                                q = 0.05)$set
   expect_equal(pfp_set, c(0, 0, 1, 0))
-  
+
   fdr_set <- get_augmented_set(p_values = holm_set$p_values,
                                num_rejected = sum(holm_set$decision),
                                alpha = 0.2, quantity = "FDR", k = 1,

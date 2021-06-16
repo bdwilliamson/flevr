@@ -10,11 +10,7 @@ Methodology authors: [Brian Williamson](https://bdwilliamson.github.io), [Ying H
 
 The author and maintainer of the `flevr` package is  [Brian Williamson](https://bdwilliamson.github.io). For details on the method, check out our preprint.
 
-## Issues
-
-If you encounter any bugs or have any specific feature requests, please [file an issue](https://github.com/bdwilliamson/flevr/issues).
-
-## R installation
+## Installation
 
 You can install a development release of `flevr` from GitHub via `devtools` by running the following code:
 ```{r}
@@ -24,6 +20,10 @@ devtools::install_github(repo = "bdwilliamson/flevr")
 ```
 
 ## Example
+
+## Issues
+
+If you encounter any bugs or have any specific feature requests, please [file an issue](https://github.com/bdwilliamson/flevr/issues).
 
 ## Citation
 
