@@ -1,3 +1,14 @@
+# v0.0.1
+
+## Major changes
+
+* Added function `extract_importance_svm`, which computes extrinsic importance from a `ksvm` object
+* Added a vignette on basic usage of the package
+
+## Minor changes
+
+None
+
 # v0.0.0.9000
 
 ## Major changes
