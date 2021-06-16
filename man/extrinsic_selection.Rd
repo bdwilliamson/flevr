@@ -4,7 +4,13 @@
 \alias{extrinsic_selection}
 \title{Perform extrinsic, ensemble-based variable selection}
 \usage{
-extrinsic_selection(fit, feature_names, threshold = 20, import_type = "all")
+extrinsic_selection(
+  fit,
+  feature_names,
+  threshold = 20,
+  import_type = "all",
+  ...
+)
 }
 \arguments{
 \item{fit}{the fitted Super Learner ensemble.}
@@ -23,6 +29,8 @@ specified for the task at hand).}
 the default, for a weighted combination of the individual-algorithm importance;
 or \code{"best"}, for the importance from the algorithm with the highest
 weight in the Super Learner).}
+
+\item{...}{other arguments to pass to algorithm-specific importance extractors.}
 }
 \value{
 a tibble with the estimated extrinsic variable importance,

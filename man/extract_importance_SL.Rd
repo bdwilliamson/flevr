@@ -4,7 +4,7 @@
 \alias{extract_importance_SL}
 \title{Extract extrinsic importance from a Super Learner object}
 \usage{
-extract_importance_SL(fit, feature_names, import_type = "all")
+extract_importance_SL(fit, feature_names, import_type = "all", ...)
 }
 \arguments{
 \item{fit}{the fitted Super Learner ensemble}
@@ -15,6 +15,8 @@ extract_importance_SL(fit, feature_names, import_type = "all")
 importance based on the weighted average of ranks across algorithmrithms
 (weights are SL coefs); \code{"best"} is the importance based on the algorithmrithm
 with highest weight. Defaults to \code{"all"}.}
+
+\item{...}{other arguments to pass to individual-algorithm extractors.}
 }
 \value{
 a tibble, with columns \code{feature} (the feature) and

@@ -4,7 +4,7 @@
 \alias{extract_importance_SL_learner}
 \title{Extract the learner-specific importance from a fitted SuperLearner algorithm}
 \usage{
-extract_importance_SL_learner(fit, coef, feature_names)
+extract_importance_SL_learner(fit, coef, feature_names, ...)
 }
 \arguments{
 \item{fit}{the specific learner (e.g., from the Super Learner's
@@ -12,7 +12,9 @@ extract_importance_SL_learner(fit, coef, feature_names)
 
 \item{coef}{the Super Learner coefficient associated with the learner.}
 
-\item{feature_names}{the feature names}
+\item{feature_names}{the feature names.}
+
+\item{...}{other arguments to pass to algorithm-specific importance extractors.}
 }
 \value{
 a tibble, with columns \code{algorithm} (the fitted algorithm),
