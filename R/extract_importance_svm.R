@@ -19,8 +19,8 @@ extract_importance_svm <- function(fit, feature_names, coef = 0, x = NULL, y = N
   if (!any(grepl("svm", class(fit)))) {
     stop("This is not a glm object. Please use a different importance extraction function.")
   } else {
-    param_df <- data.frame(sigma = kpar(kernelf(obj))$sigma, C = param(obj)$C)
-    if (class(kernelf(obj)) == "rbfkernel") {
+    param_df <- data.frame(sigma = kpar(kernelf(fit))$sigma, C = param(fit)$C)
+    if (class(kernelf(fit)) == "rbfkernel") {
       caret_mod <- "svmRadial"
     } else {
       stop("The entered kernel is not currently supported.")
