@@ -1,0 +1,19 @@
+---
+title: "Intrinsic variable selection"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Intrinsic variable selection}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(flevr)
+```
