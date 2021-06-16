@@ -10,6 +10,7 @@ set.seed(4747)
 p <- 4
 n <- 5e3
 x <- replicate(p, stats::rnorm(n, 0, 1))
+x_names <- paste0("V", 1:p)
 # apply the function to the x's
 y <- 1 + 0.5 * x[, 1] + 0.75 * x[, 2] + stats::rnorm(n, 0, 1)
 
@@ -22,6 +23,7 @@ V <- 2
 B <- 1e2
 
 # estimate the SPVIMs
+set.seed(1234)
 est <- suppressWarnings(
   sp_vim(Y = y, X = x, V = V, type = "r_squared",
               SL.library = learners, gamma = .1, alpha = 0.05, delta = 0,
@@ -75,9 +77,10 @@ test_that("obtaining an augmented set works", {
 # do the whole procedure
 test_that("doing intrinsic selection works", {
   intrinsic_set <- intrinsic_selection(spvim_ests = est, sample_size = n,
-                                       alpha = 0.2, control = list(
+                                       alpha = 0.2, feature_names = x_names,
+                                       control = list(
                                          quantity = "gFWER", base_method = "Holm",
                                          k = 1
                                        ))
-  expect_equal(intrinsic_set$set, c(1, 1, 1, 0))
+  expect_equal(intrinsic_set$selected, c(TRUE, TRUE, FALSE, TRUE))
 })

@@ -4,7 +4,10 @@
 library("testthat")
 library("SuperLearner")
 library("ranger")
+library("xgboost")
+library("glmnet")
 library("kernlab")
+library("caret")
 
 # generate the data -- note that this is a simple setting, for speed
 set.seed(4747)
@@ -17,37 +20,44 @@ x_names <- names(x_df)
 y <- 1 + 0.5 * x[, 1] + 0.75 * x[, 2] + stats::rnorm(n, 0, 1)
 
 # fit a Super Learner ensemble
-learners <- c("SL.ranger.imp", "SL.glm", "SL.ksvm")
+set.seed(1234)
+learners <- c("SL.xgboost", "SL.ranger.imp", "SL.glm", "SL.glmnet", "SL.ksvm", "SL.mean")
 V <- 2
 fit <- SuperLearner::SuperLearner(Y = y, X = x_df,
                                   SL.library = learners,
                                   cvControl = list(V = V))
+coef_nms <- names(fit$coef)
 
 # extract algorithm-specific importance
 test_that("algorithm-specific importance extraction works", {
   mean_importance <- extract_importance_mean(
-    fit = fit$fitLibrary$SL.mean_All$object, coef = fit$coef[5],
+    fit = fit$fitLibrary$SL.mean_All$object, coef = fit$coef[grepl("mean", coef_nms)],
     feature_names = x_names
   )
   expect_equal(mean_importance$rank, c(1.5, 1.5))
   glm_importance <- extract_importance_glm(
-    fit = fit$fitLibrary$SL.glm_All$object, coef = fit$coef[4],
+    fit = fit$fitLibrary$SL.glm_All$object, coef = fit$coef[grepl("glm_All", coef_nms)],
     feature_names = x_names
   )
   expect_equal(glm_importance$feature, c("V2", "V1"))
   glmnet_importance <- extract_importance_glmnet(
-    fit = fit$fitLibrary$SL.glmnet_All$object, coef = fit$coef[3],
+    fit = fit$fitLibrary$SL.glmnet_All$object, coef = fit$coef[grepl("glmnet", coef_nms)],
     feature_names = x_names
   )
   expect_equal(glmnet_importance$feature, c("V2", "V1"))
   ranger_importance <- extract_importance_ranger(
-    fit = fit$fitLibrary$SL.ranger.imp_All$object, coef = fit$coef[2],
+    fit = fit$fitLibrary$SL.ranger.imp_All$object, coef = fit$coef[grepl("ranger", coef_nms)],
     feature_names = x_names
   )
   expect_equal(ranger_importance$feature, c("V2", "V1"))
   xgboost_importance <- extract_importance_xgboost(
-    fit = fit$fitLibrary$SL.xgboost_All$object, coef = fit$coef[1],
+    fit = fit$fitLibrary$SL.xgboost_All$object, coef = fit$coef[grepl("xgboost", coef_nms)],
     feature_names = x_names
+  )
+  expect_equal(xgboost_importance$feature, c("V2", "V1"))
+  svm_importance <- extract_importance_svm(
+    fit = fit$fitLibrary$SL.ksvm_All$object, coef = fit$coef[grepl("svm", coef_nms)],
+    feature_names = x_names, x = x_df, y = y
   )
   expect_equal(xgboost_importance$feature, c("V2", "V1"))
 })
@@ -55,7 +65,7 @@ test_that("algorithm-specific importance extraction works", {
 # extract importance for the whole Super Learner ensemble
 test_that("SL importance extraction works", {
   sl_importance_all <- extract_importance_SL(
-    fit = fit, feature_names = x_names, import_type = "all"
+    fit = fit, feature_names = x_names, import_type = "all", x = x_df, y = y
   )
   expect_equal(sl_importance_all$feature, c("V2", "V1"))
   sl_importance_best <- extract_importance_SL(
