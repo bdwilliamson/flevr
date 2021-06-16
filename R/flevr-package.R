@@ -29,13 +29,13 @@
 #'
 #' @section Imports:
 #' The packages that we import either make the internal code nice
-#' (dplyr, magrittr, tibble, rlang, MASS), are directly relevant to estimating
-#' the conditional mean (SuperLearner),
-#' or are necessary for hypothesis testing (stats).
+#' (dplyr, magrittr, tibble, data.table) or are directly relevant for estimating
+#' variable importance (SuperLearner, caret).
 #'
-#' We suggest several other packages: xgboost, ranger, gam, glmnet, polspline,
+#' We suggest several other packages: xgboost, ranger, glmnet, kernlab, polspline
 #' and quadprog allow a flexible library of candidate learners in the Super
-#' Learner; testthat and covr help with unit tests; and
+#' Learner; stabs allows importance to be embedded within stability selection;
+#' testthat and covr help with unit tests; and
 #' knitr, rmarkdown,and RCurl help with the vignettes and examples.
 #'
 #' @docType package
