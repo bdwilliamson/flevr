@@ -24,6 +24,7 @@ SL_stabs_fitfun <- function(x, y, q, ...) {
   }
   fit <- SuperLearner::SuperLearner(Y = y, X = x_df, verbose = FALSE, ...)
   selected <- extrinsic_selection(fit = fit, feature_names = names(x_df), 
-                                  threshold = q + 1, import_type = "all")
+                                  threshold = q + 1, import_type = "all", 
+                                  x = x, y = y)
   list(selected = selected$selected, path = NULL)
 }
