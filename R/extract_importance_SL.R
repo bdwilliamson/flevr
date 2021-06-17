@@ -19,6 +19,7 @@
 #'
 #' @importFrom dplyr case_when filter group_by mutate summarize
 #' @importFrom data.table rbindlist
+#' @export
 extract_importance_SL <- function(fit, feature_names, import_type = "all", ...) {
   if (import_type == "all") {
     nonzero_weights <- (1:length(fit$coef))[fit$coef > 0]
