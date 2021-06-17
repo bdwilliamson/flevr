@@ -17,7 +17,7 @@
 #' @export
 extract_importance_svm <- function(fit, feature_names, coef = 0, x = NULL, y = NULL) {
   if (!any(grepl("svm", class(fit)))) {
-    stop("This is not a glm object. Please use a different importance extraction function.")
+    stop("This is not an svm object. Please use a different importance extraction function.")
   } else {
     param_df <- data.frame(sigma = kpar(kernelf(fit))$sigma, C = param(fit)$C)
     if (class(kernelf(fit)) == "rbfkernel") {
@@ -31,5 +31,6 @@ extract_importance_svm <- function(fit, feature_names, coef = 0, x = NULL, y = N
     imp_dt <- tibble::tibble(algo = "svm", feature = rownames(svm_imp$importance),
                              importance = svm_imp$importance$Overall, rank = rank(-importance),
                              weight = coef)
+    imp_dt[order(imp_dt$rank), ]
   }
 }
