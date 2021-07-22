@@ -1,3 +1,9 @@
+# v0.0.2
+
+## Major changes
+
+* Updated PFP and FDR control for intrinsic selection
+
 # v0.0.1
 
 ## Major changes
