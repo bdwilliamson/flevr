@@ -4,7 +4,10 @@
 #' specified error-controlling method.
 #'
 #' @param spvim_ests the estimated SPVIM values (an object of class \code{vim},
-#'   resulting from a call to \code{vimp::sp_vim}).
+#'   resulting from a call to \code{vimp::sp_vim}). Can also be a list of 
+#'   estimated SPVIMs, if multiple imputation was used to handle missing data; in 
+#'   this case, Rubin's rules will be used to combine the estimated SPVIMs, and
+#'   then selection will be based on the combined SPVIMs.
 #' @param sample_size the number of independent observations used to estimate
 #'   the SPVIM values.
 #' @param alpha the nominal generalized family-wise error rate, proportion of
@@ -23,7 +26,7 @@
 #' @importFrom dplyr mutate select
 #' @export
 intrinsic_selection <- function(spvim_ests, sample_size, feature_names,
-                                alpha = 0.05,
+                                alpha = 0.05, 
                                 control = list(quantity = "gFWER",
                                                base_method = "Holm",
                                                fdr_method = NULL, q = NULL,
@@ -31,8 +34,28 @@ intrinsic_selection <- function(spvim_ests, sample_size, feature_names,
   # make sure that control is in the correct format; if nothing was entered,
   # get default values
   control <- do.call(intrinsic_control, control)
-  test_statistics <- spvim_ests$test_statistic
-  p_values <- spvim_ests$p_value
+  # if a list of SPVIMs was entered, use Rubin's rules to combine the estimates
+  # and get variance estimators
+  if (!any(grepl("vim", class(spvim_ests))) & any(grepl("list", class(spvim_ests)))) {
+    # pool them
+    pooled_results <- pool_spvims(spvim_ests)
+    test_statistics <- pooled_results$test_statistics
+    p_values <- pooled_results$p_values
+    tau <- pooled_results$tau_n
+    cov_mat <- pooled_results$vcov
+    importance_df_init <- tibble::tibble(
+      s = seq_len(length(p_values)), est = pooled_results$est,
+      se = pooled_results$se, tau = pooled_results$tau_n,
+      p_value = p_values, feature = feature_names) %>% 
+      mutate(rank = rank(-abs(est)))
+  } else {
+    test_statistics <- spvim_ests$test_statistic
+    p_values <- spvim_ests$p_value
+    tau <- 0
+    cov_mat <- spvim_vcov(spvim_ests)
+    importance_df_init <- spvim_ests$mat %>%
+      dplyr::mutate(feature = feature_names, rank = rank(-abs(est)))
+  }
   if (control$fdr_method == "BY") {
     selected_set_lst <- get_base_set(test_statistics = test_statistics,
                                      p_values = p_values, alpha = alpha,
@@ -41,20 +64,6 @@ intrinsic_selection <- function(spvim_ests, sample_size, feature_names,
     selected_set <- selected_set_lst$decision
     adj_p <- selected_set$p_values
   } else {
-    if (is.null(names(spvim_ests$ic))) {
-      # cross-fitted SEs were used; create a vector where each column is when
-      # that "observation" was in the validation fold
-      ic_v <- do.call(cbind, lapply(spvim_ests$ic, function(x) x$contrib_v[-1, ]))
-      ic_s <- do.call(cbind, lapply(spvim_ests$ic, function(x) x$contrib_s[-1, ]))
-      var_contrib_v <- ic_v %*% t(ic_v)
-      var_contrib_s <- (1 / spvim_ests$gamma) * ic_s %*% t(ic_s)
-    } else {
-      var_contrib_v <- spvim_ests$ic$contrib_v[-1, ] %*%
-        t(spvim_ests$ic$contrib_v[-1, ])
-      var_contrib_s <- (1 / spvim_ests$gamma) * spvim_ests$ic$contrib_s[-1, ] %*%
-        t(spvim_ests$ic$contrib_s[-1, ]) 
-    }
-    cov_mat <- var_contrib_v + var_contrib_s
     initial_set_lst <- get_base_set(test_statistics = test_statistics,
                                     p_values = p_values, alpha = alpha,
                                     method = control$base_method, B = control$B,
@@ -72,10 +81,8 @@ intrinsic_selection <- function(spvim_ests, sample_size, feature_names,
     selected_set <- ifelse((initial_selected_set == 1) | (augmented_set$set == 1),
                            1, 0)
   }
-  importance_df <- spvim_ests$mat %>%
-    dplyr::mutate(feature = feature_names, adjusted_p_value = adj_p,
-           rank = rank(-abs(est)),
-           selected = (selected_set == 1)) %>%
+  importance_df <- importance_df_init %>%
+    dplyr::mutate(adjusted_p_value = adj_p, selected = (selected_set == 1)) %>%
     dplyr::select(feature, est, p_value, adjusted_p_value, rank, selected)
   importance_df
 }
