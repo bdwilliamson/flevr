@@ -4,6 +4,9 @@
 library("testthat")
 library("SuperLearner")
 library("vimp")
+library("mice")
+library("dplyr")
+library("tibble")
 
 # generate the data -- note that this is a simple setting, for speed
 set.seed(4747)
@@ -13,6 +16,15 @@ x <- replicate(p, stats::rnorm(n, 0, 1))
 x_names <- paste0("V", 1:p)
 # apply the function to the x's
 y <- 1 + 0.5 * x[, 1] + 0.75 * x[, 2] + stats::rnorm(n, 0, 1)
+# generate missing data in the second, third, fourth covariates
+x_df <- as.data.frame(x)
+missing_patterns <- expand.grid(V1 = 1, V2 = 0:1, V3 = 0:1, V4 = 0:1)[c(1, 2, 4, 6), ]
+x_with_missing <- mice::ampute(data = x_df, prop = .05, patterns = missing_patterns,
+                               mech = "MAR", freq = mice::ampute.default.freq(missing_patterns),
+                               weights = mice::ampute.default.weights(missing_patterns, "MAR"),
+                               std = FALSE, bycases = TRUE) %>% 
+  magrittr::use_series("amp") %>% 
+  tibble::as_tibble()
 
 true_set <- c(1, 1, 0, 0)
 
@@ -22,6 +34,7 @@ univariate_learners <- "SL.glm"
 V <- 2
 B <- 1e2
 
+# a case without missing data --------------------------------------------------
 # estimate the SPVIMs
 set.seed(1234)
 est <- suppressWarnings(
@@ -83,4 +96,51 @@ test_that("doing intrinsic selection works", {
                                          k = 1
                                        ))
   expect_equal(intrinsic_set$selected, c(TRUE, TRUE, FALSE, TRUE))
+})
+
+# a case with missing data -----------------------------------------------------
+# do multiple imputation
+set.seed(1234)
+imputed_x <- mice::mice(data = x_with_missing, m = 5, method = "pmm", printFlag = FALSE)
+completed_x <- mice::complete(imputed_x, action = "long") %>% 
+  rename(imp = .imp, id = .id)
+
+# estimate SPVIMs for each imputed dataset
+set.seed(5678)
+est_lst <- lapply(as.list(1:5), function(l) {
+  this_x <- completed_x %>% 
+    filter(imp == l) %>% 
+    select(-imp, -id)
+  suppressWarnings(
+    sp_vim(Y = y, X = this_x, V = V, type = "r_squared",
+           SL.library = learners, gamma = .1, alpha = 0.05, delta = 0,
+           cvControl = list(V = V), env = environment())
+  )
+})
+
+# use "stability" to combine
+test_that("using 'stability' to combine selected sets works", {
+  # get selected set for each
+  selected_sets <- lapply(est_lst, function(l) {
+    intrinsic_selection(spvim_ests = l, sample_size = n, feature_names = x_names,
+                        alpha = 0.05, control = list(
+                          quantity = "gFWER", base_method = "Holm",
+                          k = 1
+                        ))
+  })
+  binary_selected_sets <- lapply(selected_sets, function(l) l %>% pull(selected))
+  # pool
+  pooled_set <- pool_selected_sets(sets = binary_selected_sets, threshold = 0.9)
+  expect_equal(as.numeric(pooled_set), true_set)
+})
+
+# use rubin's rules to combine
+test_that("using Rubin's rules to combine and select works", {
+  intrinsic_set <- intrinsic_selection(spvim_ests = est_lst, sample_size = n, 
+                                       feature_names = x_names,
+                                       alpha = 0.05, control = list(
+                                         quantity = "gFWER", base_method = "Holm",
+                                         k = 0
+                                       ))
+  expect_equal(as.numeric(intrinsic_set$selected), true_set)
 })
