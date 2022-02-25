@@ -6,7 +6,7 @@ Methodology authors: [Brian Williamson](https://bdwilliamson.github.io), [Ying H
 
 ## Introduction
 
-`flevr` is a `R` package for doing variable selection based on flexible ensembles. The package provides functions for extrinsic variable selection using the [Super Learner](https://github.com/ecpolley/SuperLearner) and for intrinsic variable selection using the Shapley Population Variable Importance Measure ([SPVIM](https://github.com/bdwilliamson/vimp)).
+`flevr` is an `R` package for doing variable selection based on flexible ensembles. The package provides functions for extrinsic variable selection using the [Super Learner](https://github.com/ecpolley/SuperLearner) and for intrinsic variable selection using the Shapley Population Variable Importance Measure ([SPVIM](https://github.com/bdwilliamson/vimp)).
 
 The author and maintainer of the `flevr` package is  [Brian Williamson](https://bdwilliamson.github.io). For details on the method, check out our preprint.
 
@@ -27,7 +27,17 @@ If you encounter any bugs or have any specific feature requests, please [file an
 
 ## Citation
 
-to appear
+After using the `flevr` package, please cite the following:
+
+```
+@article{williamson2022,
+    author={Williamson, BD and Huang, Y},
+    title={Flexible variable selection in the presence of missing data},
+    journal={arXiv},
+    year={2022},
+    url={https://arxiv.org/abs/<FINISH THIS>}
+}
+```
 
 ## License
 
@@ -35,7 +45,7 @@ The contents of this repository are distributed under the MIT license. See below
 ```
 MIT License
 
-Copyright (c) [2021] [Brian D. Williamson]
+Copyright (c) [2021--present] [Brian D. Williamson]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -55,8 +65,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-
-## Logo
-
-The logo was created using [hexSticker](https://github.com/GuangchuangYu/hexSticker) and [lisa](https://github.com/tyluRp/lisa). Many thanks to the maintainers of these packages and the [Color Lisa](http://colorlisa.com/) team.

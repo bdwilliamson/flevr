@@ -15,7 +15,10 @@ intrinsic_selection(
 }
 \arguments{
 \item{spvim_ests}{the estimated SPVIM values (an object of class \code{vim},
-resulting from a call to \code{vimp::sp_vim}).}
+resulting from a call to \code{vimp::sp_vim}). Can also be a list of
+estimated SPVIMs, if multiple imputation was used to handle missing data; in
+this case, Rubin's rules will be used to combine the estimated SPVIMs, and
+then selection will be based on the combined SPVIMs.}
 
 \item{sample_size}{the number of independent observations used to estimate
 the SPVIM values.}
