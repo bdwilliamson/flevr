@@ -4,6 +4,7 @@
 
 * Updated PFP and FDR control for intrinsic selection
 * Added functions `spvim_vcov` (compute variance-covariance matrix for SPVIMs for intrinsic selection); `pool_spvims` (pool point estimates and obtain Rubin's rules-based variance estimates for multiple imputation-based procedures).
+* Added a dataset, `biomarkers`, for use in vignettes
 
 # v0.0.1
 
