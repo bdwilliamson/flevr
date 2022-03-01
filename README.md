@@ -35,7 +35,7 @@ After using the `flevr` package, please cite the following:
     title={Flexible variable selection in the presence of missing data},
     journal={arXiv},
     year={2022},
-    url={https://arxiv.org/abs/<FINISH THIS>}
+    url={https://arxiv.org/abs/2202.12989}
 }
 ```
 
