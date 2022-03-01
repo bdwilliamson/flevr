@@ -10,7 +10,7 @@ Authors@R:
 Description: Perform variable selection in settings with possibly missing data
     based on extrinsic (algorithm-specific) and intrinsic (population-level)
     variable importance. Uses a Super Learner ensemble to estimate the
-    underlying prediction functions that give rise to estimates of variable importance. For more information about the methods, please see Williamson and Huang (arXiv, 2022+) <arXiv:>
+    underlying prediction functions that give rise to estimates of variable importance. For more information about the methods, please see Williamson and Huang (arXiv, 2022+) <arXiv:2202.12989>.
 License: `use_mit_license()`
 Encoding: UTF-8
 LazyData: true
