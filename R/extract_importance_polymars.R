@@ -18,10 +18,18 @@ extract_importance_polymars <- function(fit, feature_names, coef = 0) {
     stop("This is not a polymars object. Please use a different importance extraction function.")
   } else {
     p <- length(feature_names)
-    coeffs <- summary(fit)$coefficients[-1, ]
-    summ2 <- as.data.frame(coeffs[rank(-abs(coeffs[, 3]), ties.method = "last"), ])
-    summ2$rank <- rank(-abs(summ2[, 3]), ties.method = "last")
-    summ2$feature <- rownames(summ2)
+    mod <- fit$model
+    all_preds <- c(mod$pred1, mod$pred2)
+    nonzero_preds <- all_preds[all_preds > 0]
+    unique_preds <- unique(nonzero_preds)
+    coeffs <- matrix(nrow = length(unique_preds), ncol = 2)
+    for (i in seq_len(nrow(coeffs))) {
+      these_coefs <- mod[mod$pred1 == unique_preds[i] | mod$pred2 == unique_preds[i], ]
+      coeffs[i, ] <- c(unique_preds[i], sum(abs(these_coefs$coefs / these_coefs$SE)))
+    }
+    summ2 <- as.data.frame(coeffs[rank(-abs(coeffs[, 2]), ties.method = "last"), ])
+    names(summ2) <- c("feature", "importance")
+    summ2$rank <- rank(-abs(summ2$importance), ties.method = "last")
     if (nrow(summ2) < p) {
       current_length <- nrow(summ2)
       current_nms <- row.names(summ2)
@@ -34,9 +42,8 @@ extract_importance_polymars <- function(fit, feature_names, coef = 0) {
       na_df$rank <- avg_remaining_rank
       summ2 <- dplyr::bind_rows(summ2, na_df)
     }
-    imp_dt  <- tibble::tibble(algorithm = "glm", feature = summ2$feature,
-                              importance = abs(summ2[, grepl("value",
-                                                             names(summ2))]),
+    imp_dt  <- tibble::tibble(algorithm = "polymars", feature = feature_names[summ2$feature],
+                              importance = summ2$importance,
                               rank = summ2$rank,
                               weight = coef)
     imp_dt[order(imp_dt$rank), ]

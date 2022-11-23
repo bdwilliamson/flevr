@@ -8,6 +8,7 @@ library("xgboost")
 library("glmnet")
 library("kernlab")
 library("caret")
+library("polspline")
 
 # generate the data -- note that this is a simple setting, for speed
 set.seed(4747)
@@ -21,7 +22,8 @@ y <- 1 + 0.5 * x[, 1] + 0.75 * x[, 2] + stats::rnorm(n, 0, 1)
 
 # fit a Super Learner ensemble
 set.seed(1234)
-learners <- c("SL.xgboost", "SL.ranger.imp", "SL.glm", "SL.glmnet", "SL.ksvm", "SL.mean")
+learners <- c("SL.xgboost", "SL.ranger.imp", "SL.glm", "SL.glmnet", "SL.ksvm",
+              "SL.polymars", "SL.mean")
 V <- 2
 fit <- SuperLearner::SuperLearner(Y = y, X = x_df,
                                   SL.library = learners,
@@ -59,7 +61,12 @@ test_that("algorithm-specific importance extraction works", {
     fit = fit$fitLibrary$SL.ksvm_All$object, coef = fit$coef[grepl("svm", coef_nms)],
     feature_names = x_names, x = x_df, y = y
   )
-  expect_equal(xgboost_importance$feature, c("V2", "V1"))
+  expect_equal(svm_importance$feature, c("V2", "V1"))
+  polymars_importance <- extract_importance_polymars(
+    fit = fit$fitLibrary$SL.polymars_All$object, coef = fit$coef[grepl("polymars", coef_nms)],
+    feature_names = x_names
+  )
+  expect_equal(polymars_importance$feature, c("V1", "V2"))
 })
 
 # extract importance for the whole Super Learner ensemble
