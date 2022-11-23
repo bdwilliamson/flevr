@@ -1,20 +1,20 @@
 #' Extract the learner-specific importance from a glm object
-#' 
-#' Extract the individual-algorithm extrinsic importance from a glm object, 
+#'
+#' Extract the individual-algorithm extrinsic importance from a glm object,
 #' along with the importance rank.
-#' 
+#'
 #' @param fit the \code{glm} object.
 #' @param feature_names the feature names
 #' @param coef the Super Learner coefficient associated with the learner.
-#' 
+#'
 #' @return a tibble, with columns \code{algorithm} (the fitted algorithm),
-#'   \code{feature} (the feature), \code{importance} (the algorithm-specific 
-#'   extrinsic importance of the feature), \code{rank} (the feature importance 
-#'   rank, with 1 indicating the most important feature), and \code{weight} 
+#'   \code{feature} (the feature), \code{importance} (the algorithm-specific
+#'   extrinsic importance of the feature), \code{rank} (the feature importance
+#'   rank, with 1 indicating the most important feature), and \code{weight}
 #'   (the algorithm's weight in the Super Learner)
-#' @export 
+#' @export
 extract_importance_glm <- function(fit, feature_names, coef = 0) {
-  if (!("glm" %in% class(fit))) {
+  if (!inherits(fit, "glm")) {
     stop("This is not a glm object. Please use a different importance extraction function.")
   } else {
     p <- length(feature_names)
@@ -35,8 +35,8 @@ extract_importance_glm <- function(fit, feature_names, coef = 0) {
       summ2 <- dplyr::bind_rows(summ2, na_df)
     }
     imp_dt  <- tibble::tibble(algorithm = "glm", feature = summ2$feature,
-                              importance = abs(summ2[, grepl("value", 
-                                                             names(summ2))]), 
+                              importance = abs(summ2[, grepl("value",
+                                                             names(summ2))]),
                               rank = summ2$rank,
                               weight = coef)
     imp_dt[order(imp_dt$rank), ]

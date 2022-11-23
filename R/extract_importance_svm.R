@@ -16,7 +16,7 @@
 #'   (the algorithm's weight in the Super Learner)
 #' @export
 extract_importance_svm <- function(fit, feature_names, coef = 0, x = NULL, y = NULL) {
-  if (!any(grepl("svm", class(fit)))) {
+  if (!inherits(fit, "svm")) {
     stop("This is not an svm object. Please use a different importance extraction function.")
   } else {
     param_df <- data.frame(sigma = kpar(kernelf(fit))$sigma, C = param(fit)$C)

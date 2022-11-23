@@ -1,20 +1,20 @@
 #' Extract the learner-specific importance from a ranger object
-#' 
-#' Extract the individual-algorithm extrinsic importance from a ranger object, 
+#'
+#' Extract the individual-algorithm extrinsic importance from a ranger object,
 #' along with the importance rank.
-#' 
+#'
 #' @param fit the \code{ranger} object.
 #' @param feature_names the feature names
 #' @param coef the Super Learner coefficient associated with the learner.
-#' 
+#'
 #' @return a tibble, with columns \code{algorithm} (the fitted algorithm),
-#'   \code{feature} (the feature), \code{importance} (the algorithm-specific 
-#'   extrinsic importance of the feature), \code{rank} (the feature importance 
-#'   rank, with 1 indicating the most important feature), and \code{weight} 
+#'   \code{feature} (the feature), \code{importance} (the algorithm-specific
+#'   extrinsic importance of the feature), \code{rank} (the feature importance
+#'   rank, with 1 indicating the most important feature), and \code{weight}
 #'   (the algorithm's weight in the Super Learner)
-#' @export 
+#' @export
 extract_importance_ranger <- function(fit, feature_names, coef = 0) {
-  if (!("ranger" %in% class(fit))) {
+  if (!inherits(fit, "ranger")) {
     stop("This is not a ranger object. Please use a different importance extraction function.")
   } else {
     p <- length(feature_names)
