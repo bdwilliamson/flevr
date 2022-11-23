@@ -9,8 +9,8 @@ intrinsic_selection(
   sample_size,
   feature_names,
   alpha = 0.05,
-  control = list(quantity = "gFWER", base_method = "Holm", fdr_method = NULL, q = NULL,
-    k = NULL)
+  control = list(quantity = "gFWER", base_method = "Holm", fdr_method = NULL, q = NULL, k
+    = NULL)
 )
 }
 \arguments{

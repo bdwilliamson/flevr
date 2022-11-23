@@ -1,3 +1,13 @@
+# v0.0.3
+
+## Major changes
+
+* Added importance extractor for `polymars` objects
+
+## Minor changes
+
+* Updated internal checking to `inherits`
+
 # v0.0.2
 
 ## Major changes
