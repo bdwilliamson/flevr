@@ -14,18 +14,34 @@
 #'   (the algorithm's weight in the Super Learner)
 #' @export
 extract_importance_polymars <- function(fit, feature_names, coef = 0) {
-  if (!inherits(fit, "polymars")) {
+  if (!inherits(fit, "polymars") & !inherits(fit, "polyclass")) {
     stop("This is not a polymars object. Please use a different importance extraction function.")
   } else {
     p <- length(feature_names)
-    mod <- fit$model
-    all_preds <- c(mod$pred1, mod$pred2)
-    nonzero_preds <- all_preds[all_preds > 0]
-    unique_preds <- unique(nonzero_preds)
-    coeffs <- matrix(nrow = length(unique_preds), ncol = 2)
-    for (i in seq_len(nrow(coeffs))) {
-      these_coefs <- mod[mod$pred1 == unique_preds[i] | mod$pred2 == unique_preds[i], ]
-      coeffs[i, ] <- c(unique_preds[i], sum(abs(these_coefs$coefs / these_coefs$SE)))
+    if (inherits(fit, "polymars")) {
+      mod <- fit$model
+      all_preds <- c(mod$pred1, mod$pred2)
+      nonzero_preds <- all_preds[all_preds > 0]
+      unique_preds <- unique(nonzero_preds)
+      coeffs <- matrix(nrow = length(unique_preds), ncol = 2)
+      for (i in seq_len(nrow(coeffs))) {
+        these_coefs <- mod[mod$pred1 == unique_preds[i] | mod$pred2 == unique_preds[i], ]
+        coeffs[i, ] <- c(unique_preds[i], sum(abs(these_coefs$coefs / these_coefs$SE)))
+      }
+    } else {
+      mod <- fit$fcts
+      all_preds <- as.numeric(c(mod[, 1], mod[, 3]))
+      nonzero_preds <- all_preds[all_preds > 0 & !is.na(all_preds)]
+      unique_preds <- unique(nonzero_preds)
+      coeffs <- matrix(nrow = length(unique_preds), ncol = 2)
+      for (i in seq_len(nrow(coeffs))) {
+        these_coefs <- mod[(mod[, 1] == unique_preds[i] & !is.na(mod[, 1])) |
+                             (mod[, 3] == unique_preds[i] & !is.na(mod[, 3])), ]
+        coeffs[i, ] <- c(unique_preds[i], ifelse(
+          all(these_coefs[6] == 0), sum(abs(these_coefs[5])),
+          sum(abs(these_coefs[5] / these_coefs[6]))
+        ))
+      }
     }
     summ2 <- as.data.frame(coeffs[rank(-abs(coeffs[, 2]), ties.method = "last"), ])
     names(summ2) <- c("feature", "importance")
