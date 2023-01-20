@@ -32,14 +32,14 @@ extract_importance_polymars <- function(fit, feature_names, coef = 0) {
       mod <- fit$fcts
       all_preds <- as.numeric(c(mod[, 1], mod[, 3]))
       nonzero_preds <- all_preds[all_preds > 0 & !is.na(all_preds)]
-      unique_preds <- unique(nonzero_preds)
+      unique_preds <- sort(unique(nonzero_preds))
       coeffs <- matrix(nrow = length(unique_preds), ncol = 2)
       for (i in seq_len(nrow(coeffs))) {
         these_coefs <- mod[(mod[, 1] == unique_preds[i] & !is.na(mod[, 1])) |
-                             (mod[, 3] == unique_preds[i] & !is.na(mod[, 3])), ]
+                             (mod[, 3] == unique_preds[i] & !is.na(mod[, 3])), , drop = FALSE]
         coeffs[i, ] <- c(unique_preds[i], ifelse(
-          all(these_coefs[6] == 0), sum(abs(these_coefs[5])),
-          sum(abs(these_coefs[5] / these_coefs[6]))
+          all(these_coefs[, 6] == 0), sum(abs(these_coefs[, 5])),
+          sum(abs(these_coefs[, 5] / these_coefs[, 6]))
         ))
       }
     }
@@ -48,9 +48,9 @@ extract_importance_polymars <- function(fit, feature_names, coef = 0) {
     summ2$rank <- rank(-abs(summ2$importance), ties.method = "last")
     if (nrow(summ2) < p) {
       current_length <- nrow(summ2)
-      current_nms <- row.names(summ2)
+      current_nms <- summ2$feature
       avg_remaining_rank <- mean((current_length + 1):p)
-      remaining_features <- feature_names[!(feature_names %in% current_nms)]
+      remaining_features <- (1:p)[!(1:p %in% current_nms)]
       na_mat <- matrix(NA, nrow = p - nrow(summ2), ncol = ncol(summ2))
       na_df <- as.data.frame(na_mat)
       names(na_df) <- names(summ2)
