@@ -5,3 +5,4 @@
 ^pkgdown$
 ^paper$
 ^cran-comments\.md$
+^.github$
