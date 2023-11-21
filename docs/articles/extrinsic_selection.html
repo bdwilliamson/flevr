@@ -95,15 +95,296 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bdwilliamson/flevr" class="external-link">flevr</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; flevr version 0.0.3: Flexible, Ensemble-based Variable Selection With Potentially</span></span>
-<span><span class="co">#&gt; Missing Data</span></span>
-<span><span class="co">#&gt; Package created on 2023-10-11</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/bdwilliamson/flevr" class="external-link">"flevr"</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; flevr version 0.0.4: Flexible, Ensemble-based Variable Selection With Potentially Missing Data</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>In the <a href="introduction_to_flevr.html">main vignette</a>, I
+discussed how to perform flexible variable selection in a simple,
+simulated example. In this document, I will discuss <em>extrinsic
+selection</em> in more detail.</p>
+<p>Extrinsic variable selection is variable selection performed using
+extrinsic variable importance <span class="citation">[@williamson2021]</span>. Extrinsic variable importance
+is a summary of how a particular fitted algorithm makes use of the input
+features. For example, extrinsic importance for a penalized regression
+model could be the estimated regression coefficient, while for random
+forests, it could be the random forest variable importance measure.</p>
+<p>In <code>flevr</code>, we use the following definitions of variable
+importance</p>
+<table class="table">
+<colgroup>
+<col width="53%">
+<col width="46%">
+</colgroup>
+<thead><tr class="header">
+<th>Algorithm</th>
+<th>
+<code>R</code> package implementation</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Generalized linear models</td>
+<td><code><a href="https://rdrr.io/r/stats/glm.html" class="external-link">stats::glm</a></code></td>
+</tr>
+<tr class="even">
+<td>Penalized linear models</td>
+<td>
+<code><a href="https://glmnet.stanford.edu/reference/glmnet.html" class="external-link">glmnet::glmnet</a></code> <span class="citation">[@friedman2010;@tay2023;@glmnet]</span>
+</td>
+</tr>
+<tr class="odd">
+<td>Mean</td>
+<td><code>stats::mean</code></td>
+</tr>
+<tr class="even">
+<td>Multivariate adaptive regression splines</td>
+<td>
+<code><a href="https://rdrr.io/pkg/polspline/man/polymars.html" class="external-link">polspline::polymars</a></code> <span class="citation">[@polspline]</span>
+</td>
+</tr>
+<tr class="odd">
+<td>Random forests</td>
+<td>`<code><a href="https://rdrr.io/pkg/ranger/man/ranger.html" class="external-link">ranger::ranger</a></code> <span class="citation">[@ranger;@wright2017]</span>
+</td>
+</tr>
+<tr class="even">
+<td>Support vector machines</td>
+<td>
+<code><a href="https://rdrr.io/pkg/kernlab/man/ksvm.html" class="external-link">kernlab::ksvm</a></code> <span class="citation">[@karatzoglou2004;@kernlab]</span>
+</td>
+</tr>
+<tr class="odd">
+<td>Gradient boosted trees</td>
+<td>
+<code><a href="https://rdrr.io/pkg/xgboost/man/xgb.train.html" class="external-link">xgboost::xgboost</a></code> <span class="citation">[@xgboost]</span>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Further, we define the extrinsic importance of the Super Learner
+<span class="citation">[@vanderlaan2007]</span>. The first choice is to
+use the weighted average of the variable importance ranks of the
+individual learners. The weights are determined by the Super Learner
+itself, since the algorithm determines a weighted combination of the
+individual-learner predictions. The second choice is to use the variable
+importance from the best-performing individual learner.</p>
+<p>Throughout this vignette, I will use a dataset inspired by data
+collected by the Early Detection Research Network (EDRN). Biomarkers
+developed at six “labs” are validated at at least one of four
+“validation sites” on 306 cysts. The data also include two binary
+outcome variables: whether or not the cyst was classified as mucinous,
+and whether or not the cyst was determined to have high malignant
+potential. The data contain some missing information, which complicates
+variable selection; only 212 cysts have complete information. In the
+first section, we will drop the missing data; in the second section, we
+will appropriately handle the missing data by using multiple
+imputation.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># load the dataset</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"biomarkers"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://dplyr.tidyverse.org" class="external-link">"dplyr"</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter, lag</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span><span class="co"># set up vector "y" of outcomes and matrix "x" of features</span></span>
+<span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">biomarkers</span><span class="op">)</span></span>
+<span><span class="va">y_cc</span> <span class="op">&lt;-</span> <span class="va">biomarkers</span><span class="op">$</span><span class="va">mucinous</span><span class="op">[</span><span class="va">cc</span><span class="op">]</span></span>
+<span><span class="va">x_cc</span> <span class="op">&lt;-</span> <span class="va">biomarkers</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.omit</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"lab"</span><span class="op">)</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"cea"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">x_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">x_cc</span><span class="op">)</span></span>
+<span><span class="va">x_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">x_df</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="extrinsic-variable-selection">Extrinsic variable selection<a class="anchor" aria-label="anchor" href="#extrinsic-variable-selection"></a>
+</h2>
+<p>The first step in performing extrinsic variable selection is to fit a
+Super Learner. This requires specifying a <em>library of candidate
+learners</em> for the Super Learner <span class="citation">[@vanderlaan2007;@superlearner]</span>; throughout, I
+use a very simple library of learners for the Super Learner (this is for
+illustration only; in practice, I suggest using a large library of
+learners).</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
+<span><span class="co"># fit a Super Learner ensemble; note its simplicity, for speed</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/ecpolley/SuperLearner" class="external-link">"SuperLearner"</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: nnls</span></span>
+<span><span class="co">#&gt; Loading required package: gam</span></span>
+<span><span class="co">#&gt; Loading required package: splines</span></span>
+<span><span class="co">#&gt; Loading required package: foreach</span></span>
+<span><span class="co">#&gt; Loaded gam 1.22-2</span></span>
+<span><span class="co">#&gt; Super Learner</span></span>
+<span><span class="co">#&gt; Version: 2.0-28.1</span></span>
+<span><span class="co">#&gt; Package created on 2021-05-04</span></span>
+<span><span class="va">learners</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.glm"</span>, <span class="st">"SL.ranger.imp"</span>, <span class="st">"SL.xgboost"</span><span class="op">)</span></span>
+<span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">SuperLearner</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html" class="external-link">SuperLearner</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">y_cc</span>, X <span class="op">=</span> <span class="va">x_df</span>,</span>
+<span>                                  SL.library <span class="op">=</span> <span class="va">learners</span>,</span>
+<span>                                  cvControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>V <span class="op">=</span> <span class="va">V</span><span class="op">)</span>,</span>
+<span>                                  family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required namespace: ranger</span></span>
+<span><span class="co">#&gt; Loading required namespace: xgboost</span></span>
+<span><span class="co">#&gt; Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :</span></span>
+<span><span class="co">#&gt; prediction from rank-deficient fit; attr(*, "non-estim") has doubtful cases</span></span>
+<span><span class="co"># check the SL weights</span></span>
+<span><span class="va">fit</span><span class="op">$</span><span class="va">coef</span></span>
+<span><span class="co">#&gt;        SL.glm_All SL.ranger.imp_All    SL.xgboost_All </span></span>
+<span><span class="co">#&gt;         0.0000000         0.4684959         0.5315041</span></span>
+<span><span class="co"># extract importance based on the whole Super Learner</span></span>
+<span><span class="va">sl_importance_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_importance_SL.html">extract_importance_SL</a></span><span class="op">(</span></span>
+<span>  fit <span class="op">=</span> <span class="va">fit</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>, import_type <span class="op">=</span> <span class="st">"all"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">sl_importance_all</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 2</span></span></span>
+<span><span class="co">#&gt;    feature                  rank</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_telomerase_score    1.94</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab3_muc3ac_score        2.06</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> cea                      3.41</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab6_ab_score            3.59</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab4_glucose_score       4   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab1_actb                6   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab2_fluorescence_score  7.94</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab3_muc5ac_score        8.53</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab4_areg_score          8.59</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab1_molecules_score     8.94</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
+<p>Using the ensemble weights here means that weight approximately 0.53
+is given to the boosted trees, weight approximately 0.47 is given to the
+random forest, while weight 0 is given to the logistic regression
+model.</p>
+<p>To instead look at the importance of the best individual learner, use
+the following code:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sl_importance_best</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_importance_SL.html">extract_importance_SL</a></span><span class="op">(</span></span>
+<span>  fit <span class="op">=</span> <span class="va">fit</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>, import_type <span class="op">=</span> <span class="st">"best"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">sl_importance_best</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 2</span></span></span>
+<span><span class="co">#&gt;    feature                  rank</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_telomerase_score       1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> cea                         2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab3_muc3ac_score           3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab4_glucose_score          4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab6_ab_score               5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab1_actb                   6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab2_fluorescence_score     7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab1_molecules_score        8</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab3_muc5ac_score           9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab4_areg_score            10</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
+<p>In this case, this shows the importance in the boosted trees.</p>
+<p>Finally, to do variable selection, we need to select a threshold
+(ideally before looking at the data). In this case, since there are only
+24 variables, we choose a threshold of 5.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">extrinsic_selected</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extrinsic_selection.html">extrinsic_selection</a></span><span class="op">(</span></span>
+<span>  fit <span class="op">=</span> <span class="va">fit</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>, threshold <span class="op">=</span> <span class="fl">5</span>, import_type <span class="op">=</span> <span class="st">"all"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">extrinsic_selected</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 3</span></span></span>
+<span><span class="co">#&gt;    feature                  rank selected</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_telomerase_score    1.94 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab3_muc3ac_score        2.06 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> cea                      3.41 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab6_ab_score            3.59 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab4_glucose_score       4    TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab1_actb                6    FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab2_fluorescence_score  7.94 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab3_muc5ac_score        8.53 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab4_areg_score          8.59 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab1_molecules_score     8.94 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
+<p>Here, we select five variables, since these had weighted rank less
+than 5.</p>
+</div>
+<div class="section level2">
+<h2 id="extrinsic-selection-with-missing-data">Extrinsic selection with missing data<a class="anchor" aria-label="anchor" href="#extrinsic-selection-with-missing-data"></a>
+</h2>
+<p>To properly handle the missing data, we first perform multiple
+imputation. We use the <code>R</code> package <code>mice</code>, here
+with only 5 imputations (in practice, more imputations may be
+better).</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/amices/mice" class="external-link">"mice"</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'mice'</span></span>
+<span><span class="co">#&gt; The following object is masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     cbind, rbind</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20231121</span><span class="op">)</span></span>
+<span><span class="va">mi_biomarkers</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://amices.org/mice/reference/mice.html" class="external-link">mice</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">biomarkers</span>, m <span class="op">=</span> <span class="fl">5</span>, printFlag <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">imputed_biomarkers</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tidyr/man/complete.html" class="external-link">complete</a></span><span class="op">(</span><span class="va">mi_biomarkers</span>, action <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>imp <span class="op">=</span> <span class="va">.imp</span>, id <span class="op">=</span> <span class="va">.id</span><span class="op">)</span></span></code></pre></div>
+<p>We can perform extrinsic variable selection using the imputed data.
+First, we fit a Super Learner and perform extrinsic variable selection
+for each imputed dataset. Then, we select a final set of variables based
+on those that are selected in a pre-specified number of imputed datasets
+(e.g., 3 of 5) <span class="citation">[@heymans2007]</span>. Again, we
+use a rank of 5 for each imputed dataset to select variables.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20231121</span><span class="op">)</span></span>
+<span><span class="co"># set up a list to collect selected sets</span></span>
+<span><span class="va">all_selected_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, length <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co"># for each imputed dataset, do extrinsic selection</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="co"># fit a Super Learner</span></span>
+<span>  <span class="va">these_data</span> <span class="op">&lt;-</span> <span class="va">imputed_biomarkers</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">imp</span> <span class="op">==</span> <span class="va">i</span><span class="op">)</span></span>
+<span>  <span class="va">this_y</span> <span class="op">&lt;-</span> <span class="va">these_data</span><span class="op">$</span><span class="va">mucinous</span></span>
+<span>  <span class="va">this_x</span> <span class="op">&lt;-</span> <span class="va">these_data</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"lab"</span><span class="op">)</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"cea"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">this_x_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">this_x</span><span class="op">)</span></span>
+<span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">SuperLearner</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html" class="external-link">SuperLearner</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">this_y</span>, X <span class="op">=</span> <span class="va">this_x_df</span>,</span>
+<span>                                  SL.library <span class="op">=</span> <span class="va">learners</span>,</span>
+<span>                                  cvControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>V <span class="op">=</span> <span class="va">V</span><span class="op">)</span>,</span>
+<span>                                  family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span></span>
+<span>  <span class="co"># do extrinsic selection</span></span>
+<span>  <span class="va">all_selected_vars</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extrinsic_selection.html">extrinsic_selection</a></span><span class="op">(</span></span>
+<span>    fit <span class="op">=</span> <span class="va">fit</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>, threshold <span class="op">=</span> <span class="fl">5</span>, import_type <span class="op">=</span> <span class="st">"all"</span></span>
+<span>  <span class="op">)</span><span class="op">$</span><span class="va">selected</span></span>
+<span><span class="op">}</span></span>
+<span><span class="co">#&gt; Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :</span></span>
+<span><span class="co">#&gt; prediction from rank-deficient fit; attr(*, "non-estim") has doubtful cases</span></span>
+<span></span>
+<span><span class="co">#&gt; Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :</span></span>
+<span><span class="co">#&gt; prediction from rank-deficient fit; attr(*, "non-estim") has doubtful cases</span></span>
+<span></span>
+<span><span class="co">#&gt; Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :</span></span>
+<span><span class="co">#&gt; prediction from rank-deficient fit; attr(*, "non-estim") has doubtful cases</span></span>
+<span></span>
+<span><span class="co">#&gt; Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :</span></span>
+<span><span class="co">#&gt; prediction from rank-deficient fit; attr(*, "non-estim") has doubtful cases</span></span>
+<span></span>
+<span><span class="co">#&gt; Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :</span></span>
+<span><span class="co">#&gt; prediction from rank-deficient fit; attr(*, "non-estim") has doubtful cases</span></span>
+<span><span class="co"># perform extrinsic variable selection</span></span>
+<span><span class="va">selected_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pool_selected_sets.html">pool_selected_sets</a></span><span class="op">(</span>sets <span class="op">=</span> <span class="va">all_selected_vars</span>, threshold <span class="op">=</span> <span class="fl">3</span> <span class="op">/</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">x_names</span><span class="op">[</span><span class="va">selected_vars</span><span class="op">]</span></span>
+<span><span class="co">#&gt; [1] "lab1_actb"             "lab1_molecules_score"  "lab1_telomerase_score"</span></span></code></pre></div>
+<p>In this case, there is only one variable in common between the
+multiply-imputed approach and the approach dropping missing data. This
+serves to highlight that it is important in missing-data contexts to
+handle the missing data appropriately.</p>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 

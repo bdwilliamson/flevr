@@ -95,15 +95,290 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bdwilliamson/flevr" class="external-link">flevr</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; flevr version 0.0.3: Flexible, Ensemble-based Variable Selection With Potentially</span></span>
-<span><span class="co">#&gt; Missing Data</span></span>
-<span><span class="co">#&gt; Package created on 2023-10-11</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/bdwilliamson/flevr" class="external-link">"flevr"</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; flevr version 0.0.4: Flexible, Ensemble-based Variable Selection With Potentially Missing Data</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p>In the <a href="introduction_to_flevr.html">main vignette</a>, I
+discussed how to perform flexible variable selection in a simple,
+simulated example. In this document, I will discuss <em>intrinsic
+selection</em> in more detail.</p>
+<p>Intrinsic variable selection is variable selection performed using
+intrinsic variable importance <span class="citation">(Williamson and
+Huang 2023)</span>. Intrinsic variable importance is a summary of the
+true population distribution; it is the difference between the best
+possible prediction performance obtained using a set of variables and
+the best possible prediction performance obtained without using that set
+of variables <span class="citation">(Williamson, Gilbert, Simon, et al.
+2021; Williamson, Gilbert, Carone, et al. 2020)</span>. Prediction
+performance can be measured using R-squared, classification accuracy,
+area under the receiver operating characteristic curve (AUC), and
+binomial deviance. It can also be defined for a single variable by
+averaging the intrinsic importance of the variable compared to each
+other subset of variables <span class="citation">(Williamson and Feng
+2020)</span>, a notion that we use for variable selection.</p>
+<p>Throughout this vignette, I will use a dataset inspired by data
+collected by the Early Detection Research Network (EDRN). Biomarkers
+developed at six “labs” are validated at at least one of four
+“validation sites” on 306 cysts. The data also include two binary
+outcome variables: whether or not the cyst was classified as mucinous,
+and whether or not the cyst was determined to have high malignant
+potential. The data contain some missing information, which complicates
+variable selection; only 212 cysts have complete information. In the
+first section, we will drop the missing data; in the second section, we
+will appropriately handle the missing data by using multiple imputation.
+I will use AUC to measure intrinsic importance.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># load the dataset</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"biomarkers"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://dplyr.tidyverse.org" class="external-link">"dplyr"</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter, lag</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span><span class="co"># set up vector "y" of outcomes and matrix "x" of features</span></span>
+<span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">biomarkers</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">biomarkers</span><span class="op">$</span><span class="va">mucinous</span></span>
+<span><span class="va">y_cc</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">[</span><span class="va">cc</span><span class="op">]</span></span>
+<span><span class="va">x_cc</span> <span class="op">&lt;-</span> <span class="va">biomarkers</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.omit</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"lab"</span><span class="op">)</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"cea"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">x_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">x_cc</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="intrinsic-variable-selection">Intrinsic variable selection<a class="anchor" aria-label="anchor" href="#intrinsic-variable-selection"></a>
+</h2>
+<p>The first step in performing intrinsic variable selection is to
+estimate intrinsic variable importance. To estimate variable importance,
+I use the function <code>sp_vim</code> from the <code>R</code> package
+<code>vimp</code> <span class="citation">(Williamson, Feng, Wolock, et
+al. 2023)</span>. This requires specifying a <em>library of candidate
+learners</em> for the Super Learner <span class="citation">(Laan,
+Polley, and Hubbard 2007)</span>; throughout, I use a very simple
+library of learners for the Super Learner (this is for illustration
+only; in practice, I suggest using a large library of learners).</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># set up a library for SuperLearner; this is too simple a library for use in most applications</span></span>
+<span><span class="va">learners</span> <span class="op">&lt;-</span> <span class="st">"SL.glm"</span></span>
+<span><span class="va">univariate_learners</span> <span class="op">&lt;-</span> <span class="st">"SL.glm"</span></span>
+<span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span></span>
+<span><span class="co"># estimate the SPVIMs</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/ecpolley/SuperLearner" class="external-link">"SuperLearner"</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: nnls</span></span>
+<span><span class="co">#&gt; Loading required package: gam</span></span>
+<span><span class="co">#&gt; Loading required package: splines</span></span>
+<span><span class="co">#&gt; Loading required package: foreach</span></span>
+<span><span class="co">#&gt; Loaded gam 1.22-2</span></span>
+<span><span class="co">#&gt; Super Learner</span></span>
+<span><span class="co">#&gt; Version: 2.0-28.1</span></span>
+<span><span class="co">#&gt; Package created on 2021-05-04</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://bdwilliamson.github.io/vimp/" class="external-link">"vimp"</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; vimp version 2.3.1: Perform Inference on Algorithm-Agnostic Variable Importance</span></span>
+<span><span class="va">est</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="http://bdwilliamson.github.io/vimp/reference/sp_vim.html" class="external-link">sp_vim</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">y_cc</span>, X <span class="op">=</span> <span class="va">x_cc</span>, V <span class="op">=</span> <span class="va">V</span>, type <span class="op">=</span> <span class="st">"auc"</span>,</span>
+<span>              SL.library <span class="op">=</span> <span class="va">learners</span>, gamma <span class="op">=</span> <span class="fl">.1</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, delta <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>              cvControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>V <span class="op">=</span> <span class="va">V</span><span class="op">)</span>, env <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">environment</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">est</span></span>
+<span><span class="co">#&gt; Variable importance estimates:</span></span>
+<span><span class="co">#&gt;        Estimate     SE         95% CI          VIMP &gt; 0 p-value  </span></span>
+<span><span class="co">#&gt; s = 1  0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 2  4.215857e-02 0.16534232 [0, 0.36622356] FALSE    0.4131126</span></span>
+<span><span class="co">#&gt; s = 3  0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 4  0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 5  6.187506e-05 0.06263558 [0, 0.12282535] FALSE    0.4998444</span></span>
+<span><span class="co">#&gt; s = 6  0.000000e+00 0.11676553 [0, 0.21535200] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 7  0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 8  7.752945e-03 0.11357388 [0, 0.23035366] FALSE    0.4820035</span></span>
+<span><span class="co">#&gt; s = 9  0.000000e+00 0.05425335 [0, 0.10041316] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 10 2.070649e-02 0.07993317 [0, 0.17737263] FALSE    0.4492960</span></span>
+<span><span class="co">#&gt; s = 11 0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 12 0.000000e+00 0.05157831 [0, 0.10109163] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 13 6.410256e-03 0.02006046 [0, 0.04572804] FALSE    0.4832894</span></span>
+<span><span class="co">#&gt; s = 14 0.000000e+00 0.06751652 [0, 0.12712006] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 15 0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 16 0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 17 0.000000e+00 0.05109337 [0, 0.09725160] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 18 4.462739e-04 0.06625191 [0, 0.13029763] FALSE    0.4988827</span></span>
+<span><span class="co">#&gt; s = 19 0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 20 0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 21 0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span></code></pre></div>
+<p>The next step is to choose an error rate to control and a method for
+controlling the family-wise error rate. Here, I choose the generalized
+family-wise error rate to control overall and choose Holm-adjusted
+p-values to control the individual family-wise error rate:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">intrinsic_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/intrinsic_selection.html">intrinsic_selection</a></span><span class="op">(</span></span>
+<span>  spvim_ests <span class="op">=</span> <span class="va">est</span>, sample_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x_cc</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.2</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>,</span>
+<span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span> quantity <span class="op">=</span> <span class="st">"gFWER"</span>, base_method <span class="op">=</span> <span class="st">"Holm"</span>, k <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">intrinsic_set</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 6</span></span></span>
+<span><span class="co">#&gt;    feature                       est p_value adjusted_p_value  rank selected</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_actb               0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab1_molecules_score    0.042<span style="text-decoration: underline;">2</span>      0.413                1     1 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab1_telomerase_score   0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab2_fluorescence_score 0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab3_muc3ac_score       0.000<span style="text-decoration: underline;">061</span>9   0.500                1     6 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab3_muc5ac_score       0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab4_areg_score         0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab4_glucose_score      0.007<span style="text-decoration: underline;">75</span>     0.482                1     3 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab5_mucinous_call      0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab5_neoplasia_v1_call  0.020<span style="text-decoration: underline;">7</span>      0.449                1     2 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
+<p>I could also choose to control the false discovery rate (FDR), again
+using Holm-adjusted p-values to control the individual family-wise error
+rate:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">intrinsic_set_fdr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/intrinsic_selection.html">intrinsic_selection</a></span><span class="op">(</span></span>
+<span>  spvim_ests <span class="op">=</span> <span class="va">est</span>, sample_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x_cc</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">0.2</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>,</span>
+<span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span> quantity <span class="op">=</span> <span class="st">"FDR"</span>, base_method <span class="op">=</span> <span class="st">"Holm"</span>, k <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">intrinsic_set_fdr</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 6</span></span></span>
+<span><span class="co">#&gt;    feature                       est p_value adjusted_p_value  rank selected</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_actb               0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab1_molecules_score    0.042<span style="text-decoration: underline;">2</span>      0.413                1     1 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab1_telomerase_score   0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab2_fluorescence_score 0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab3_muc3ac_score       0.000<span style="text-decoration: underline;">061</span>9   0.500                1     6 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab3_muc5ac_score       0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab4_areg_score         0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab4_glucose_score      0.007<span style="text-decoration: underline;">75</span>     0.482                1     3 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab5_mucinous_call      0           0.5                  1    14 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab5_neoplasia_v1_call  0.020<span style="text-decoration: underline;">7</span>      0.449                1     2 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="intrinsic-selection-with-missing-data">Intrinsic selection with missing data<a class="anchor" aria-label="anchor" href="#intrinsic-selection-with-missing-data"></a>
+</h2>
+<p>To properly handle the missing data, we first perform multiple
+imputation. We use the <code>R</code> package <code>mice</code> <span class="citation">(Buuren, Groothuis-Oudshoorn, and others 2023; van
+Buuren and Groothuis-Oudshoorn 2011)</span>, here with only 5
+imputations (in practice, more imputations may be better).</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/amices/mice" class="external-link">"mice"</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'mice'</span></span>
+<span><span class="co">#&gt; The following object is masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     cbind, rbind</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20231121</span><span class="op">)</span></span>
+<span><span class="va">mi_biomarkers</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://amices.org/mice/reference/mice.html" class="external-link">mice</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">biomarkers</span>, m <span class="op">=</span> <span class="fl">5</span>, printFlag <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">imputed_biomarkers</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tidyr/man/complete.html" class="external-link">complete</a></span><span class="op">(</span><span class="va">mi_biomarkers</span>, action <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>imp <span class="op">=</span> <span class="va">.imp</span>, id <span class="op">=</span> <span class="va">.id</span><span class="op">)</span></span></code></pre></div>
+<p>We can perform intrinsic variable selection using the imputed data.
+First, we estimate variable importance for each imputed dataset.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20231121</span><span class="op">)</span></span>
+<span><span class="va">est_lst</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">l</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">this_x</span> <span class="op">&lt;-</span> <span class="va">imputed_biomarkers</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">imp</span> <span class="op">==</span> <span class="va">l</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"lab"</span><span class="op">)</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"cea"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">this_y</span> <span class="op">&lt;-</span> <span class="va">biomarkers</span><span class="op">$</span><span class="va">mucinous</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="http://bdwilliamson.github.io/vimp/reference/sp_vim.html" class="external-link">sp_vim</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">this_y</span>, X <span class="op">=</span> <span class="va">this_x</span>, V <span class="op">=</span> <span class="va">V</span>, type <span class="op">=</span> <span class="st">"auc"</span>, </span>
+<span>    SL.library <span class="op">=</span> <span class="va">learners</span>, gamma <span class="op">=</span> <span class="fl">0.1</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, delta <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    cvControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>V <span class="op">=</span> <span class="va">V</span><span class="op">)</span>, env <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">environment</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<p>Next, we use Rubin’s rules <span class="citation">(Rubin 2018)</span>
+to combine the variable importance estimates, and use this to perform
+variable selection. Here, we control the generalized family-wise error
+rate at 5, using Holm-adjusted p-values to control the initial
+family-wise error rate.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">intrinsic_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/intrinsic_selection.html">intrinsic_selection</a></span><span class="op">(</span></span>
+<span>  spvim_ests <span class="op">=</span> <span class="va">est_lst</span>, sample_size <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">biomarkers</span><span class="op">)</span>,</span>
+<span>  feature_names <span class="op">=</span> <span class="va">x_names</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, </span>
+<span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>quantity <span class="op">=</span> <span class="st">"gFWER"</span>, base_method <span class="op">=</span> <span class="st">"Holm"</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">intrinsic_set</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 6</span></span></span>
+<span><span class="co">#&gt;    feature                      est p_value adjusted_p_value  rank selected</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_actb               0.033<span style="text-decoration: underline;">4</span>     0.409                1     2 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab1_molecules_score    0.018<span style="text-decoration: underline;">2</span>     0.449                1     6 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab1_telomerase_score   0.021<span style="text-decoration: underline;">6</span>     0.439                1     5 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab2_fluorescence_score 0.003<span style="text-decoration: underline;">41</span>    0.491                1    16 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab3_muc3ac_score       0.023<span style="text-decoration: underline;">8</span>     0.433                1     4 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab3_muc5ac_score       0.003<span style="text-decoration: underline;">74</span>    0.489                1    13 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab4_areg_score         0.004<span style="text-decoration: underline;">85</span>    0.484                1    12 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab4_glucose_score      0.012<span style="text-decoration: underline;">8</span>     0.462                1     8 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab5_mucinous_call      0.000<span style="text-decoration: underline;">775</span>   0.498                1    21 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab5_neoplasia_v1_call  0.006<span style="text-decoration: underline;">43</span>    0.480                1    10 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
+<p>We select five variables, here those with the top-5 estimated
+variable importance. The point estimates and p-values have been computed
+using Rubin’s rules.</p>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-mice" class="csl-entry">
+Buuren, S van, K Groothuis-Oudshoorn, and others. 2023. <em><span class="nocase">mice</span>: Multivariate Imputation by Chained
+Equations</em>. <a href="https://CRAN.R-project.org/package=mice" class="external-link">https://CRAN.R-project.org/package=mice</a>.
+</div>
+<div id="ref-vanderlaan2007" class="csl-entry">
+Laan, MJ van der, EC Polley, and AE Hubbard. 2007. <span>“Super
+Learner.”</span> <em>Statistical Applications in Genetics and Molecular
+Biology</em> 6 (1): Online Article 25.
+</div>
+<div id="ref-rubin2018" class="csl-entry">
+Rubin, Donald B. 2018. <span>“Multiple Imputation.”</span> In
+<em>Flexible Imputation of Missing Data, Second Edition</em>, 29–62.
+Chapman; Hall/CRC.
+</div>
+<div id="ref-mice2011" class="csl-entry">
+van Buuren, Stef, and Karin Groothuis-Oudshoorn. 2011. <span>“<span class="nocase">mice</span>: Multivariate Imputation by Chained Equations
+in r.”</span> <em>Journal of Statistical Software</em> 45 (3): 1–67. <a href="https://doi.org/10.18637/jss.v045.i03" class="external-link">https://doi.org/10.18637/jss.v045.i03</a>.
+</div>
+<div id="ref-williamson2020c" class="csl-entry">
+Williamson, BD, and J Feng. 2020. <span>“Efficient Nonparametric
+Statistical Inference on Population Feature Importance Using
+<span>S</span>hapley Values.”</span> In <em>Proceedings of the 37th
+International Conference on Machine Learning</em>, 119:10282–91.
+Proceedings of Machine Learning Research. <a href="http://proceedings.mlr.press/v119/williamson20a.html" class="external-link">http://proceedings.mlr.press/v119/williamson20a.html</a>.
+</div>
+<div id="ref-williamson_vimp" class="csl-entry">
+Williamson, BD, J Feng, C Wolock, et al. 2023. <em><span class="nocase">vimp</span>: Perform Inference on Algorithm-Agnostic
+Variable Importance</em>. <a href="https://CRAN.R-project.org/package=vimp" class="external-link">https://CRAN.R-project.org/package=vimp</a>.
+</div>
+<div id="ref-williamson2020a" class="csl-entry">
+Williamson, BD, PB Gilbert, M Carone, et al. 2020. <span>“Nonparametric
+Variable Importance Assessment Using Machine Learning
+Techniques.”</span> <em>Biometrics</em>.
+</div>
+<div id="ref-williamson2021" class="csl-entry">
+Williamson, BD, PB Gilbert, NR Simon, et al. 2021. <span>“A General
+Framework for Inference on Algorithm-Agnostic Variable
+Importance.”</span> <em>Journal of the American Statistical
+Association</em>. <a href="https://doi.org/10.1080/01621459.2021.2003200" class="external-link">https://doi.org/10.1080/01621459.2021.2003200</a>.
+</div>
+<div id="ref-williamson2023flevr" class="csl-entry">
+Williamson, BD, and Y Huang. 2023. <span>“Flexible Variable Selection in
+the Presence of Missing Data.”</span> <em>International Journal of
+Biostatistics</em>. <a href="https://arxiv.org/abs/2202.12989" class="external-link">https://arxiv.org/abs/2202.12989</a>.
+</div>
+</div>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 
