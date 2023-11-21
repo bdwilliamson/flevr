@@ -19,8 +19,8 @@
 #'
 #' @importFrom dplyr case_when filter group_by mutate summarize
 #' @importFrom data.table rbindlist
-#' @importFrom rlang .data 
 #' @importFrom magrittr `%>%`
+#' @importFrom rlang .data
 #' @export
 extract_importance_SL <- function(fit, feature_names, import_type = "all", ...) {
   if (import_type == "all") {
@@ -47,7 +47,7 @@ extract_importance_SL <- function(fit, feature_names, import_type = "all", ...) 
       fit = best_obj, coef = fit$coef[biggest_weight],
       feature_names = feature_names, ...
     ) %>%
-      dplyr::select(.data$feature, .data$rank)
+      dplyr::select("feature", "rank")
   }
   imp_dt[order(imp_dt$rank), ]
 }

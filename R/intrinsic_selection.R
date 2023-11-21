@@ -88,6 +88,6 @@ intrinsic_selection <- function(spvim_ests, sample_size, feature_names,
   }
   importance_df <- importance_df_init %>%
     dplyr::mutate(adjusted_p_value = adj_p, selected = (selected_set == 1)) %>%
-    dplyr::select(.data$feature, .data$est, .data$p_value, .data$adjusted_p_value, .data$rank, .data$selected)
+    dplyr::select("feature", "est", "p_value", "adjusted_p_value", "rank", "selected")
   importance_df
 }
