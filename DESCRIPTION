@@ -26,7 +26,8 @@ Imports:
     caret,
     mvtnorm,
     kernlab,
-    rlang
+    rlang,
+    ranger
 Suggests:
     vimp,
     stabs,
@@ -34,7 +35,6 @@ Suggests:
     knitr,
     rmarkdown,
     mice,
-    ranger,
     xgboost,
     glmnet,
     polspline

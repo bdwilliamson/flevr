@@ -11,9 +11,6 @@
 #'
 #' @export
  pool_spvims <- function(spvim_ests) {
-   if (!inherits("vim", spvim_ests[[1]])) {
-     stop("spvim_ests must be a list of VIM objects, from a call to vimp::sp_vim")
-   }
    M <- length(spvim_ests)
    delta <- spvim_ests[[1]]$delta
    # compute the mean SPVIM estimates over the imputations

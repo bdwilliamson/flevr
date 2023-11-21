@@ -1,8 +1,8 @@
 #' Super Learner wrapper for a ranger object with variable importance
 #'
 #' @inheritParams SuperLearner::SL.ranger
-#'
-#' @importFrom ranger predict
+#' 
+#' @importFrom stats predict
 #' @export
 SL.ranger.imp <- function (Y, X, newX, family, obsWeights = rep(1, length(Y)),
                            num.trees = 500, mtry = floor(sqrt(ncol(X))),
