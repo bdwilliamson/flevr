@@ -16,25 +16,24 @@
 #'   (the algorithm's weight in the Super Learner)
 #' @export
 extract_importance_SL_learner <- function(fit, coef, feature_names, ...) {
-  cls <- class(fit)
-  if (any(grepl("xgb", cls))) {
-    imp_dt <- extract_importance_xgboost(fit = fit, feature_names = feature_names, 
+  if (inherits(fit, "xgboost") | inherits(fit, "xgb.Booster")) {
+    imp_dt <- extract_importance_xgboost(fit = fit, feature_names = feature_names,
                                          coef = coef)
-  } else if (any(grepl("ranger", cls))) {
-    imp_dt <- extract_importance_ranger(fit = fit, feature_names = feature_names, 
+  } else if (inherits(fit, "ranger")) {
+    imp_dt <- extract_importance_ranger(fit = fit, feature_names = feature_names,
                                         coef = coef)
-  } else if (any(grepl("glmnet", cls))) {
-    imp_dt <- extract_importance_glmnet(fit = fit, feature_names = feature_names, 
+  } else if (inherits(fit, "glmnet") | inherits(fit, "cv.glmnet")) {
+    imp_dt <- extract_importance_glmnet(fit = fit, feature_names = feature_names,
                                         coef = coef)
-  } else if (any(grepl("glm", cls))) {
-    imp_dt <- extract_importance_glm(fit = fit, feature_names = feature_names, 
+  } else if (inherits(fit, "glm")) {
+    imp_dt <- extract_importance_glm(fit = fit, feature_names = feature_names,
                                      coef = coef)
-  } else if (any(grepl("mean", cls)) | any(grepl("numeric", cls))) {
-    imp_dt <- extract_importance_mean(fit = fit, feature_names = feature_names, 
+  } else if (inherits(fit, "numeric")) {
+    imp_dt <- extract_importance_mean(fit = fit, feature_names = feature_names,
                                       coef = coef)
-  } else if (any(grepl("svm", cls))) {
+  } else if (inherits(fit, "ksvm")) {
     L <- list(...)
-    imp_dt <- extract_importance_svm(fit = fit, feature_names = feature_names, 
+    imp_dt <- extract_importance_svm(fit = fit, feature_names = feature_names,
                                      coef = coef, x = L$x, y = L$y)
   } else {
     stop("One of the algorithms in fitLibrary is unsupported at this time.")

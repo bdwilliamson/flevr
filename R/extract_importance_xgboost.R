@@ -14,7 +14,7 @@
 #'   (the algorithm's weight in the Super Learner)
 #' @export
 extract_importance_xgboost <- function(fit, feature_names, coef = 0) {
-  if (!inherits(fit, "xgboost")) {
+  if (!inherits(fit, "xgboost") & !inherits(fit, "xgb.Booster")) {
     stop("This is not an xgboost object. Please use a different importance extraction function.")
   } else {
     p <- length(feature_names)

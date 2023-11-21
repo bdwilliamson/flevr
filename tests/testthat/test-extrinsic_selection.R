@@ -63,6 +63,11 @@ test_that("algorithm-specific importance extraction works", {
     feature_names = x_names
   )
   expect_equal(xgboost_importance$feature, c("V2", "V1"))
+  xgboost_importance_bin <- extract_importance_xgboost(
+    fit = fit_bin$fitLibrary$SL.xgboost_All$object, coef = fit$coef[grepl("xgboost", coef_nms)],
+    feature_names = x_names
+  )
+  expect_equal(xgboost_importance_bin$feature, c("V2", "V1"))
   svm_importance <- extract_importance_svm(
     fit = fit$fitLibrary$SL.ksvm_All$object, coef = fit$coef[grepl("svm", coef_nms)],
     feature_names = x_names, x = x_df, y = y
@@ -78,7 +83,7 @@ test_that("algorithm-specific importance extraction works", {
     fit = fit_bin$fitLibrary$SL.polymars_All$fit, coef = fit$coef[grepl("polymars", coef_nms)],
     feature_names = x_names
   )
-  expect_equal(polyclass_importance$feature, c("V2", "V1"))
+  expect_equal(polyclass_importance$feature, c("V1", "V2"))
 })
 
 # extract importance for the whole Super Learner ensemble

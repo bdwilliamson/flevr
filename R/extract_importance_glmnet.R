@@ -14,7 +14,7 @@
 #'   (the algorithm's weight in the Super Learner)
 #' @export
 extract_importance_glmnet <- function(fit, feature_names, coef = 0) {
-  if (!inherits(fit, "cv.glmnet")) {
+  if (!inherits(fit, "cv.glmnet") & !inherits(fit, "glmnet")) {
     stop("This is not a cv.glmnet object. Please use a different importance extraction function.")
   } else {
     p <- length(feature_names)
