@@ -13,7 +13,7 @@ The author and maintainer of the `flevr` package is  [Brian Williamson](https://
 ## Installation
 
 You can install a development release of `flevr` from GitHub via `devtools` by running the following code:
-```{r}
+```r
 # install devtools if you haven't already
 # install.packages("devtools", repos = "https://cloud.r-project.org")
 devtools::install_github(repo = "bdwilliamson/flevr")
