@@ -83,7 +83,7 @@ test_that("algorithm-specific importance extraction works", {
     fit = fit_bin$fitLibrary$SL.polymars_All$fit, coef = fit$coef[grepl("polymars", coef_nms)],
     feature_names = x_names
   )
-  expect_equal(polyclass_importance$feature, c("V1", "V2"))
+  expect_equal(polyclass_importance$feature, c("V2", "V1"))
 })
 
 # extract importance for the whole Super Learner ensemble

@@ -35,6 +35,9 @@ extract_importance_SL_learner <- function(fit, coef, feature_names, ...) {
     L <- list(...)
     imp_dt <- extract_importance_svm(fit = fit, feature_names = feature_names,
                                      coef = coef, x = L$x, y = L$y)
+  } else if (inherits(fit, "polymars") | inherits(fit, "polyclass")) {
+    imp_dt <- extract_importance_polymars(fit = fit, feature_names = feature_names,
+                                          coef = coef)
   } else {
     stop("One of the algorithms in fitLibrary is unsupported at this time.")
   }
