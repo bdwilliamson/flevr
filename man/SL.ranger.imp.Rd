@@ -22,6 +22,41 @@ SL.ranger.imp(
   ...
 )
 }
+\arguments{
+\item{Y}{Outcome variable}
+
+\item{X}{Training dataframe}
+
+\item{newX}{Test dataframe}
+
+\item{family}{Gaussian or binomial}
+
+\item{obsWeights}{Observation-level weights}
+
+\item{num.trees}{Number of trees.}
+
+\item{mtry}{Number of variables to possibly split at in each node. Default is
+the (rounded down) square root of the number variables.}
+
+\item{write.forest}{Save ranger.forest object, required for prediction. Set
+to FALSE to reduce memory usage if no prediction intended.}
+
+\item{probability}{Grow a probability forest as in Malley et al. (2012).}
+
+\item{min.node.size}{Minimal node size. Default 1 for classification, 5 for
+regression, 3 for survival, and 10 for probability.}
+
+\item{replace}{Sample with replacement.}
+
+\item{sample.fraction}{Fraction of observations to sample. Default is 1 for
+sampling with replacement and 0.632 for sampling without replacement.}
+
+\item{num.threads}{Number of threads to use.}
+
+\item{verbose}{If TRUE, display additional output during execution.}
+
+\item{...}{Any additional arguments, not currently used.}
+}
 \description{
 Super Learner wrapper for a ranger object with variable importance
 }

@@ -1,6 +1,9 @@
 #' Super Learner wrapper for a ranger object with variable importance
-
-SL.ranger.imp <- function (Y, X, newX, family, obsWeights = rep(1, length(Y)), 
+#'
+#' @inheritParams SuperLearner::SL.ranger
+#'
+#' @export
+SL.ranger.imp <- function (Y, X, newX, family, obsWeights = rep(1, length(Y)),
                            num.trees = 500, mtry = floor(sqrt(ncol(X))),
                            write.forest = TRUE, probability = family$family == "binomial",
                            min.node.size = ifelse(family$family == "gaussian", 5, 1),
