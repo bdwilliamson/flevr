@@ -1,5 +1,12 @@
 url: http://bdwilliamson.github.io/flevr/
 destination: docs
+articles:
+- title: Articles
+  navbar: ~
+  contents:
+  - introduction_to_flevr
+  - extrinsic_selection
+  - intrinsic_selection
 reference:
 - title: Intrinsic variable selection
   desc: Functions for performing variable selection based on intrinsic variable importance.

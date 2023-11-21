@@ -1,3 +1,8 @@
+# v0.0.4
+
+* Bugfixes for `xgboost` objects and `extract_importance_SL`
+* `pkgdown` site
+
 # v0.0.3
 
 ## Major changes
