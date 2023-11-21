@@ -149,6 +149,7 @@ imputed_biomarkers <- mice::complete(mi_biomarkers, action = "long") %>%
 We can perform extrinsic variable selection using the imputed data. First, we fit a Super Learner and perform extrinsic variable selection for each imputed dataset. Then, we select a final set of variables based on those that are selected in a pre-specified number of imputed datasets (e.g., 3 of 5) [@heymans2007]. Again, we use a rank of 5 for each imputed dataset to select variables.
 
 ```r
+extrinsic_learners <- c("SL.glm", "SL.ranger.imp", "SL.xgboost")
 set.seed(20231121)
 # set up a list to collect selected sets
 all_selected_vars <- vector("list", length = 5)
@@ -162,7 +163,7 @@ for (i in 1:5) {
     select(starts_with("lab"), starts_with("cea"))
   this_x_df <- as.data.frame(this_x)
   fit <- SuperLearner::SuperLearner(Y = this_y, X = this_x_df,
-                                  SL.library = learners,
+                                  SL.library = extrinsic_learners,
                                   cvControl = list(V = V),
                                   family = "binomial")
   # do extrinsic selection
@@ -188,7 +189,7 @@ est_lst <- lapply(as.list(1:5), function(l) {
     select(starts_with("lab"), starts_with("cea"))
   this_y <- biomarkers$mucinous
   suppressWarnings(
-    sp_vim(Y = y, X = this_x, V = V, type = "auc", 
+    sp_vim(Y = this_y, X = this_x, V = V, type = "auc", 
     SL.library = learners, gamma = 0.1, alpha = 0.05, delta = 0,
     cvControl = list(V = V), env = environment())
   )
