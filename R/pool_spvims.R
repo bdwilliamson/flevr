@@ -1,16 +1,19 @@
 #' Pool SPVIM Estimates Using Rubin's Rules
-#' 
+#'
 #' If multiple imputation was used due to the presence of missing data,
 #' pool SPVIM estimates from individual imputed datasets using Rubin's rules.
 #' Results in point estimates averaged over the imputations, along with
 #' within-imputation variance estimates and across-imputation variance estimates;
 #' and test statistics and p-values for hypothesis testing.
-#' 
+#'
 #' @param spvim_ests a list of estimated SPVIMs (of class \code{vim})
 #' @return a list of results
-#' 
+#'
 #' @export
  pool_spvims <- function(spvim_ests) {
+   if (!inherits("vim", spvim_ests[[1]])) {
+     stop("spvim_ests must be a list of VIM objects, from a call to vimp::sp_vim")
+   }
    M <- length(spvim_ests)
    delta <- spvim_ests[[1]]$delta
    # compute the mean SPVIM estimates over the imputations
@@ -33,7 +36,7 @@
    # compute overall variance-covariance matrix
    vcov_arry <- sapply(seq_len(length(spvim_ests)), function(i) spvim_vcov(spvim_ests[[i]]),
                        simplify = "array")
-   vcov_mat <- sweep(apply(vcov_arry, c(1, 2), mean), MARGIN = 1, 
+   vcov_mat <- sweep(apply(vcov_arry, c(1, 2), mean), MARGIN = 1,
                      STATS = ((M + 1) / M) * across_impute_vars[-1], FUN = "+")
    # compute test statistics and p-values based on within-, across-imputation variance
    test_statistics <- unlist(lapply(2:length(mean_ests), function(j) {
@@ -41,8 +44,8 @@
      tau_n_j <- across_impute_vars[j] + across_impute_zero_vars
      (ests_plus[j] - mean_zero_est - delta) / sqrt(var_n_j + ((M + 1) / M) * tau_n_j)
    }))
-   p_values <- 1 - pnorm(test_statistics)
+   p_values <- 1 - stats::pnorm(test_statistics)
    return(list(est = mean_ests[-1], se = sqrt(within_impute_vars[-1]),
-               test_statistics = test_statistics, p_values = p_values, 
+               test_statistics = test_statistics, p_values = p_values,
                tau_n = across_impute_vars[-1], vcov = vcov_mat))
  }

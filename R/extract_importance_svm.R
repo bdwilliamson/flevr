@@ -14,13 +14,14 @@
 #'   extrinsic importance of the feature), \code{rank} (the feature importance
 #'   rank, with 1 indicating the most important feature), and \code{weight}
 #'   (the algorithm's weight in the Super Learner)
+#' @importFrom kernlab kpar kernelf param
 #' @export
 extract_importance_svm <- function(fit, feature_names, coef = 0, x = NULL, y = NULL) {
   if (!inherits(fit, "ksvm")) {
     stop("This is not an svm object. Please use a different importance extraction function.")
   } else {
     param_df <- data.frame(sigma = kpar(kernelf(fit))$sigma, C = param(fit)$C)
-    if (class(kernelf(fit)) == "rbfkernel") {
+    if (inherits(kernelf(fit), "rbfkernel")) {
       caret_mod <- "svmRadial"
     } else {
       stop("The entered kernel is not currently supported.")

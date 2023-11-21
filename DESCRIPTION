@@ -1,5 +1,5 @@
 Package: flevr
-Title: Flexible, Ensemble-based Variable Selection With Potentially Missing Data
+Title: Flexible, Ensemble-based Variable Selection with Potentially Missing Data
 Version: 0.0.4
 Authors@R:
     person(given = "Brian D.",
@@ -11,7 +11,6 @@ Description: Perform variable selection in settings with possibly missing data
     based on extrinsic (algorithm-specific) and intrinsic (population-level)
     variable importance. Uses a Super Learner ensemble to estimate the
     underlying prediction functions that give rise to estimates of variable importance. For more information about the methods, please see Williamson and Huang (arXiv, 2022+) <arXiv:2202.12989>.
-License: `use_mit_license()`
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -41,3 +40,4 @@ Suggests:
 URL: https://github.com/bdwilliamson/flevr
 BugReports: https://github.com/bdwilliamson/flevr/issues
 VignetteBuilder: knitr
+License: MIT + file LICENSE

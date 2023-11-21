@@ -23,6 +23,11 @@ then selection will be based on the combined SPVIMs.}
 \item{sample_size}{the number of independent observations used to estimate
 the SPVIM values.}
 
+\item{feature_names}{the names of the features (a character vector of
+length \code{p} (the total number of features)); only used if the
+fitted Super Learner ensemble was fit on a \code{matrix} rather than on a
+\code{data.frame}, \code{tibble}, etc.}
+
 \item{alpha}{the nominal generalized family-wise error rate, proportion of
 false positives, or false discovery rate level to control at (e.g., 0.05).}
 

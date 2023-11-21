@@ -9,7 +9,9 @@ SL.ranger.imp <- function (Y, X, newX, family, obsWeights = rep(1, length(Y)),
                            min.node.size = ifelse(family$family == "gaussian", 5, 1),
                            replace = TRUE, sample.fraction = ifelse(replace, 1, 0.632),
                            num.threads = 1, verbose = FALSE, ...) {
-  SuperLearner:::.SL.require("ranger")
+  if (!requireNamespace("ranger", quietly = FALSE)) {
+    stop("loading required package ranger failed", call. = FALSE)
+  }
   if (family$family == "binomial") {
     Y = as.factor(Y)
   }
@@ -22,7 +24,7 @@ SL.ranger.imp <- function (Y, X, newX, family, obsWeights = rep(1, length(Y)),
                         case.weights = obsWeights, write.forest = write.forest,
                         probability = probability, num.threads = num.threads,
                         verbose = verbose, importance = "impurity")
-  pred <- predict(fit, data = newX)$predictions
+  pred <- ranger::predict(fit, data = newX)$predictions
   if (family$family == "binomial") {
     pred = pred[, "1"]
   }

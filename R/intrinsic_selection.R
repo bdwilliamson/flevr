@@ -10,6 +10,10 @@
 #'   then selection will be based on the combined SPVIMs.
 #' @param sample_size the number of independent observations used to estimate
 #'   the SPVIM values.
+#' @param feature_names the names of the features (a character vector of
+#'    length \code{p} (the total number of features)); only used if the
+#'    fitted Super Learner ensemble was fit on a \code{matrix} rather than on a
+#'    \code{data.frame}, \code{tibble}, etc.
 #' @param alpha the nominal generalized family-wise error rate, proportion of
 #'    false positives, or false discovery rate level to control at (e.g., 0.05).
 #' @param control a list of parameters to control the variable selection process.
@@ -23,6 +27,7 @@
 #'    the \code{sp_vim} function and the \code{vimp} package for estimating
 #'    intrinsic variable importance.
 #' @importFrom magrittr `%>%`
+#' @importFrom rlang .data 
 #' @importFrom dplyr mutate select
 #' @export
 intrinsic_selection <- function(spvim_ests, sample_size, feature_names,
@@ -54,7 +59,7 @@ intrinsic_selection <- function(spvim_ests, sample_size, feature_names,
     tau <- 0
     cov_mat <- spvim_vcov(spvim_ests)
     importance_df_init <- spvim_ests$mat %>%
-      dplyr::mutate(feature = feature_names, rank = rank(-abs(est)))
+      dplyr::mutate(feature = .data$feature_names, rank = rank(-abs(.data$est)))
   }
   if (control$fdr_method == "BY") {
     selected_set_lst <- get_base_set(test_statistics = test_statistics,
@@ -83,6 +88,6 @@ intrinsic_selection <- function(spvim_ests, sample_size, feature_names,
   }
   importance_df <- importance_df_init %>%
     dplyr::mutate(adjusted_p_value = adj_p, selected = (selected_set == 1)) %>%
-    dplyr::select(feature, est, p_value, adjusted_p_value, rank, selected)
+    dplyr::select(.data$feature, .data$est, .data$p_value, .data$adjusted_p_value, .data$rank, .data$selected)
   importance_df
 }

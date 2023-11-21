@@ -21,8 +21,8 @@ get_base_set <- function(test_statistics, p_values, alpha = 0.05,
                          Sigma = diag(1, nrow = length(test_statistics)),
                          q = NULL) {
   # rank the test statistics and p-values
-  ranks_t <- rank(test_statistics, ties = "first")
-  ranks_p <- rank(p_values, ties = "first")
+  ranks_t <- rank(test_statistics, ties.method = "first")
+  ranks_p <- rank(p_values, ties.method = "first")
   ranked_t <- test_statistics[order(-ranks_t)]
   ranked_p <- p_values[order(ranks_p)]
   # get the reversed order
@@ -58,7 +58,7 @@ get_base_set <- function(test_statistics, p_values, alpha = 0.05,
                             sigma = Sigma)
       stat <- switch((method == "maxT") + 1, ranked_p, ranked_t)
       if (method == "minP") {
-        z <- 1 - pnorm(z)
+        z <- 1 - stats::pnorm(z)
       }
       comparisons <- sapply(1:B, function(i) {
         z_tri <- matrix(rep(z[i, ], p), nrow = p, ncol = p, byrow = TRUE)

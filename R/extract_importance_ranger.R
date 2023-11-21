@@ -21,7 +21,7 @@ extract_importance_ranger <- function(fit, feature_names, coef = 0) {
     imp_dt_init <- ranger::importance(fit)
     ranks <- rank(-abs(imp_dt_init))
     if (length(ranks) < p) {
-      avg_remaining_rank <- ranger((length(imp_dt_init) + 1):p)
+      avg_remaining_rank <- mean((length(imp_dt_init) + 1):p)
       current_nms <- names(imp_dt_init)
       remaining_features <- feature_names[!(feature_names %in% current_nms)]
       current_length <- length(imp_dt_init)

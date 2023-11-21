@@ -19,7 +19,7 @@
 get_augmented_set <- function(p_values = NULL, num_rejected = 0, alpha = 0.05,
                               quantity = "gFWER", q = 0.05, k = 1) {
   # rank the test statistics and p-values
-  ranks_p <- rank(p_values, ties = "first")
+  ranks_p <- rank(p_values, ties.method = "first")
   ranked_p <- p_values[order(ranks_p)]
   # get the reversed order
   reverse_ord <- rank(ranks_p)

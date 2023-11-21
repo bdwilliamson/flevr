@@ -19,6 +19,8 @@
 #'
 #' @importFrom dplyr case_when filter group_by mutate summarize
 #' @importFrom data.table rbindlist
+#' @importFrom rlang .data 
+#' @importFrom magrittr `%>%`
 #' @export
 extract_importance_SL <- function(fit, feature_names, import_type = "all", ...) {
   if (import_type == "all") {
@@ -33,11 +35,11 @@ extract_importance_SL <- function(fit, feature_names, import_type = "all", ...) 
     )
     imp_dt <- importances %>%
       data.table::rbindlist() %>%
-      dplyr::filter(weight != 0) %>%
-      dplyr::group_by(feature, algorithm) %>%
-      dplyr::mutate(wgt_rank = weight * rank, .groups = "drop") %>%
-      dplyr::group_by(feature) %>%
-      dplyr::summarize(rank = sum(wgt_rank), .groups = "drop")
+      dplyr::filter(.data$weight != 0) %>%
+      dplyr::group_by(.data$feature, .data$algorithm) %>%
+      dplyr::mutate(wgt_rank = .data$weight * .data$rank, .groups = "drop") %>%
+      dplyr::group_by(.data$feature) %>%
+      dplyr::summarize(rank = sum(.data$wgt_rank), .groups = "drop")
   } else {
     biggest_weight <- which.max(fit$coef)
     best_obj <- fit$fitLibrary[[biggest_weight]]$object
@@ -45,7 +47,7 @@ extract_importance_SL <- function(fit, feature_names, import_type = "all", ...) 
       fit = best_obj, coef = fit$coef[biggest_weight],
       feature_names = feature_names, ...
     ) %>%
-      dplyr::select(feature, rank)
+      dplyr::select(.data$feature, .data$rank)
   }
   imp_dt[order(imp_dt$rank), ]
 }
