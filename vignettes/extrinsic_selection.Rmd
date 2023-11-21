@@ -17,3 +17,123 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(flevr)
 ```
+
+## Introduction
+
+In the [main vignette](introduction_to_flevr.html), I discussed how to perform flexible variable selection in a simple, simulated example. In this document, I will discuss _extrinsic selection_ in more detail.
+
+Extrinsic variable selection is variable selection performed using extrinsic variable importance [@williamson2021]. Extrinsic variable importance is a summary of how a particular fitted algorithm makes use of the input features. For example, extrinsic importance for a penalized regression model could be the estimated regression coefficient, while for random forests, it could be the random forest variable importance measure. 
+
+In `flevr`, we use the following definitions of variable importance
+
+| Algorithm | `R` package implementation|  Extrinsic importance measure |
+| -------- | ------- |
+| Generalized linear models | `stats::glm` | Absolute value of estimated regression coefficient divided by its standard error |
+| Penalized linear models | `glmnet::glmnet` [@friedman2010;@tay2023;@glmnet] | Absolute value of estimated regression coefficient
+| Mean    | `stats::mean` | --- |
+| Multivariate adaptive regression splines | `polspline::polymars` [@polspline] | Sum of estimated coefficients for splines |
+| Random forests | ``ranger::ranger` [@ranger;@wright2017] | Default variable importance measure |
+| Support vector machines | `kernlab::ksvm` [@karatzoglou2004;@kernlab] | Change in cross-validated error |
+| Gradient boosted trees | `xgboost::xgboost` [@xgboost] | Default variable importance measure |
+
+Further, we define the extrinsic importance of the Super Learner [@vanderlaan2007]. The first choice is to use the weighted average of the variable importance ranks of the individual learners. The weights are determined by the Super Learner itself, since the algorithm determines a weighted combination of the individual-learner predictions. The second choice is to use the variable importance from the best-performing individual learner.
+
+Throughout this vignette, I will use a dataset inspired by data collected by the Early Detection Research Network (EDRN). Biomarkers developed at six "labs" are validated at at least one of four "validation sites" on 306 cysts. The data also include two binary outcome variables: whether or not the cyst was classified as mucinous, and whether or not the cyst was determined to have high malignant potential. The data contain some missing information, which complicates variable selection; only 212 cysts have complete information. In the first section, we will drop the missing data; in the second section, we will appropriately handle the missing data by using multiple imputation.
+
+```{r load-biomarker-data}
+# load the dataset
+data("biomarkers")
+library("dplyr")
+# set up vector "y" of outcomes and matrix "x" of features
+cc <- complete.cases(biomarkers)
+y_cc <- biomarkers$mucinous[cc]
+x_cc <- biomarkers %>%
+  na.omit() %>%
+  select(starts_with("lab"), starts_with("cea"))
+x_df <- as.data.frame(x_cc)
+x_names <- names(x_df)
+```
+
+## Extrinsic variable selection
+
+The first step in performing extrinsic variable selection is to fit a Super Learner. This requires specifying a *library of candidate learners* for the Super Learner [@vanderlaan2007;@superlearner]; throughout, I use a very simple library of learners for the Super Learner (this is for illustration only; in practice, I suggest using a large library of learners).
+
+```{r fit-sl}
+set.seed(1234)
+# fit a Super Learner ensemble; note its simplicity, for speed
+library("SuperLearner")
+learners <- c("SL.glm", "SL.ranger.imp", "SL.xgboost")
+V <- 2
+fit <- SuperLearner::SuperLearner(Y = y_cc, X = x_df,
+                                  SL.library = learners,
+                                  cvControl = list(V = V),
+                                  family = "binomial")
+# check the SL weights
+fit$coef
+# extract importance based on the whole Super Learner
+sl_importance_all <- extract_importance_SL(
+  fit = fit, feature_names = x_names, import_type = "all"
+)
+sl_importance_all
+```
+Using the ensemble weights here means that weight approximately 0.53 is given to the boosted trees, weight approximately 0.47 is given to the random forest, while weight 0 is given to the logistic regression model. 
+
+To instead look at the importance of the best individual learner, use the following code:
+```{r sl-best-alg}
+sl_importance_best <- extract_importance_SL(
+  fit = fit, feature_names = x_names, import_type = "best"
+)
+sl_importance_best
+```
+In this case, this shows the importance in the boosted trees. 
+
+Finally, to do variable selection, we need to select a threshold (ideally before looking at the data). In this case, since there are only 24 variables, we choose a threshold of 5.
+```{r extrinsic-selection}
+extrinsic_selected <- extrinsic_selection(
+  fit = fit, feature_names = x_names, threshold = 5, import_type = "all"
+)
+extrinsic_selected
+```
+Here, we select five variables, since these had weighted rank less than 5.
+
+## Extrinsic selection with missing data
+
+To properly handle the missing data, we first perform multiple imputation. We use the `R` package `mice`, here with only 5 imputations (in practice, more imputations may be better).
+
+```{r impute}
+library("mice")
+set.seed(20231121)
+mi_biomarkers <- mice::mice(data = biomarkers, m = 5, printFlag = FALSE)
+imputed_biomarkers <- mice::complete(mi_biomarkers, action = "long") %>%
+  rename(imp = .imp, id = .id)
+```
+
+We can perform extrinsic variable selection using the imputed data. First, we fit a Super Learner and perform extrinsic variable selection for each imputed dataset. Then, we select a final set of variables based on those that are selected in a pre-specified number of imputed datasets (e.g., 3 of 5) [@heymans2007]. Again, we use a rank of 5 for each imputed dataset to select variables.
+
+```{r extrinsic-selection-with-missing-data}
+set.seed(20231121)
+# set up a list to collect selected sets
+all_selected_vars <- vector("list", length = 5)
+# for each imputed dataset, do extrinsic selection
+for (i in 1:5) {
+  # fit a Super Learner
+  these_data <- imputed_biomarkers %>%
+    filter(imp == i)
+  this_y <- these_data$mucinous
+  this_x <- these_data %>%
+    select(starts_with("lab"), starts_with("cea"))
+  this_x_df <- as.data.frame(this_x)
+  fit <- SuperLearner::SuperLearner(Y = this_y, X = this_x_df,
+                                  SL.library = learners,
+                                  cvControl = list(V = V),
+                                  family = "binomial")
+  # do extrinsic selection
+  all_selected_vars[[i]] <- extrinsic_selection(
+    fit = fit, feature_names = x_names, threshold = 5, import_type = "all"
+  )$selected
+}
+# perform extrinsic variable selection
+selected_vars <- pool_selected_sets(sets = all_selected_vars, threshold = 3 / 5)
+x_names[selected_vars]
+```
+In this case, there is only one variable in common between the multiply-imputed approach and the approach dropping missing data. This serves to highlight that it is important in missing-data contexts to handle the missing data appropriately.

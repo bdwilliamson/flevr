@@ -5,6 +5,8 @@ vignette: >
   %\VignetteIndexEntry{Intrinsic variable selection}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+csl: chicago-author-date.csl
+bibliography: papers.bib
 ---
 
 ```{r, include = FALSE}
@@ -17,3 +19,102 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(flevr)
 ```
+
+## Introduction
+
+In the [main vignette](introduction_to_flevr.html), I discussed how to perform flexible variable selection in a simple, simulated example. In this document, I will discuss _intrinsic selection_ in more detail.
+
+Intrinsic variable selection is variable selection performed using intrinsic variable importance [@williamson2023flevr]. Intrinsic variable importance is a summary of the true population distribution; it is the difference between the best possible prediction performance obtained using a set of variables and the best possible prediction performance obtained without using that set of variables [@williamson2021;@williamson2020a]. Prediction performance can be measured using R-squared, classification accuracy, area under the receiver operating characteristic curve (AUC), and binomial deviance. It can also be defined for a single variable by averaging the intrinsic importance of the variable compared to each other subset of variables [@williamson2020c], a notion that we use for variable selection.
+
+Throughout this vignette, I will use a dataset inspired by data collected by the Early Detection Research Network (EDRN). Biomarkers developed at six "labs" are validated at at least one of four "validation sites" on 306 cysts. The data also include two binary outcome variables: whether or not the cyst was classified as mucinous, and whether or not the cyst was determined to have high malignant potential. The data contain some missing information, which complicates variable selection; only 212 cysts have complete information. In the first section, we will drop the missing data; in the second section, we will appropriately handle the missing data by using multiple imputation. I will use AUC to measure intrinsic importance.
+
+```{r load-biomarker-data}
+# load the dataset
+data("biomarkers")
+library("dplyr")
+# set up vector "y" of outcomes and matrix "x" of features
+cc <- complete.cases(biomarkers)
+y_cc <- biomarkers$mucinous[cc]
+x_cc <- biomarkers %>%
+  na.omit() %>%
+  select(starts_with("lab"), starts_with("cea"))
+x_names <- names(x_cc)
+```
+
+## Intrinsic variable selection
+
+The first step in performing intrinsic variable selection is to estimate intrinsic variable importance. To estimate variable importance, I use the function `sp_vim` from the `R` package `vimp` [@williamson_vimp]. This requires specifying a *library of candidate learners* for the Super Learner [@vanderlaan2007]; throughout, I use a very simple library of learners for the Super Learner (this is for illustration only; in practice, I suggest using a large library of learners).
+
+```{r fit-spvim}
+set.seed(1234)
+
+# set up a library for SuperLearner; this is too simple a library for use in most applications
+learners <- "SL.glm"
+univariate_learners <- "SL.glm"
+V <- 2
+
+# estimate the SPVIMs
+library("vimp")
+est <- suppressWarnings(
+  sp_vim(Y = y_cc, X = x_cc, V = V, type = "auc",
+              SL.library = learners, gamma = .1, alpha = 0.05, delta = 0,
+              cvControl = list(V = V), env = environment())
+)
+est
+```
+
+The next step is to choose an error rate to control and a method for controlling the family-wise error rate. Here, I choose the generalized family-wise error rate to control overall and choose Holm-adjusted p-values to control the individual family-wise error rate: 
+```{r intrinsic-selection}
+intrinsic_set <- intrinsic_selection(
+  spvim_ests = est, sample_size = nrow(x_cc), alpha = 0.2, feature_names = x_names,
+  control = list( quantity = "gFWER", base_method = "Holm", k = 1)
+)
+intrinsic_set
+```
+I could also choose to control the false discovery rate (FDR), again using Holm-adjusted p-values to control the individual family-wise error rate:
+```{r intrinsic-selection-fdr}
+intrinsic_set_fdr <- intrinsic_selection(
+  spvim_ests = est, sample_size = nrow(x_cc), alpha = 0.2, feature_names = x_names,
+  control = list( quantity = "FDR", base_method = "Holm", k = 1)
+)
+intrinsic_set_fdr
+```
+
+## Intrinsic selection with missing data
+
+To properly handle the missing data, we first perform multiple imputation. We use the `R` package `mice` [@mice;@mice2011], here with only 5 imputations (in practice, more imputations may be better).
+
+```{r impute}
+library("mice")
+set.seed(20231121)
+mi_biomarkers <- mice::mice(data = biomarkers, m = 5, printFlag = FALSE)
+imputed_biomarkers <- mice::complete(mi_biomarkers, action = "long") %>%
+  rename(imp = .imp, id = .id)
+```
+
+We can perform intrinsic variable selection using the imputed data. First, we estimate variable importance for each imputed dataset. 
+
+```{r est-spvim-imp}
+set.seed(20231121)
+est_lst <- lapply(as.list(1:5), function(l) {
+  this_x <- imputed_biomarkers %>%
+    filter(imp == l) %>%
+    select(starts_with("lab"), starts_with("cea"))
+  this_y <- biomarkers$mucinous
+  suppressWarnings(
+    sp_vim(Y = y, X = this_x, V = V, type = "auc", 
+    SL.library = learners, gamma = 0.1, alpha = 0.05, delta = 0,
+    cvControl = list(V = V), env = environment())
+  )
+})
+```
+Next, we use Rubin's rules [@rubin2018] to combine the variable importance estimates, and use this to perform variable selection. Here, we control the generalized family-wise error rate at 5, using Holm-adjusted p-values to control the initial family-wise error rate.
+```{r intrinsic-select-mi}
+intrinsic_set <- intrinsic_selection(
+  spvim_ests = est_lst, sample_size = nrow(biomarkers),
+  feature_names = x_names, alpha = 0.05, 
+  control = list(quantity = "gFWER", base_method = "Holm", k = 5)
+)
+intrinsic_set
+```
+We select five variables, here those with the top-5 estimated variable importance. The point estimates and p-values have been computed using Rubin's rules.
