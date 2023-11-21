@@ -2,6 +2,7 @@
 #'
 #' @inheritParams SuperLearner::SL.ranger
 #'
+#' @importFrom ranger predict
 #' @export
 SL.ranger.imp <- function (Y, X, newX, family, obsWeights = rep(1, length(Y)),
                            num.trees = 500, mtry = floor(sqrt(ncol(X))),
@@ -24,7 +25,7 @@ SL.ranger.imp <- function (Y, X, newX, family, obsWeights = rep(1, length(Y)),
                         case.weights = obsWeights, write.forest = write.forest,
                         probability = probability, num.threads = num.threads,
                         verbose = verbose, importance = "impurity")
-  pred <- ranger::predict(fit, data = newX)$predictions
+  pred <- predict(fit, data = newX)$predictions
   if (family$family == "binomial") {
     pred = pred[, "1"]
   }

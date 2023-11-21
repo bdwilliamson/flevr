@@ -19,14 +19,16 @@ Depends:
     R (>= 3.1.0)
 Imports:
     SuperLearner,
-    vimp,
     data.table,
     dplyr,
     magrittr,
     tibble,
     caret,
-    mvtnorm
+    mvtnorm,
+    kernlab,
+    rlang
 Suggests:
+    vimp,
     stabs,
     testthat,
     knitr,
@@ -35,7 +37,6 @@ Suggests:
     ranger,
     xgboost,
     glmnet,
-    kernlab,
     polspline
 URL: https://github.com/bdwilliamson/flevr
 BugReports: https://github.com/bdwilliamson/flevr/issues

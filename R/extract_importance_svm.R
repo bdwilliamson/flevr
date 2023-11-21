@@ -30,7 +30,7 @@ extract_importance_svm <- function(fit, feature_names, coef = 0, x = NULL, y = N
                               method = caret_mod, tuneGrid = param_df)
     svm_imp <- caret::varImp(svm_train, useModel = FALSE, value = "gcv")
     imp_dt <- tibble::tibble(algorithm = "svm", feature = rownames(svm_imp$importance),
-                             importance = svm_imp$importance$Overall, rank = rank(-importance),
+                             importance = svm_imp$importance$Overall, rank = rank(-abs(svm_imp$importance)),
                              weight = coef)
     imp_dt[order(imp_dt$rank), ]
   }

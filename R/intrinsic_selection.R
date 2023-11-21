@@ -4,8 +4,8 @@
 #' specified error-controlling method.
 #'
 #' @param spvim_ests the estimated SPVIM values (an object of class \code{vim},
-#'   resulting from a call to \code{vimp::sp_vim}). Can also be a list of 
-#'   estimated SPVIMs, if multiple imputation was used to handle missing data; in 
+#'   resulting from a call to \code{vimp::sp_vim}). Can also be a list of
+#'   estimated SPVIMs, if multiple imputation was used to handle missing data; in
 #'   this case, Rubin's rules will be used to combine the estimated SPVIMs, and
 #'   then selection will be based on the combined SPVIMs.
 #' @param sample_size the number of independent observations used to estimate
@@ -27,11 +27,11 @@
 #'    the \code{sp_vim} function and the \code{vimp} package for estimating
 #'    intrinsic variable importance.
 #' @importFrom magrittr `%>%`
-#' @importFrom rlang .data 
+#' @importFrom rlang .data
 #' @importFrom dplyr mutate select
 #' @export
 intrinsic_selection <- function(spvim_ests, sample_size, feature_names,
-                                alpha = 0.05, 
+                                alpha = 0.05,
                                 control = list(quantity = "gFWER",
                                                base_method = "Holm",
                                                fdr_method = NULL, q = NULL,
@@ -51,15 +51,15 @@ intrinsic_selection <- function(spvim_ests, sample_size, feature_names,
     importance_df_init <- tibble::tibble(
       s = seq_len(length(p_values)), est = pooled_results$est,
       se = pooled_results$se, tau = pooled_results$tau_n,
-      p_value = p_values, feature = feature_names) %>% 
-      mutate(rank = rank(-abs(est)))
+      p_value = p_values, feature = feature_names) %>%
+      mutate(rank = rank(-abs(.data$est)))
   } else {
     test_statistics <- spvim_ests$test_statistic
     p_values <- spvim_ests$p_value
     tau <- 0
     cov_mat <- spvim_vcov(spvim_ests)
     importance_df_init <- spvim_ests$mat %>%
-      dplyr::mutate(feature = .data$feature_names, rank = rank(-abs(.data$est)))
+      dplyr::mutate(feature = feature_names, rank = rank(-abs(.data$est)))
   }
   if (control$fdr_method == "BY") {
     selected_set_lst <- get_base_set(test_statistics = test_statistics,
