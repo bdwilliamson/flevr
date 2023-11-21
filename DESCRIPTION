@@ -1,5 +1,5 @@
 Package: flevr
-Title: Flexible, Ensemble-based Variable Selection with Potentially Missing Data
+Title: Flexible, Ensemble-Based Variable Selection with Potentially Missing Data
 Version: 0.0.4
 Authors@R:
     person(given = "Brian D.",

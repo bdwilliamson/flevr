@@ -1,4 +1,4 @@
-#' flevr: Flexible, Ensemble-based Variable Selection with Potentially Missing Data
+#' flevr: Flexible, Ensemble-Based Variable Selection with Potentially Missing Data
 #'
 #' A framework for flexible, ensemble-based variable selection using either
 #' extrinsic or intrinsic variable importance. You provide
