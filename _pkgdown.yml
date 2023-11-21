@@ -1,0 +1,39 @@
+url: http://bdwilliamson.github.io/flevr/
+destination: docs
+reference:
+- title: Intrinsic variable selection
+  desc: Functions for performing variable selection based on intrinsic variable importance.
+  contents:
+  - intrinsic_selection
+  - intrinsic_control
+  - pool_spvims
+  - spvim_vcov
+  - get_base_set
+  - get_augmented_set
+- title: Extrinsic variable selection
+  desc: Functions for performing variable selection based on extrinsic variable importance.
+  contents:
+  - extrinsic_selection
+  - extract_importance_glm
+  - extract_importance_glmnet
+  - extract_importance_mean
+  - extract_importance_polymars
+  - extract_importance_ranger
+  - extract_importance_SL_learner
+  - extract_importance_SL
+  - extract_importance_svm
+  - extract_importance_xgboost
+  - SL_stabs_fitfun
+  - SL.ranger.imp
+- title: Biomarker data
+  desc: Dataset for use in the vignettes and examples.
+  contents:
+  - biomarkers
+- title: Package documentation homepage
+  desc: Landing page for R help.
+  contents: flevr
+- title: Internal package utility functions
+  desc: Functions for internal convenience, used by other core functions.
+  contents:
+  - pool_selected_sets
+

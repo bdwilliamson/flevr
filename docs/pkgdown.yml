@@ -1,9 +1,12 @@
-pandoc: 2.9.2.1
-pkgdown: 1.5.1
+pandoc: 3.1.1
+pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   extrinsic_selection: extrinsic_selection.html
   intrinsic_selection: intrinsic_selection.html
   introduction_to_flevr: introduction_to_flevr.html
-last_built: 2022-02-25T19:06Z
+last_built: 2023-11-21T18:16Z
+urls:
+  reference: http://bdwilliamson.github.io/flevr/reference
+  article: http://bdwilliamson.github.io/flevr/articles
 

@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,23 +33,17 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">flevr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.3</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
 <li>
-  <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -70,8 +66,8 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/bdwilliamson/flevr/">
-    <span class="fab fa fab fa-github fa-lg"></span>
+  <a href="https://github.com/bdwilliamson/flevr/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
      
   </a>
 </li>
@@ -85,139 +81,193 @@
 
       
 
-      </header><script src="introduction_to_flevr_files/header-attrs-2.4/header-attrs.js"></script><script src="introduction_to_flevr_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Introduction to <code>flevr</code>
 </h1>
-                        <h4 class="author">Brian D. Williamson</h4>
+                        <h4 data-toc-skip class="author">Brian D.
+Williamson</h4>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/bdwilliamson/flevr/blob/master/vignettes/introduction_to_flevr.Rmd"><code>vignettes/introduction_to_flevr.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/bdwilliamson/flevr/blob/HEAD/vignettes/introduction_to_flevr.Rmd" class="external-link"><code>vignettes/introduction_to_flevr.Rmd</code></a></small>
       <div class="hidden name"><code>introduction_to_flevr.Rmd</code></div>
 
     </div>
 
     
     
-<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">flevr</span>)
-<span class="co">#&gt; flevr version 0.0.2: Flexible, Ensemble-based Variable Selection With Potentially Missing Data</span>
-<span class="co">#&gt; Package created on 2022-02-25</span></pre></body></html></div>
-<div id="introduction" class="section level2">
-<h2 class="hasAnchor">
-<a href="#introduction" class="anchor"></a>Introduction</h2>
-<p><code>flevr</code> is a <code>R</code> package for doing variable selection based on flexible ensembles. The package provides functions for extrinsic variable selection using the <a href="https://github.com/ecpolley/SuperLearner">Super Learner</a> and for intrinsic variable selection using the Shapley Population Variable Importance Measure (<a href="https://github.com/bdwilliamson/vimp">SPVIM</a>).</p>
-<p>The author and maintainer of the <code>flevr</code> package is <a href="https://bdwilliamson.github.io">Brian Williamson</a>. For details on the method, check out our preprint.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bdwilliamson/flevr" class="external-link">flevr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; flevr version 0.0.3: Flexible, Ensemble-based Variable Selection With Potentially</span></span>
+<span><span class="co">#&gt; Missing Data</span></span>
+<span><span class="co">#&gt; Package created on 2023-10-11</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+</h2>
+<p><code>flevr</code> is a <code>R</code> package for doing variable
+selection based on flexible ensembles. The package provides functions
+for extrinsic variable selection using the <a href="https://github.com/ecpolley/SuperLearner" class="external-link">Super Learner</a> and
+for intrinsic variable selection using the Shapley Population Variable
+Importance Measure (<a href="https://github.com/bdwilliamson/vimp" class="external-link">SPVIM</a>).</p>
+<p>The author and maintainer of the <code>flevr</code> package is <a href="https://bdwilliamson.github.io" class="external-link">Brian Williamson</a>. For details
+on the method, check out our preprint.</p>
 </div>
-<div id="installation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installation" class="anchor"></a>Installation</h2>
-<p>You can install a development release of <code>flevr</code> from GitHub via <code>devtools</code> by running the following code:</p>
-<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="co"># install devtools if you haven't already</span>
-<span class="co"># install.packages("devtools", repos = "https://cloud.r-project.org")</span>
-<span class="kw pkg">devtools</span><span class="kw ns">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html">install_github</a></span>(<span class="kw">repo</span> <span class="kw">=</span> <span class="st">"bdwilliamson/flevr"</span>)</pre></body></html></div>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>You can install a development release of <code>flevr</code> from
+GitHub via <code>devtools</code> by running the following code:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install devtools if you haven't already</span></span>
+<span><span class="co"># install.packages("devtools", repos = "https://cloud.r-project.org")</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span>repo <span class="op">=</span> <span class="st">"bdwilliamson/flevr"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div id="quick-start" class="section level2">
-<h2 class="hasAnchor">
-<a href="#quick-start" class="anchor"></a>Quick start</h2>
-<p>This section should serve as a quick guide to using the <code>flevr</code> package — we will cover the main functions for doing extrinsic and intrinsic variable selection using a simulated data example. More details are given in the specific vignettes for <a href="extrinsic_selection.html">extrinsic selection</a> and <a href="intrinsic_selection.html">intrinsic selection</a>.</p>
+<div class="section level2">
+<h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
+</h2>
+<p>This section should serve as a quick guide to using the
+<code>flevr</code> package — we will cover the main functions for doing
+extrinsic and intrinsic variable selection using a simulated data
+example. More details are given in the specific vignettes for <a href="extrinsic_selection.html">extrinsic selection</a> and <a href="intrinsic_selection.html">intrinsic selection</a>.</p>
 <p>First, we create some data:</p>
-<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="co"># generate the data -- note that this is a simple setting, for speed</span>
-<span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="fl">4747</span>)
-<span class="no">p</span> <span class="kw">&lt;-</span> <span class="fl">2</span>
-<span class="no">n</span> <span class="kw">&lt;-</span> <span class="fl">500</span>
-<span class="co"># generate features</span>
-<span class="no">x</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html">replicate</a></span>(<span class="no">p</span>, <span class="kw pkg">stats</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="no">n</span>, <span class="fl">0</span>, <span class="fl">1</span>))
-<span class="no">x_df</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(<span class="no">x</span>)
-<span class="no">x_names</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="no">x_df</span>)
-<span class="co"># generate outcomes</span>
-<span class="no">y</span> <span class="kw">&lt;-</span> <span class="fl">1</span> + <span class="fl">0.5</span> * <span class="no">x</span>[, <span class="fl">1</span>] + <span class="fl">0.75</span> * <span class="no">x</span>[, <span class="fl">2</span>] + <span class="kw pkg">stats</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html">rnorm</a></span>(<span class="no">n</span>, <span class="fl">0</span>, <span class="fl">1</span>)</pre></body></html></div>
-<p>This creates a matrix of covariates <code>x</code> with 2 columns and a vector <code>y</code> of normally-distributed outcome values for a sample of <code>n = 500</code> study participants.</p>
-<p>There are two main types of variable selection available in <code>flevr</code>: extrinsic and intrinsic. Extrinsic selection is the most common type of variable selection: in this approach, a given algorithm (and perhaps its associated algorithm-specific variable importance) is used for variable selection. The lasso is a widely-used example of extrinsic selection. Intrinsic selection, on the other hand, uses estimated intrinsic variable importance (a population quantity) to perform variable selection. This intrinsic importance is both defined and estimated in a model-agnostic manner.</p>
-<div id="extrinsic-variable-selection" class="section level3">
-<h3 class="hasAnchor">
-<a href="#extrinsic-variable-selection" class="anchor"></a>Extrinsic variable selection</h3>
-<p>We recommend using the Super Learner <span class="citation">(<span class="citeproc-not-found" data-reference-id="ref"><strong>???</strong></span>)</span>(vanderlaan2007) to do extrinsic variable selection to protect against model misspecification; more details on this procedure are available in the vignette on <a href="extrinsic_selection.html">extrinsic selection</a>. This requires specifying a <em>library</em> of <em>candidate learners</em> (e.g., lasso, random forests). We can do this in <code>flevr</code> using the following code:</p>
-<div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="fl">1234</span>)
-<span class="co"># fit a Super Learner ensemble; note its simplicity, for speed</span>
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">"SuperLearner"</span>)
-<span class="co">#&gt; Loading required package: nnls</span>
-<span class="co">#&gt; Super Learner</span>
-<span class="co">#&gt; Version: 2.0-27-9000</span>
-<span class="co">#&gt; Package created on 2019-08-12</span>
-<span class="no">learners</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"SL.glm"</span>, <span class="st">"SL.mean"</span>)
-<span class="no">V</span> <span class="kw">&lt;-</span> <span class="fl">2</span>
-<span class="no">fit</span> <span class="kw">&lt;-</span> <span class="kw pkg">SuperLearner</span><span class="kw ns">::</span><span class="fu"><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html">SuperLearner</a></span>(<span class="kw">Y</span> <span class="kw">=</span> <span class="no">y</span>, <span class="kw">X</span> <span class="kw">=</span> <span class="no">x_df</span>,
-                                  <span class="kw">SL.library</span> <span class="kw">=</span> <span class="no">learners</span>,
-                                  <span class="kw">cvControl</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">V</span> <span class="kw">=</span> <span class="no">V</span>))
-<span class="co"># extract importance based on the whole Super Learner</span>
-<span class="no">sl_importance_all</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/extract_importance_SL.html">extract_importance_SL</a></span>(
-  <span class="kw">fit</span> <span class="kw">=</span> <span class="no">fit</span>, <span class="kw">feature_names</span> <span class="kw">=</span> <span class="no">x_names</span>, <span class="kw">import_type</span> <span class="kw">=</span> <span class="st">"all"</span>
-)
-<span class="no">sl_importance_all</span>
-<span class="co">#&gt; # A tibble: 2 x 2</span>
-<span class="co">#&gt;   feature  rank</span>
-<span class="co">#&gt;   &lt;chr&gt;   &lt;dbl&gt;</span>
-<span class="co">#&gt; 1 V2       1.01</span>
-<span class="co">#&gt; 2 V1       1.99</span></pre></body></html></div>
-<p>These results suggest that feature 2 is more important than feature 1 within the Super Learner ensemble (since a lower rank is better). If we want to scrutinize the importance of features within the best-fitting algorithm in the Super Learner ensemble, we can do the following:</p>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">sl_importance_best</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/extract_importance_SL.html">extract_importance_SL</a></span>(
-  <span class="kw">fit</span> <span class="kw">=</span> <span class="no">fit</span>, <span class="kw">feature_names</span> <span class="kw">=</span> <span class="no">x_names</span>, <span class="kw">import_type</span> <span class="kw">=</span> <span class="st">"best"</span>
-)
-<span class="no">sl_importance_best</span>
-<span class="co">#&gt; # A tibble: 2 x 2</span>
-<span class="co">#&gt;   feature  rank</span>
-<span class="co">#&gt;   &lt;chr&gt;   &lt;int&gt;</span>
-<span class="co">#&gt; 1 V2          1</span>
-<span class="co">#&gt; 2 V1          2</span></pre></body></html></div>
-<p>Finally, to do variable selection, we need to select a threshold (ideally before looking at the data). In this case, since there are only two variables, we choose a threshold of 1.5, which means we will select only one variable:</p>
-<div class="sourceCode" id="cb6"><html><body><pre class="r"><span class="no">extrinsic_selected</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/extrinsic_selection.html">extrinsic_selection</a></span>(
-  <span class="kw">fit</span> <span class="kw">=</span> <span class="no">fit</span>, <span class="kw">feature_names</span> <span class="kw">=</span> <span class="no">x_names</span>, <span class="kw">threshold</span> <span class="kw">=</span> <span class="fl">1.5</span>, <span class="kw">import_type</span> <span class="kw">=</span> <span class="st">"all"</span>
-)
-<span class="no">extrinsic_selected</span>
-<span class="co">#&gt; # A tibble: 2 x 3</span>
-<span class="co">#&gt;   feature  rank selected</span>
-<span class="co">#&gt;   &lt;chr&gt;   &lt;dbl&gt; &lt;lgl&gt;   </span>
-<span class="co">#&gt; 1 V2       1.01 TRUE    </span>
-<span class="co">#&gt; 2 V1       1.99 FALSE</span></pre></body></html></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># generate the data -- note that this is a simple setting, for speed</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">4747</span><span class="op">)</span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">500</span></span>
+<span><span class="co"># generate features</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="va">p</span>, <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">x_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="va">x_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">x_df</span><span class="op">)</span></span>
+<span><span class="co"># generate outcomes</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="fl">0.75</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">+</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<p>This creates a matrix of covariates <code>x</code> with 2 columns and
+a vector <code>y</code> of normally-distributed outcome values for a
+sample of <code>n = 500</code> study participants.</p>
+<p>There are two main types of variable selection available in
+<code>flevr</code>: extrinsic and intrinsic. Extrinsic selection is the
+most common type of variable selection: in this approach, a given
+algorithm (and perhaps its associated algorithm-specific variable
+importance) is used for variable selection. The lasso is a widely-used
+example of extrinsic selection. Intrinsic selection, on the other hand,
+uses estimated intrinsic variable importance (a population quantity) to
+perform variable selection. This intrinsic importance is both defined
+and estimated in a model-agnostic manner.</p>
+<div class="section level3">
+<h3 id="extrinsic-variable-selection">Extrinsic variable selection<a class="anchor" aria-label="anchor" href="#extrinsic-variable-selection"></a>
+</h3>
+<p>We recommend using the Super Learner <span class="citation">(<strong>ref?</strong>)</span>(vanderlaan2007) to do
+extrinsic variable selection to protect against model misspecification;
+more details on this procedure are available in the vignette on <a href="extrinsic_selection.html">extrinsic selection</a>. This requires
+specifying a <em>library</em> of <em>candidate learners</em> (e.g.,
+lasso, random forests). We can do this in <code>flevr</code> using the
+following code:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
+<span><span class="co"># fit a Super Learner ensemble; note its simplicity, for speed</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/ecpolley/SuperLearner" class="external-link">"SuperLearner"</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: nnls</span></span>
+<span><span class="co">#&gt; Loading required package: gam</span></span>
+<span><span class="co">#&gt; Loading required package: splines</span></span>
+<span><span class="co">#&gt; Loading required package: foreach</span></span>
+<span><span class="co">#&gt; Loaded gam 1.22-2</span></span>
+<span><span class="co">#&gt; Super Learner</span></span>
+<span><span class="co">#&gt; Version: 2.0-28.1</span></span>
+<span><span class="co">#&gt; Package created on 2021-05-04</span></span>
+<span><span class="va">learners</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.glm"</span>, <span class="st">"SL.mean"</span><span class="op">)</span></span>
+<span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">SuperLearner</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html" class="external-link">SuperLearner</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">y</span>, X <span class="op">=</span> <span class="va">x_df</span>,</span>
+<span>                                  SL.library <span class="op">=</span> <span class="va">learners</span>,</span>
+<span>                                  cvControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>V <span class="op">=</span> <span class="va">V</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># extract importance based on the whole Super Learner</span></span>
+<span><span class="va">sl_importance_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_importance_SL.html">extract_importance_SL</a></span><span class="op">(</span></span>
+<span>  fit <span class="op">=</span> <span class="va">fit</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>, import_type <span class="op">=</span> <span class="st">"all"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">sl_importance_all</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
+<span><span class="co">#&gt;   feature  rank</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> V2       1.01</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> V1       1.99</span></span></code></pre></div>
+<p>These results suggest that feature 2 is more important than feature 1
+within the Super Learner ensemble (since a lower rank is better). If we
+want to scrutinize the importance of features within the best-fitting
+algorithm in the Super Learner ensemble, we can do the following:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sl_importance_best</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_importance_SL.html">extract_importance_SL</a></span><span class="op">(</span></span>
+<span>  fit <span class="op">=</span> <span class="va">fit</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>, import_type <span class="op">=</span> <span class="st">"best"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">sl_importance_best</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 2</span></span></span>
+<span><span class="co">#&gt;   feature  rank</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> V2          1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> V1          2</span></span></code></pre></div>
+<p>Finally, to do variable selection, we need to select a threshold
+(ideally before looking at the data). In this case, since there are only
+two variables, we choose a threshold of 1.5, which means we will select
+only one variable:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">extrinsic_selected</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extrinsic_selection.html">extrinsic_selection</a></span><span class="op">(</span></span>
+<span>  fit <span class="op">=</span> <span class="va">fit</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>, threshold <span class="op">=</span> <span class="fl">1.5</span>, import_type <span class="op">=</span> <span class="st">"all"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">extrinsic_selected</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 3</span></span></span>
+<span><span class="co">#&gt;   feature  rank selected</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> V2       1.01 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> V1       1.99 FALSE</span></span></code></pre></div>
 <p>In this case, we select only variable 2.</p>
 </div>
-<div id="intrinsic-variable-selection" class="section level3">
-<h3 class="hasAnchor">
-<a href="#intrinsic-variable-selection" class="anchor"></a>Intrinsic variable selection</h3>
-<p>Intrinsic variable selection is based on population variable importance <span class="citation">(<span class="citeproc-not-found" data-reference-id="ref"><strong>???</strong></span>)</span>(williamson2020c); more details on this procedure are available in the vignette on <a href="intrinsic_selection.html">intrinsic selection</a>. Intrinsic selection also uses the Super Learner under the hood, and requires specifying a useful <em>measure of predictiveness</em> (e.g., R-squared or classification accuracy). The first step in doing intrinsic selection is estimating the variable importance:</p>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span>(<span class="fl">1234</span>)
-
-<span class="co"># set up a library for SuperLearner</span>
-<span class="no">learners</span> <span class="kw">&lt;-</span> <span class="st">"SL.glm"</span>
-<span class="no">univariate_learners</span> <span class="kw">&lt;-</span> <span class="st">"SL.glm"</span>
-<span class="no">V</span> <span class="kw">&lt;-</span> <span class="fl">2</span>
-
-<span class="co"># estimate the SPVIMs</span>
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="st">"vimp"</span>)
-<span class="co">#&gt; vimp version 2.2.7: Perform Inference on Algorithm-Agnostic Variable Importance</span>
-<span class="no">est</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html">suppressWarnings</a></span>(
-  <span class="fu"><a href="https://bdwilliamson.github.io/vimp/reference/sp_vim.html">sp_vim</a></span>(<span class="kw">Y</span> <span class="kw">=</span> <span class="no">y</span>, <span class="kw">X</span> <span class="kw">=</span> <span class="no">x</span>, <span class="kw">V</span> <span class="kw">=</span> <span class="no">V</span>, <span class="kw">type</span> <span class="kw">=</span> <span class="st">"r_squared"</span>,
-              <span class="kw">SL.library</span> <span class="kw">=</span> <span class="no">learners</span>, <span class="kw">gamma</span> <span class="kw">=</span> <span class="fl">.1</span>, <span class="kw">alpha</span> <span class="kw">=</span> <span class="fl">0.05</span>, <span class="kw">delta</span> <span class="kw">=</span> <span class="fl">0</span>,
-              <span class="kw">cvControl</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">V</span> <span class="kw">=</span> <span class="no">V</span>), <span class="kw">env</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html">environment</a></span>())
-)
-<span class="no">est</span>
-<span class="co">#&gt; Variable importance estimates:</span>
-<span class="co">#&gt;       Estimate  SE         95% CI                  VIMP &gt; 0 p-value     </span>
-<span class="co">#&gt; s = 1 0.1515809 0.06090463 [0.03221005, 0.2709518] TRUE     1.330062e-03</span>
-<span class="co">#&gt; s = 2 0.2990449 0.06565597 [0.17036157, 0.4277282] TRUE     6.863052e-09</span></pre></body></html></div>
-<p>This procedure again shows (correctly) that variable 2 is more important than variable 1 in this population.</p>
-<p>The next step is to choose an error rate to control and a method for controlling the family-wise error rate. Here, we choose the generalized family-wise error rate to control overall and choose Holm-adjusted p-values to control the individual family-wise error rate:</p>
-<div class="sourceCode" id="cb8"><html><body><pre class="r"><span class="no">intrinsic_set</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/intrinsic_selection.html">intrinsic_selection</a></span>(
-  <span class="kw">spvim_ests</span> <span class="kw">=</span> <span class="no">est</span>, <span class="kw">sample_size</span> <span class="kw">=</span> <span class="no">n</span>, <span class="kw">alpha</span> <span class="kw">=</span> <span class="fl">0.2</span>, <span class="kw">feature_names</span> <span class="kw">=</span> <span class="no">x_names</span>,
-  <span class="kw">control</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>( <span class="kw">quantity</span> <span class="kw">=</span> <span class="st">"gFWER"</span>, <span class="kw">base_method</span> <span class="kw">=</span> <span class="st">"Holm"</span>, <span class="kw">k</span> <span class="kw">=</span> <span class="fl">1</span>)
-)
-<span class="no">intrinsic_set</span>
-<span class="co">#&gt; # A tibble: 2 x 6</span>
-<span class="co">#&gt;   feature   est       p_value adjusted_p_value  rank selected</span>
-<span class="co">#&gt;   &lt;chr&gt;   &lt;dbl&gt;         &lt;dbl&gt;            &lt;dbl&gt; &lt;dbl&gt; &lt;lgl&gt;   </span>
-<span class="co">#&gt; 1 V1      0.152 0.00133           0.00133          2 TRUE    </span>
-<span class="co">#&gt; 2 V2      0.299 0.00000000686     0.0000000137     1 TRUE</span></pre></body></html></div>
+<div class="section level3">
+<h3 id="intrinsic-variable-selection">Intrinsic variable selection<a class="anchor" aria-label="anchor" href="#intrinsic-variable-selection"></a>
+</h3>
+<p>Intrinsic variable selection is based on population variable
+importance <span class="citation">(<strong>ref?</strong>)</span>(williamson2020c); more
+details on this procedure are available in the vignette on <a href="intrinsic_selection.html">intrinsic selection</a>. Intrinsic
+selection also uses the Super Learner under the hood, and requires
+specifying a useful <em>measure of predictiveness</em> (e.g., R-squared
+or classification accuracy). The first step in doing intrinsic selection
+is estimating the variable importance:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># set up a library for SuperLearner</span></span>
+<span><span class="va">learners</span> <span class="op">&lt;-</span> <span class="st">"SL.glm"</span></span>
+<span><span class="va">univariate_learners</span> <span class="op">&lt;-</span> <span class="st">"SL.glm"</span></span>
+<span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span></span>
+<span><span class="co"># estimate the SPVIMs</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://bdwilliamson.github.io/vimp/" class="external-link">"vimp"</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; vimp version 2.3.1: Perform Inference on Algorithm-Agnostic Variable Importance</span></span>
+<span><span class="va">est</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="http://bdwilliamson.github.io/vimp/reference/sp_vim.html" class="external-link">sp_vim</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">y</span>, X <span class="op">=</span> <span class="va">x</span>, V <span class="op">=</span> <span class="va">V</span>, type <span class="op">=</span> <span class="st">"r_squared"</span>,</span>
+<span>              SL.library <span class="op">=</span> <span class="va">learners</span>, gamma <span class="op">=</span> <span class="fl">.1</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, delta <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>              cvControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>V <span class="op">=</span> <span class="va">V</span><span class="op">)</span>, env <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/environment.html" class="external-link">environment</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">est</span></span>
+<span><span class="co">#&gt; Variable importance estimates:</span></span>
+<span><span class="co">#&gt;       Estimate  SE         95% CI                  VIMP &gt; 0 p-value     </span></span>
+<span><span class="co">#&gt; s = 1 0.1515809 0.06090463 [0.03221005, 0.2709518] TRUE     1.330062e-03</span></span>
+<span><span class="co">#&gt; s = 2 0.2990449 0.06565597 [0.17036157, 0.4277282] TRUE     6.863052e-09</span></span></code></pre></div>
+<p>This procedure again shows (correctly) that variable 2 is more
+important than variable 1 in this population.</p>
+<p>The next step is to choose an error rate to control and a method for
+controlling the family-wise error rate. Here, we choose the generalized
+family-wise error rate to control overall and choose Holm-adjusted
+p-values to control the individual family-wise error rate:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">intrinsic_set</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/intrinsic_selection.html">intrinsic_selection</a></span><span class="op">(</span></span>
+<span>  spvim_ests <span class="op">=</span> <span class="va">est</span>, sample_size <span class="op">=</span> <span class="va">n</span>, alpha <span class="op">=</span> <span class="fl">0.2</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>,</span>
+<span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span> quantity <span class="op">=</span> <span class="st">"gFWER"</span>, base_method <span class="op">=</span> <span class="st">"Holm"</span>, k <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">intrinsic_set</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 6</span></span></span>
+<span><span class="co">#&gt;   feature   est       p_value adjusted_p_value  rank selected</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> V1      0.152 0.001<span style="text-decoration: underline;">33</span>           0.001<span style="text-decoration: underline;">33</span>          2 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> V2      0.299 0.000<span style="text-decoration: underline;">000</span>006<span style="text-decoration: underline;">86</span>     0.000<span style="text-decoration: underline;">000</span>013<span style="text-decoration: underline;">7</span>     1 TRUE</span></span></code></pre></div>
 <p>In this case, we select both variables.</p>
 </div>
 </div>
@@ -234,11 +284,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Brian D. Williamson.</p>
+  <p></p>
+<p>Developed by Brian D. Williamson.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
@@ -246,6 +298,8 @@
 
   
 
+
+  
 
   </body>
 </html>
