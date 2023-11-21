@@ -4,3 +4,4 @@
 ^docs$
 ^pkgdown$
 ^paper$
+^cran-comments\.md$

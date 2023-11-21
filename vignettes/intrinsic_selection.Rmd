@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(flevr)
+library("flevr")
 ```
 
 ## Introduction
@@ -34,7 +34,8 @@ data("biomarkers")
 library("dplyr")
 # set up vector "y" of outcomes and matrix "x" of features
 cc <- complete.cases(biomarkers)
-y_cc <- biomarkers$mucinous[cc]
+y <- biomarkers$mucinous
+y_cc <- y[cc]
 x_cc <- biomarkers %>%
   na.omit() %>%
   select(starts_with("lab"), starts_with("cea"))
@@ -54,6 +55,7 @@ univariate_learners <- "SL.glm"
 V <- 2
 
 # estimate the SPVIMs
+library("SuperLearner")
 library("vimp")
 est <- suppressWarnings(
   sp_vim(Y = y_cc, X = x_cc, V = V, type = "auc",
@@ -102,7 +104,7 @@ est_lst <- lapply(as.list(1:5), function(l) {
     select(starts_with("lab"), starts_with("cea"))
   this_y <- biomarkers$mucinous
   suppressWarnings(
-    sp_vim(Y = y, X = this_x, V = V, type = "auc", 
+    sp_vim(Y = this_y, X = this_x, V = V, type = "auc", 
     SL.library = learners, gamma = 0.1, alpha = 0.05, delta = 0,
     cvControl = list(V = V), env = environment())
   )
