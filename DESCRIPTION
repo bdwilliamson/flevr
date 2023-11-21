@@ -5,7 +5,7 @@ Authors@R:
     person(given = "Brian D.",
            family = "Williamson",
            role = c("aut", "cre"),
-           email = "bwillia2@fredhutch.org",
+           email = "brian.d.williamson@kp.org",
            comment = c(ORCID = "0000-0002-7024-548X"))
 Description: Perform variable selection in settings with possibly missing data
     based on extrinsic (algorithm-specific) and intrinsic (population-level)
@@ -15,7 +15,7 @@ License: `use_mit_license()`
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Depends:
     R (>= 3.1.0)
 Imports:
@@ -25,13 +25,19 @@ Imports:
     dplyr,
     magrittr,
     tibble,
-    caret
+    caret,
+    mvtnorm
 Suggests:
     stabs,
     testthat,
     knitr,
     rmarkdown,
-    mice
+    mice,
+    ranger,
+    xgboost,
+    glmnet,
+    kernlab,
+    polspline
 URL: https://github.com/bdwilliamson/flevr
 BugReports: https://github.com/bdwilliamson/flevr/issues
 VignetteBuilder: knitr

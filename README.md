@@ -30,11 +30,11 @@ If you encounter any bugs or have any specific feature requests, please [file an
 After using the `flevr` package, please cite the following:
 
 ```
-@article{williamson2022,
+@article{williamson2023,
     author={Williamson, BD and Huang, Y},
     title={Flexible variable selection in the presence of missing data},
-    journal={arXiv},
-    year={2022},
+    journal={International Journal of Biostatistics},
+    year={2023},
     url={https://arxiv.org/abs/2202.12989}
 }
 ```
