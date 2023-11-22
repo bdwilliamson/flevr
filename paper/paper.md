@@ -19,6 +19,7 @@ affiliations:
  - name: Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center, Seattle, USA
    index: 2
  - name: Department of Biostatistics, University of Washington, Seattle, USA
+   index: 3
 citation_author: Williamson et al.
 date: 21 November 2023
 bibliography: paper.bib
