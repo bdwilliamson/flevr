@@ -39,7 +39,7 @@ Other useful links:
 \section{Imports}{
 
 The packages that we import either make the internal code nice
-(dplyr, magrittr, tibble, data.table) or are directly relevant for estimating
+(dplyr, magrittr, tibble) or are directly relevant for estimating
 variable importance (SuperLearner, caret).
 
 We suggest several other packages: xgboost, ranger, glmnet, kernlab, polspline
