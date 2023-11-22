@@ -18,7 +18,6 @@
 #'   most important feature).
 #'
 #' @importFrom dplyr case_when filter group_by mutate summarize
-#' @importFrom data.table rbindlist
 #' @importFrom magrittr `%>%`
 #' @importFrom rlang .data
 #' @export
@@ -33,8 +32,7 @@ extract_importance_SL <- function(fit, feature_names, import_type = "all", ...) 
       ),
       simplify = FALSE
     )
-    imp_dt <- importances %>%
-      data.table::rbindlist() %>%
+    imp_dt <- do.call(rbind, importances) %>%
       dplyr::filter(.data$weight != 0) %>%
       dplyr::group_by(.data$feature, .data$algorithm) %>%
       dplyr::mutate(wgt_rank = .data$weight * .data$rank, .groups = "drop") %>%
