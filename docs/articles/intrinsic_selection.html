@@ -271,14 +271,6 @@ Buuren and Groothuis-Oudshoorn 2011)</span>, here with only 2
 imputations (in practice, more imputations may be better).</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/amices/mice" class="external-link">"mice"</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'mice'</span></span>
-<span><span class="co">#&gt; The following object is masked from 'package:stats':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     filter</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     cbind, rbind</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20231121</span><span class="op">)</span></span>
 <span><span class="va">mi_biomarkers</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://amices.org/mice/reference/mice.html" class="external-link">mice</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">biomarkers</span>, m <span class="op">=</span> <span class="va">n_imp</span>, printFlag <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">imputed_biomarkers</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tidyr/man/complete.html" class="external-link">complete</a></span><span class="op">(</span><span class="va">mi_biomarkers</span>, action <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -309,21 +301,7 @@ family-wise error rate.</p>
 <span>  feature_names <span class="op">=</span> <span class="va">x_names</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, </span>
 <span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>quantity <span class="op">=</span> <span class="st">"gFWER"</span>, base_method <span class="op">=</span> <span class="st">"Holm"</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">intrinsic_set</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 6</span></span></span>
-<span><span class="co">#&gt;    feature                     est p_value adjusted_p_value  rank selected</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_actb               0.032<span style="text-decoration: underline;">2</span>    0.402                1     4 TRUE    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab1_molecules_score    0         0.500                1    20 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab1_telomerase_score   0.034<span style="text-decoration: underline;">2</span>    0.406                1     3 TRUE    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab2_fluorescence_score 0.009<span style="text-decoration: underline;">35</span>   0.476                1     8 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab3_muc3ac_score       0.005<span style="text-decoration: underline;">38</span>   0.483                1    13 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab3_muc5ac_score       0         0.500                1    20 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab4_areg_score         0         0.500                1    20 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab4_glucose_score      0.005<span style="text-decoration: underline;">38</span>   0.483                1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab5_mucinous_call      0.001<span style="text-decoration: underline;">61</span>   0.495                1    17 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab5_neoplasia_v1_call  0.013<span style="text-decoration: underline;">0</span>    0.459                1     7 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
+<span><span class="va">intrinsic_set</span></span></code></pre></div>
 <p>We select five variables, here those with the top-5 estimated
 variable importance. The point estimates and p-values have been computed
 using Rubin’s rules.</p>

@@ -318,14 +318,6 @@ with only 2 imputations (in practice, more imputations may be
 better).</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/amices/mice" class="external-link">"mice"</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'mice'</span></span>
-<span><span class="co">#&gt; The following object is masked from 'package:stats':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     filter</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     cbind, rbind</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20231121</span><span class="op">)</span></span>
 <span><span class="va">mi_biomarkers</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://amices.org/mice/reference/mice.html" class="external-link">mice</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">biomarkers</span>, m <span class="op">=</span> <span class="va">n_imp</span>, printFlag <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">imputed_biomarkers</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tidyr/man/complete.html" class="external-link">complete</a></span><span class="op">(</span><span class="va">mi_biomarkers</span>, action <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -358,15 +350,9 @@ use a rank of 5 for each imputed dataset to select variables.</p>
 <span>    fit <span class="op">=</span> <span class="va">fit</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>, threshold <span class="op">=</span> <span class="fl">5</span>, import_type <span class="op">=</span> <span class="st">"all"</span></span>
 <span>  <span class="op">)</span><span class="op">$</span><span class="va">selected</span></span>
 <span><span class="op">}</span></span>
-<span><span class="co">#&gt; Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :</span></span>
-<span><span class="co">#&gt; prediction from rank-deficient fit; attr(*, "non-estim") has doubtful cases</span></span>
-<span></span>
-<span><span class="co">#&gt; Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :</span></span>
-<span><span class="co">#&gt; prediction from rank-deficient fit; attr(*, "non-estim") has doubtful cases</span></span>
 <span><span class="co"># perform extrinsic variable selection</span></span>
 <span><span class="va">selected_vars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pool_selected_sets.html">pool_selected_sets</a></span><span class="op">(</span>sets <span class="op">=</span> <span class="va">all_selected_vars</span>, threshold <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="va">n_imp</span><span class="op">)</span></span>
-<span><span class="va">x_names</span><span class="op">[</span><span class="va">selected_vars</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "lab1_actb"             "lab1_molecules_score"  "lab1_telomerase_score"</span></span></code></pre></div>
+<span><span class="va">x_names</span><span class="op">[</span><span class="va">selected_vars</span><span class="op">]</span></span></code></pre></div>
 <p>In this case, there is only one variable in common between the
 multiply-imputed approach and the approach dropping missing data. This
 serves to highlight that it is important in missing-data contexts to
