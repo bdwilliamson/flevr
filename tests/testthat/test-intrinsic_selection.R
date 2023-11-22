@@ -22,8 +22,8 @@ missing_patterns <- expand.grid(V1 = 1, V2 = 0:1, V3 = 0:1, V4 = 0:1)[c(1, 2, 4,
 x_with_missing <- mice::ampute(data = x_df, prop = .05, patterns = missing_patterns,
                                mech = "MAR", freq = mice::ampute.default.freq(missing_patterns),
                                weights = mice::ampute.default.weights(missing_patterns, "MAR"),
-                               std = FALSE, bycases = TRUE) %>% 
-  magrittr::use_series("amp") %>% 
+                               std = FALSE, bycases = TRUE) %>%
+  magrittr::use_series("amp") %>%
   tibble::as_tibble()
 
 true_set <- c(1, 1, 0, 0)
@@ -100,16 +100,17 @@ test_that("doing intrinsic selection works", {
 
 # a case with missing data -----------------------------------------------------
 # do multiple imputation
+n_imp <- 2
 set.seed(1234)
-imputed_x <- mice::mice(data = x_with_missing, m = 2, method = "pmm", printFlag = FALSE)
-completed_x <- mice::complete(imputed_x, action = "long") %>% 
+imputed_x <- mice::mice(data = x_with_missing, m = n_imp, method = "pmm", printFlag = FALSE)
+completed_x <- mice::complete(imputed_x, action = "long") %>%
   rename(imp = .imp, id = .id)
 
 # estimate SPVIMs for each imputed dataset
 set.seed(5678)
-est_lst <- lapply(as.list(1:5), function(l) {
-  this_x <- completed_x %>% 
-    filter(imp == l) %>% 
+est_lst <- lapply(as.list(1:n_imp), function(l) {
+  this_x <- completed_x %>%
+    filter(imp == l) %>%
     select(-imp, -id)
   suppressWarnings(
     sp_vim(Y = y, X = this_x, V = V, type = "r_squared",
@@ -125,7 +126,7 @@ test_that("using 'stability' to combine selected sets works", {
     intrinsic_selection(spvim_ests = l, sample_size = n, feature_names = x_names,
                         alpha = 0.05, control = list(
                           quantity = "gFWER", base_method = "Holm",
-                          k = 1
+                          k = 0
                         ))
   })
   binary_selected_sets <- lapply(selected_sets, function(l) l %>% pull(selected))
@@ -136,7 +137,7 @@ test_that("using 'stability' to combine selected sets works", {
 
 # use rubin's rules to combine
 test_that("using Rubin's rules to combine and select works", {
-  intrinsic_set <- intrinsic_selection(spvim_ests = est_lst, sample_size = n, 
+  intrinsic_set <- intrinsic_selection(spvim_ests = est_lst, sample_size = n,
                                        feature_names = x_names,
                                        alpha = 0.05, control = list(
                                          quantity = "gFWER", base_method = "Holm",
