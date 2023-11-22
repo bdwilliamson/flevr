@@ -104,7 +104,7 @@ n_imp <- 2
 
 To properly handle the missing data, we first perform multiple imputation. We use the `R` package `mice`, here with only `r n_imp` imputations (in practice, more imputations may be better).
 
-```{r impute}
+```{r impute, eval = FALSE}
 library("mice")
 set.seed(20231121)
 mi_biomarkers <- mice::mice(data = biomarkers, m = n_imp, printFlag = FALSE)
@@ -114,7 +114,7 @@ imputed_biomarkers <- mice::complete(mi_biomarkers, action = "long") %>%
 
 We can perform extrinsic variable selection using the imputed data. First, we fit a Super Learner and perform extrinsic variable selection for each imputed dataset. Then, we select a final set of variables based on those that are selected in a pre-specified number of imputed datasets (e.g., 3 of 5) [@heymans2007]. Again, we use a rank of 5 for each imputed dataset to select variables.
 
-```{r extrinsic-selection-with-missing-data}
+```{r extrinsic-selection-with-missing-data, eval = FALSE}
 set.seed(20231121)
 # set up a list to collect selected sets
 all_selected_vars <- vector("list", length = 5)

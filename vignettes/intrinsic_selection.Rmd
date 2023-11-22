@@ -90,7 +90,7 @@ n_imp <- 2
 
 To properly handle the missing data, we first perform multiple imputation. We use the `R` package `mice` [@mice;@mice2011], here with only `r n_imp` imputations (in practice, more imputations may be better).
 
-```{r impute}
+```{r impute, eval = FALSE}
 library("mice")
 set.seed(20231121)
 mi_biomarkers <- mice::mice(data = biomarkers, m = n_imp, printFlag = FALSE)
@@ -100,7 +100,7 @@ imputed_biomarkers <- mice::complete(mi_biomarkers, action = "long") %>%
 
 We can perform intrinsic variable selection using the imputed data. First, we estimate variable importance for each imputed dataset. 
 
-```{r est-spvim-imp}
+```{r est-spvim-imp, eval = FALSE}
 set.seed(20231121)
 est_lst <- lapply(as.list(1:n_imp), function(l) {
   this_x <- imputed_biomarkers %>%
@@ -115,7 +115,7 @@ est_lst <- lapply(as.list(1:n_imp), function(l) {
 })
 ```
 Next, we use Rubin's rules [@rubin2018] to combine the variable importance estimates, and use this to perform variable selection. Here, we control the generalized family-wise error rate at 5, using Holm-adjusted p-values to control the initial family-wise error rate.
-```{r intrinsic-select-mi}
+```{r intrinsic-select-mi, eval = FALSE}
 intrinsic_set <- intrinsic_selection(
   spvim_ests = est_lst, sample_size = nrow(biomarkers),
   feature_names = x_names, alpha = 0.05, 
