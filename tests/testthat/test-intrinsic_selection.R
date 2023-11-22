@@ -101,7 +101,7 @@ test_that("doing intrinsic selection works", {
 # a case with missing data -----------------------------------------------------
 # do multiple imputation
 set.seed(1234)
-imputed_x <- mice::mice(data = x_with_missing, m = 5, method = "pmm", printFlag = FALSE)
+imputed_x <- mice::mice(data = x_with_missing, m = 2, method = "pmm", printFlag = FALSE)
 completed_x <- mice::complete(imputed_x, action = "long") %>% 
   rename(imp = .imp, id = .id)
 

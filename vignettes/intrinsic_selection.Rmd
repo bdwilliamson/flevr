@@ -84,12 +84,16 @@ intrinsic_set_fdr
 
 ## Intrinsic selection with missing data
 
-To properly handle the missing data, we first perform multiple imputation. We use the `R` package `mice` [@mice;@mice2011], here with only 5 imputations (in practice, more imputations may be better).
+```{r impute-setup}
+n_imp <- 2
+```
+
+To properly handle the missing data, we first perform multiple imputation. We use the `R` package `mice` [@mice;@mice2011], here with only `r n_imp` imputations (in practice, more imputations may be better).
 
 ```{r impute}
 library("mice")
 set.seed(20231121)
-mi_biomarkers <- mice::mice(data = biomarkers, m = 5, printFlag = FALSE)
+mi_biomarkers <- mice::mice(data = biomarkers, m = n_imp, printFlag = FALSE)
 imputed_biomarkers <- mice::complete(mi_biomarkers, action = "long") %>%
   rename(imp = .imp, id = .id)
 ```
@@ -98,7 +102,7 @@ We can perform intrinsic variable selection using the imputed data. First, we es
 
 ```{r est-spvim-imp}
 set.seed(20231121)
-est_lst <- lapply(as.list(1:5), function(l) {
+est_lst <- lapply(as.list(1:n_imp), function(l) {
   this_x <- imputed_biomarkers %>%
     filter(imp == l) %>%
     select(starts_with("lab"), starts_with("cea"))

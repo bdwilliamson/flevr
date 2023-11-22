@@ -98,12 +98,16 @@ Here, we select five variables, since these had weighted rank less than 5.
 
 ## Extrinsic selection with missing data
 
-To properly handle the missing data, we first perform multiple imputation. We use the `R` package `mice`, here with only 5 imputations (in practice, more imputations may be better).
+```{r impute-setup}
+n_imp <- 2
+```
+
+To properly handle the missing data, we first perform multiple imputation. We use the `R` package `mice`, here with only `r n_imp` imputations (in practice, more imputations may be better).
 
 ```{r impute}
 library("mice")
 set.seed(20231121)
-mi_biomarkers <- mice::mice(data = biomarkers, m = 5, printFlag = FALSE)
+mi_biomarkers <- mice::mice(data = biomarkers, m = n_imp, printFlag = FALSE)
 imputed_biomarkers <- mice::complete(mi_biomarkers, action = "long") %>%
   rename(imp = .imp, id = .id)
 ```
@@ -115,7 +119,7 @@ set.seed(20231121)
 # set up a list to collect selected sets
 all_selected_vars <- vector("list", length = 5)
 # for each imputed dataset, do extrinsic selection
-for (i in 1:5) {
+for (i in 1:n_imp) {
   # fit a Super Learner
   these_data <- imputed_biomarkers %>%
     filter(imp == i)
@@ -133,7 +137,7 @@ for (i in 1:5) {
   )$selected
 }
 # perform extrinsic variable selection
-selected_vars <- pool_selected_sets(sets = all_selected_vars, threshold = 3 / 5)
+selected_vars <- pool_selected_sets(sets = all_selected_vars, threshold = 1 / n_imp)
 x_names[selected_vars]
 ```
 In this case, there is only one variable in common between the multiply-imputed approach and the approach dropping missing data. This serves to highlight that it is important in missing-data contexts to handle the missing data appropriately.
