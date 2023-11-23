@@ -62,7 +62,7 @@ The first step in performing extrinsic variable selection is to fit a Super Lear
 set.seed(1234)
 # fit a Super Learner ensemble; note its simplicity, for speed
 library("SuperLearner")
-learners <- c("SL.glm", "SL.ranger.imp", "SL.xgboost")
+learners <- c("SL.glm", "SL.ranger.imp", "SL.polymars")
 V <- 2
 fit <- SuperLearner::SuperLearner(Y = y_cc, X = x_df,
                                   SL.library = learners,
