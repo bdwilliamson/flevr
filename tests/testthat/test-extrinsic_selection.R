@@ -4,7 +4,6 @@
 library("testthat")
 library("SuperLearner")
 library("ranger")
-library("xgboost")
 library("glmnet")
 library("kernlab")
 library("caret")
