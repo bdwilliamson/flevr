@@ -30,13 +30,13 @@ journal: JOSS
 
 # Summary
 
-Variable selection is a common goal in biomedical research, among other fields. Traditional tools for variable selection either rely on possibly restrictive modelling assumptions (cites) or make handling missing data difficult (cites). 
+Variable selection is a common goal in biomedical research, among other fields. Traditional tools for variable selection are generally not robust to departures from possibly restrictive modelling assumptions [@leng2006]. Additionally, in missing-data settings, difficult-to-interpret procedures to combine variable selection results are required if machine learning tools are used [@heymans2007]. 
 
 The `flevr` package for `R` [@r_software] provides researchers with the tools necessary to perform variable selection using either _intrinsic variable importance_ [@williamson2021vim2;@williamson2020spvim], which quantifies the population prediction potential of features, or to make use of the good prediction performance of the Super Learner [@vanderlaan2007] to perform variable selection based on an ensemble of individual prediction algorithms. The package facilitates both handling missing data using multiple imputation [@mice2011] and incorporating state-of-the-art machine learning algorithms to perform variable selection.
 
 # Statement of need
 
-why did we need to do this? No software implementation for variable selection based on intrinsic importance. Also none based on SL importance. Are there other R packages that are similar? no.
+Variable selection in missing-data contexts is complicated by two issues: (i) a desire for the results to be robust to departures from simplifying modelling assumptions, and (ii) the need to incorporate a missing-data approach. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. The `flevr` `R` package provides an open-source tool for performing variable selection using flexible, ensemble machine learning algorithms. The _intrinsic selection_ approach (`intrinsic_selection`) is based on population variable importance; this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets [@heymans2007].
 
 # Examples
 
