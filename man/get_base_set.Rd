@@ -32,8 +32,8 @@ get_base_set(
 \value{
 the initial selected set, a list of the following:
 \itemize{
-\item{decision}{- a numeric vector with 1 indicating that the variable was selected and 0 otherwise}
-\item{p_values}{- the p-values used to make the decision}
+\item \code{decision}, a numeric vector with 1 indicating that the variable was selected and 0 otherwise
+\item \code{p_values}, the p-values used to make the decision
 }
 }
 \description{

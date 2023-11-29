@@ -131,9 +131,38 @@ rank, with 1 indicating the most important feature), and <code>weight</code></p>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">kernlab</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kernlab/man/ksvm.html" class="external-link">ksvm</a></span><span class="op">(</span><span class="va">x_mat</span>, <span class="va">y</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># extract importance</span></span></span>
 <span class="r-in"><span><span class="va">importance</span> <span class="op">&lt;-</span> <span class="fu">extract_importance_svm</span><span class="op">(</span>fit <span class="op">=</span> <span class="va">fit</span>, feature_names <span class="op">=</span> <span class="va">feature_nms</span>, x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in kpar(kernelf(fit)):</span> could not find function "kpar"</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>You are trying to do regression and your outcome only has two possible values Are you trying to do classification? If so, use a 2 level factor as your outcome column.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: ggplot2</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: lattice</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Variable(s) `' constant. Cannot scale data.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were missing values in resampled performance measures.</span>
 <span class="r-in"><span><span class="va">importance</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'importance' not found</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 22 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    algorithm feature                        importance  rank weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> svm       lab3_muc3ac_score                   100       1      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> svm       lab1_actb                            76.4     2      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> svm       lab6_ab_score                        72.5     3      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> svm       lab1_telomerase_score                58.8     4      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> svm       lab4_glucose_score                   57.7     5      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> svm       cea                                  45.7     6      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> svm       lab1_telomerase_neoplasia_call       45.6     7      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> svm       lab2_fluorescence_score              44.8     8      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> svm       lab4_areg_score                      39.4     9      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> svm       lab1_molecules_score                 30.6    10      0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 12 more rows</span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

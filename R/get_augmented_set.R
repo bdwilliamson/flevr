@@ -16,9 +16,9 @@
 #'
 #' @return a list of the variables selected into the augmentation set. Contains the following values:
 #' \itemize{
-#'   \item{set}{- a numeric vector where 1 denotes that the variable was selected and 0 otherwise}
-#'   \item{k}{- the value of k used}
-#'   \item{q_star}{- the value of q-star used} 
+#'   \item \code{set}, a numeric vector where 1 denotes that the variable was selected and 0 otherwise
+#'   \item \code{k}, the value of k used
+#'   \item \code{q_star}, the value of q-star used
 #' }
 #' 
 #' @examples

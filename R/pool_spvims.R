@@ -9,12 +9,12 @@
 #' @param spvim_ests a list of estimated SPVIMs (of class \code{vim})
 #' @return a list of results containing the following:
 #' \itemize{
-#'   \item{est}{- the average SPVIM estimate over the multiply-imputed datasets}
-#'   \item{se}{- the average of the within-imputation SPVIM variance estimates}
-#'   \item{test_statistics}{- the test statistics for hypothesis tests of zero importance, using the Rubin's rules standard error estimator and average SPVIM estimate}
-#'   \item{p_values}{- p-values computed using the above test statistics}
-#'   \item{tau_n}{- the across-imputation variance estimates}
-#'   \item{vcov}{- the overall variance-covariance matrix}
+#'   \item \code{est}, the average SPVIM estimate over the multiply-imputed datasets
+#'   \item \code{se}, the average of the within-imputation SPVIM variance estimates
+#'   \item \code{test_statistics}, the test statistics for hypothesis tests of zero importance, using the Rubin's rules standard error estimator and average SPVIM estimate
+#'   \item \code{p_values}, p-values computed using the above test statistics
+#'   \item \code{tau_n}, the across-imputation variance estimates
+#'   \item \code{vcov}, the overall variance-covariance matrix
 #' }
 #' @examples
 #' \donttest{
