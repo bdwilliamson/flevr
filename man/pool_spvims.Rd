@@ -4,13 +4,21 @@
 \alias{pool_spvims}
 \title{Pool SPVIM Estimates Using Rubin's Rules}
 \usage{
-pool_spvims(spvim_ests)
+pool_spvims(spvim_ests = NULL)
 }
 \arguments{
 \item{spvim_ests}{a list of estimated SPVIMs (of class \code{vim})}
 }
 \value{
-a list of results
+a list of results containing the following:
+\itemize{
+\item{est}{- the average SPVIM estimate over the multiply-imputed datasets}
+\item{se}{- the average of the within-imputation SPVIM variance estimates}
+\item{test_statistics}{- the test statistics for hypothesis tests of zero importance, using the Rubin's rules standard error estimator and average SPVIM estimate}
+\item{p_values}{- p-values computed using the above test statistics}
+\item{tau_n}{- the across-imputation variance estimates}
+\item{vcov}{- the overall variance-covariance matrix}
+}
 }
 \description{
 If multiple imputation was used due to the presence of missing data,
@@ -18,4 +26,33 @@ pool SPVIM estimates from individual imputed datasets using Rubin's rules.
 Results in point estimates averaged over the imputations, along with
 within-imputation variance estimates and across-imputation variance estimates;
 and test statistics and p-values for hypothesis testing.
+}
+\examples{
+\donttest{
+data("biomarkers")
+library("dplyr")
+# do multiple imputation (with a small number for illustration only)
+library("mice")
+n_imp <- 2
+set.seed(20231129)
+mi_biomarkers <- mice::mice(data = biomarkers, m = n_imp, printFlag = FALSE)
+imputed_biomarkers <- mice::complete(mi_biomarkers, action = "long") \%>\%
+  rename(imp = .imp, id = .id)
+# estimate SPVIMs for each imputed dataset, using simple library for illustration only
+library("SuperLearner")
+est_lst <- lapply(as.list(1:n_imp), function(l) {
+  this_x <- imputed_biomarkers \%>\%
+    filter(imp == l) \%>\%
+    select(starts_with("lab"), starts_with("cea"))
+  this_y <- biomarkers$mucinous
+  suppressWarnings(
+    vimp::sp_vim(Y = this_y, X = this_x, V = 2, type = "auc", 
+                 SL.library = "SL.glm", gamma = 0.1, alpha = 0.05, delta = 0,
+                 cvControl = list(V = 2), env = environment())
+  )
+})
+# pool the SPVIMs using Rubin's rules
+pooled_spvims <- pool_spvims(spvim_ests = est_lst)
+pooled_spvims
+}
 }

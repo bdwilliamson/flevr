@@ -19,6 +19,7 @@ SL.ranger.imp(
   sample.fraction = ifelse(replace, 1, 0.632),
   num.threads = 1,
   verbose = FALSE,
+  importance = "impurity",
   ...
 )
 }
@@ -55,8 +56,38 @@ sampling with replacement and 0.632 for sampling without replacement.}
 
 \item{verbose}{If TRUE, display additional output during execution.}
 
+\item{importance}{Variable importance mode, one of 'none', 'impurity', 'impurity_corrected', 'permutation'. The 'impurity' measure is the Gini index for classification, the variance of the responses for regression and the sum of test statistics (see \code{splitrule}) for survival.}
+
 \item{...}{Any additional arguments, not currently used.}
+}
+\value{
+a named list with elements \code{pred} (predictions on \code{newX}) and \code{fit} (the fitted \code{ranger} object).
 }
 \description{
 Super Learner wrapper for a ranger object with variable importance
+}
+\examples{
+data("biomarkers")
+# subset to complete cases for illustration
+cc <- complete.cases(biomarkers)
+dat_cc <- biomarkers[cc, ]
+# use only the mucinous outcome, not the high-malignancy outcome
+y <- dat_cc$mucinous
+x <- dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))]
+feature_nms <- names(x)
+# get the fit
+set.seed(20231129)
+fit <- SL.ranger.imp(Y = y, X = x, newX = x, family = binomial())
+fit
+}
+\references{
+Breiman, L. (2001). Random forests. Machine learning 45:5-32.
+
+Wright, M. N. & Ziegler, A. (2016). ranger: A Fast Implementation of Random
+Forests for High Dimensional Data in C++ and R. Journal of Statistical
+Software, in press. http://arxiv.org/abs/1508.04409.
+}
+\seealso{
+\code{\link[SuperLearner]{SL.ranger}} \code{\link[ranger]{ranger}}
+  \code{\link[ranger]{predict.ranger}}
 }

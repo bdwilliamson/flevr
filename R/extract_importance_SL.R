@@ -16,6 +16,28 @@
 #' @return a tibble, with columns \code{feature} (the feature) and
 #'   \code{rank} (the weighted feature importance rank, with 1 indicating the
 #'   most important feature).
+#' 
+#' @examples
+#' data("biomarkers")
+#' # subset to complete cases for illustration
+#' cc <- complete.cases(biomarkers)
+#' dat_cc <- biomarkers[cc, ]
+#' # use only the mucinous outcome, not the high-malignancy outcome
+#' y <- dat_cc$mucinous
+#' x <- dat_cc[, !(names(dat_cc) %in% c("mucinous", "high_malignancy"))]
+#' feature_nms <- names(x)
+#' # get the fit (using a simple library and 2 folds for illustration only)
+#' set.seed(20231129)
+#' library("SuperLearner")
+#' fit <- SuperLearner::SuperLearner(Y = y, X = x, SL.library = c("SL.glm", "SL.mean"), 
+#'                                   cvControl = list(V = 2))
+#' # extract importance using all learners
+#' importance <- extract_importance_SL(fit = fit, feature_names = feature_nms)
+#' importance
+#' # extract importance of best learner
+#' best_importance <- extract_importance_SL(fit = fit, feature_names = feature_nms, 
+#'                                          import_type = "best")
+#' best_importance
 #'
 #' @importFrom dplyr case_when filter group_by mutate summarize
 #' @importFrom magrittr `%>%`

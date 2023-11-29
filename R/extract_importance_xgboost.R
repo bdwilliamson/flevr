@@ -4,16 +4,30 @@
 #' along with the importance rank.
 #'
 #' @param fit the \code{xgboost} object.
-#' @param feature_names the feature names
-#' @param coef the Super Learner coefficient associated with the learner.
+#' @inheritParams extract_importance_glm
+#' 
+#' @examples
+#' \donttest{
+#' data("biomarkers")
+#' # subset to complete cases for illustration
+#' cc <- complete.cases(biomarkers)
+#' dat_cc <- biomarkers[cc, ]
+#' # use only the mucinous outcome, not the high-malignancy outcome
+#' y <- dat_cc$mucinous
+#' x <- as.matrix(dat_cc[, !(names(dat_cc) %in% c("mucinous", "high_malignancy"))])
+#' feature_nms <- names(x)
+#' set.seed(20231129)
+#' xgbmat <- xgboost::xgb.DMatrix(data = x, label = y)
+#' # get the fit, using a small number of rounds for illustration only 
+#' fit <- xgboost::xgboost(data = xgbmat, objective = "binary:logistic", nthread = 1, nrounds = 10)
+#' # extract importance
+#' importance <- extract_importance_xgboost(fit = fit, feature_names = feature_nms)
+#' importance
+#' }
 #'
-#' @return a tibble, with columns \code{algorithm} (the fitted algorithm),
-#'   \code{feature} (the feature), \code{importance} (the algorithm-specific
-#'   extrinsic importance of the feature), \code{rank} (the feature importance
-#'   rank, with 1 indicating the most important feature), and \code{weight}
-#'   (the algorithm's weight in the Super Learner)
+#' @inherit extract_importance_glm return
 #' @export
-extract_importance_xgboost <- function(fit, feature_names, coef = 0) {
+extract_importance_xgboost <- function(fit = NULL, feature_names = "", coef = 0) {
   if (!inherits(fit, "xgboost") & !inherits(fit, "xgb.Booster")) {
     stop("This is not an xgboost object. Please use a different importance extraction function.")
   } else {

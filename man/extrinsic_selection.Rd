@@ -5,8 +5,8 @@
 \title{Perform extrinsic, ensemble-based variable selection}
 \usage{
 extrinsic_selection(
-  fit,
-  feature_names,
+  fit = NULL,
+  feature_names = "",
   threshold = 20,
   import_type = "all",
   ...
@@ -41,6 +41,26 @@ variables.
 Based on a fitted Super Learner ensemble, extract extrinsic
 variable importance estimates, rank them, and do variable
 selection using the specified rank threshold.
+}
+\examples{
+data("biomarkers")
+# subset to complete cases for illustration
+cc <- complete.cases(biomarkers)
+dat_cc <- biomarkers[cc, ]
+# use only the mucinous outcome, not the high-malignancy outcome
+y <- dat_cc$mucinous
+x <- dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))]
+feature_nms <- names(x)
+# get the fit (using a simple library and 2 folds for illustration only)
+library("SuperLearner")
+set.seed(20231129)
+fit <- SuperLearner::SuperLearner(Y = y, X = x, SL.library = c("SL.glm", "SL.mean"), 
+                                  cvControl = list(V = 2))
+# extract importance
+importance <- extrinsic_selection(fit = fit, feature_names = feature_nms, threshold = 1.5, 
+                                  import_type = "all")
+importance
+
 }
 \seealso{
 \code{\link[SuperLearner]{SuperLearner}} for specific usage of

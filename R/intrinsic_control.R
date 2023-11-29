@@ -21,6 +21,10 @@
 #'    or equal to zero.) 
 #'
 #' @return a list with the control parameters.
+#' @examples
+#' control <- intrinsic_control(quantity = "gFWER", base_method = "Holm", fdr_method = "Holm", 
+#'                              k = 1)
+#' control
 #' @export
 intrinsic_control <- function(quantity = "gFWER", base_method = "Holm",
                               fdr_method = "Holm", q = 0.2, k = 5) {

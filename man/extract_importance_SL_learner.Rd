@@ -4,7 +4,7 @@
 \alias{extract_importance_SL_learner}
 \title{Extract the learner-specific importance from a fitted SuperLearner algorithm}
 \usage{
-extract_importance_SL_learner(fit, coef, feature_names, ...)
+extract_importance_SL_learner(fit = NULL, coef = 0, feature_names = "", ...)
 }
 \arguments{
 \item{fit}{the specific learner (e.g., from the Super Learner's
@@ -12,7 +12,7 @@ extract_importance_SL_learner(fit, coef, feature_names, ...)
 
 \item{coef}{the Super Learner coefficient associated with the learner.}
 
-\item{feature_names}{the feature names.}
+\item{feature_names}{the feature names}
 
 \item{...}{other arguments to pass to algorithm-specific importance extractors.}
 }
@@ -26,4 +26,24 @@ rank, with 1 indicating the most important feature), and \code{weight}
 \description{
 Extract the individual-algorithm extrinsic importance from one fitted
 algorithm within the Super Learner, along with the importance rank.
+}
+\examples{
+data("biomarkers")
+# subset to complete cases for illustration
+cc <- complete.cases(biomarkers)
+dat_cc <- biomarkers[cc, ]
+# use only the mucinous outcome, not the high-malignancy outcome
+y <- dat_cc$mucinous
+x <- dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))]
+feature_nms <- names(x)
+# get the fit (using a simple library and 2 folds for illustration only)
+library("SuperLearner")
+set.seed(20231129)
+fit <- SuperLearner::SuperLearner(Y = y, X = x, SL.library = c("SL.glm", "SL.mean"), 
+                                  cvControl = list(V = 2))
+# extract importance
+importance <- extract_importance_SL_learner(fit = fit$fitLibrary[[1]]$object, 
+                                            feature_names = feature_nms, coef = fit$coef[1])
+importance
+
 }

@@ -41,3 +41,8 @@ a list with the control parameters.
 \description{
 Control parameters for SPVIM-based intrinsic variable selection.
 }
+\examples{
+control <- intrinsic_control(quantity = "gFWER", base_method = "Holm", fdr_method = "Holm", 
+                             k = 1)
+control
+}

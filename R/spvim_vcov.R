@@ -6,8 +6,26 @@
 #' @param spvim_ests estimated SPVIMs
 #' 
 #' @return a variance-covariance matrix
+#' @examples
+#' \donttest{
+#' data("biomarkers")
+#' # subset to complete cases for illustration
+#' cc <- complete.cases(biomarkers)
+#' dat_cc <- biomarkers[cc, ]
+#' # use only the mucinous outcome, not the high-malignancy outcome
+#' y <- dat_cc$mucinous
+#' x <- dat_cc[, !(names(dat_cc) %in% c("mucinous", "high_malignancy"))]
+#' feature_nms <- names(x)
+#' # estimate SPVIMs (using simple library and V = 2 for illustration only)
+#' set.seed(20231129)
+#' library("SuperLearner")
+#' est <- vimp::sp_vim(Y = y, X = x, V = 2, type = "auc", SL.library = "SL.glm", 
+#'                     cvControl = list(V = 2))
+#' # get variance-covariance matrix
+#' vcov <- spvim_vcov(spvim_ests = est)
+#' }
 #' @export
-spvim_vcov <- function(spvim_ests) {
+spvim_vcov <- function(spvim_ests = NULL) {
   if (is.null(names(spvim_ests$ic))) {
     # cross-fitted SEs were used; create a vector where each column is when
     # that "observation" was in the validation fold

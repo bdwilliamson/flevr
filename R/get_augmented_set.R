@@ -14,7 +14,37 @@
 #' @param q the proportion for FDR or PFP control.
 #' @param k the number of false positives for gFWER control.
 #'
-#' @return a list of the variables selected into the augmentation set.
+#' @return a list of the variables selected into the augmentation set. Contains the following values:
+#' \itemize{
+#'   \item{set}{- a numeric vector where 1 denotes that the variable was selected and 0 otherwise}
+#'   \item{k}{- the value of k used}
+#'   \item{q_star}{- the value of q-star used} 
+#' }
+#' 
+#' @examples
+#' \donttest{
+#' data("biomarkers")
+#' # subset to complete cases for illustration
+#' cc <- complete.cases(biomarkers)
+#' dat_cc <- biomarkers[cc, ]
+#' # use only the mucinous outcome, not the high-malignancy outcome
+#' y <- dat_cc$mucinous
+#' x <- dat_cc[, !(names(dat_cc) %in% c("mucinous", "high_malignancy"))]
+#' feature_nms <- names(x)
+#' # estimate SPVIMs (using simple library and V = 2 for illustration only)
+#' set.seed(20231129)
+#' library("SuperLearner")
+#' est <- vimp::sp_vim(Y = y, X = x, V = 2, type = "auc", SL.library = "SL.glm", 
+#'                     cvControl = list(V = 2))
+#' # get base set
+#' base_set <- get_base_set(test_statistics = est$test_statistic, p_values = est$p_value, 
+#'                          alpha = 0.2, method = "Holm")
+#' # get augmented set
+#' augmented_set <- get_augmented_set(p_values = base_set$p_values, 
+#'                                    num_rejected = sum(base_set$decision), alpha = 0.2, 
+#'                                    quantity = "gFWER", k = 1)
+#' augmented_set$set
+#' }
 #' @export
 get_augmented_set <- function(p_values = NULL, num_rejected = 0, alpha = 0.05,
                               quantity = "gFWER", q = 0.05, k = 1) {

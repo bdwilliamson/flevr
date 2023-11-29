@@ -4,7 +4,7 @@
 \alias{extract_importance_glm}
 \title{Extract the learner-specific importance from a glm object}
 \usage{
-extract_importance_glm(fit, feature_names, coef = 0)
+extract_importance_glm(fit = NULL, feature_names = "", coef = 0)
 }
 \arguments{
 \item{fit}{the \code{glm} object.}
@@ -23,4 +23,20 @@ rank, with 1 indicating the most important feature), and \code{weight}
 \description{
 Extract the individual-algorithm extrinsic importance from a glm object,
 along with the importance rank.
+}
+\examples{
+data("biomarkers")
+# subset to complete cases for illustration
+cc <- complete.cases(biomarkers)
+dat_cc <- biomarkers[cc, ]
+# use only the mucinous outcome, not the high-malignancy outcome
+y <- dat_cc$mucinous
+x <- dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))]
+feature_nms <- names(x)
+# get the fit
+fit <- stats::glm(y ~ ., family = "binomial", data = data.frame(y = y, x))
+# extract importance
+importance <- extract_importance_glm(fit = fit, feature_names = feature_nms)
+importance
+
 }

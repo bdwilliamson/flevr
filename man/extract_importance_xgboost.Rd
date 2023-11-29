@@ -4,7 +4,7 @@
 \alias{extract_importance_xgboost}
 \title{Extract the learner-specific importance from an xgboost object}
 \usage{
-extract_importance_xgboost(fit, feature_names, coef = 0)
+extract_importance_xgboost(fit = NULL, feature_names = "", coef = 0)
 }
 \arguments{
 \item{fit}{the \code{xgboost} object.}
@@ -23,4 +23,24 @@ rank, with 1 indicating the most important feature), and \code{weight}
 \description{
 Extract the individual-algorithm extrinsic importance from an xgboost object,
 along with the importance rank.
+}
+\examples{
+\donttest{
+data("biomarkers")
+# subset to complete cases for illustration
+cc <- complete.cases(biomarkers)
+dat_cc <- biomarkers[cc, ]
+# use only the mucinous outcome, not the high-malignancy outcome
+y <- dat_cc$mucinous
+x <- as.matrix(dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))])
+feature_nms <- names(x)
+set.seed(20231129)
+xgbmat <- xgboost::xgb.DMatrix(data = x, label = y)
+# get the fit, using a small number of rounds for illustration only 
+fit <- xgboost::xgboost(data = xgbmat, objective = "binary:logistic", nthread = 1, nrounds = 10)
+# extract importance
+importance <- extract_importance_xgboost(fit = fit, feature_names = feature_nms)
+importance
+}
+
 }

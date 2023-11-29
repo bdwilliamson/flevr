@@ -5,17 +5,32 @@
 #'
 #' @param fit the specific learner (e.g., from the Super Learner's
 #'     \code{fitLibrary} list).
-#' @param coef the Super Learner coefficient associated with the learner.
-#' @param feature_names the feature names.
+#' @inheritParams extract_importance_glm
 #' @param ... other arguments to pass to algorithm-specific importance extractors.
 #'
-#' @return a tibble, with columns \code{algorithm} (the fitted algorithm),
-#'   \code{feature} (the feature), \code{importance} (the algorithm-specific
-#'   extrinsic importance of the feature), \code{rank} (the feature importance
-#'   rank, with 1 indicating the most important feature), and \code{weight}
-#'   (the algorithm's weight in the Super Learner)
+#' @inherit extract_importance_glm return
+#' 
+#' @examples
+#' data("biomarkers")
+#' # subset to complete cases for illustration
+#' cc <- complete.cases(biomarkers)
+#' dat_cc <- biomarkers[cc, ]
+#' # use only the mucinous outcome, not the high-malignancy outcome
+#' y <- dat_cc$mucinous
+#' x <- dat_cc[, !(names(dat_cc) %in% c("mucinous", "high_malignancy"))]
+#' feature_nms <- names(x)
+#' # get the fit (using a simple library and 2 folds for illustration only)
+#' library("SuperLearner")
+#' set.seed(20231129)
+#' fit <- SuperLearner::SuperLearner(Y = y, X = x, SL.library = c("SL.glm", "SL.mean"), 
+#'                                   cvControl = list(V = 2))
+#' # extract importance
+#' importance <- extract_importance_SL_learner(fit = fit$fitLibrary[[1]]$object, 
+#'                                             feature_names = feature_nms, coef = fit$coef[1])
+#' importance
+#' 
 #' @export
-extract_importance_SL_learner <- function(fit, coef, feature_names, ...) {
+extract_importance_SL_learner <- function(fit = NULL, coef = 0, feature_names = "", ...) {
   if (inherits(fit, "xgboost") | inherits(fit, "xgb.Booster")) {
     imp_dt <- extract_importance_xgboost(fit = fit, feature_names = feature_names,
                                          coef = coef)

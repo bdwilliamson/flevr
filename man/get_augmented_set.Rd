@@ -29,11 +29,41 @@ or \code{"FDR"}).}
 \item{k}{the number of false positives for gFWER control.}
 }
 \value{
-a list of the variables selected into the augmentation set.
+a list of the variables selected into the augmentation set. Contains the following values:
+\itemize{
+\item{set}{- a numeric vector where 1 denotes that the variable was selected and 0 otherwise}
+\item{k}{- the value of k used}
+\item{q_star}{- the value of q-star used}
+}
 }
 \description{
 Based on the adjusted p-values from a FWER-controlling procedure and a
 more general error rate for which control is desired (e.g., generalized
 FWER, proportion of false positives, or FDR), augment the set based on FWER
 control with the next-most significant variables.
+}
+\examples{
+\donttest{
+data("biomarkers")
+# subset to complete cases for illustration
+cc <- complete.cases(biomarkers)
+dat_cc <- biomarkers[cc, ]
+# use only the mucinous outcome, not the high-malignancy outcome
+y <- dat_cc$mucinous
+x <- dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))]
+feature_nms <- names(x)
+# estimate SPVIMs (using simple library and V = 2 for illustration only)
+set.seed(20231129)
+library("SuperLearner")
+est <- vimp::sp_vim(Y = y, X = x, V = 2, type = "auc", SL.library = "SL.glm", 
+                    cvControl = list(V = 2))
+# get base set
+base_set <- get_base_set(test_statistics = est$test_statistic, p_values = est$p_value, 
+                         alpha = 0.2, method = "Holm")
+# get augmented set
+augmented_set <- get_augmented_set(p_values = base_set$p_values, 
+                                   num_rejected = sum(base_set$decision), alpha = 0.2, 
+                                   quantity = "gFWER", k = 1)
+augmented_set$set
+}
 }

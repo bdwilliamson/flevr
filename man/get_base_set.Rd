@@ -5,8 +5,8 @@
 \title{Get an initial selected set based on intrinsic importance and a base method}
 \usage{
 get_base_set(
-  test_statistics,
-  p_values,
+  test_statistics = NULL,
+  p_values = NULL,
   alpha = 0.05,
   method = "maxT",
   B = 10000,
@@ -30,10 +30,35 @@ get_base_set(
 \item{q}{the false discovery rate (for method = "BY")}
 }
 \value{
-the initial selected set
+the initial selected set, a list of the following:
+\itemize{
+\item{decision}{- a numeric vector with 1 indicating that the variable was selected and 0 otherwise}
+\item{p_values}{- the p-values used to make the decision}
+}
 }
 \description{
 Using the estimated intrinsic importance and a base method
 designed to control the family-wise error rate (e.g., Holm),
 obtain an initial selected set.
+}
+\examples{
+\donttest{
+data("biomarkers")
+# subset to complete cases for illustration
+cc <- complete.cases(biomarkers)
+dat_cc <- biomarkers[cc, ]
+# use only the mucinous outcome, not the high-malignancy outcome
+y <- dat_cc$mucinous
+x <- dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))]
+feature_nms <- names(x)
+# estimate SPVIMs (using simple library and V = 2 for illustration only)
+set.seed(20231129)
+library("SuperLearner")
+est <- vimp::sp_vim(Y = y, X = x, V = 2, type = "auc", SL.library = "SL.glm", 
+                    cvControl = list(V = 2))
+# get base set
+base_set <- get_base_set(test_statistics = est$test_statistic, p_values = est$p_value, 
+                         alpha = 0.2, method = "Holm")
+base_set$decision
+}
 }

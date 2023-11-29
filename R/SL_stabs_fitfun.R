@@ -13,6 +13,26 @@
 #'   a logical matrix indicating which variable was selected at each step).
 #'
 #' @seealso \code{\link[stabs]{stabsel}} for general usage of stability selection.
+#' @examples
+#' \donttest{
+#' data("biomarkers")
+#' # subset to complete cases for illustration
+#' cc <- complete.cases(biomarkers)
+#' dat_cc <- biomarkers[cc, ]
+#' # use only the mucinous outcome, not the high-malignancy outcome
+#' y <- dat_cc$mucinous
+#' x <- dat_cc[, !(names(dat_cc) %in% c("mucinous", "high_malignancy"))]
+#' feature_nms <- names(x)
+#' # use stability selection with SL (using small number of folds for CV, 
+#' # small SL library and small number of bootstrap replicates for illustration only)
+#' set.seed(20231129)
+#' library("SuperLearner")
+#' sl_stabs <- stabs::stabsel(x = x, y = y,
+#'                            fitfun = SL_stabs_fitfun,
+#'                            args.fitfun = list(SL.library = "SL.glm", cvControl = list(V = 2)),
+#'                            q = 2, B = 5, PFER = 5)
+#' sl_stabs
+#' }
 #' @export
 SL_stabs_fitfun <- function(x, y, q, ...) {
   if (!requireNamespace("SuperLearner", quietly = TRUE)) {

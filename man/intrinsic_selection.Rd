@@ -5,9 +5,9 @@
 \title{Perform intrinsic, ensemble-based variable selection}
 \usage{
 intrinsic_selection(
-  spvim_ests,
-  sample_size,
-  feature_names,
+  spvim_ests = NULL,
+  sample_size = NULL,
+  feature_names = "",
   alpha = 0.05,
   control = list(quantity = "gFWER", base_method = "Holm", fdr_method = NULL, q = NULL, k
     = NULL)
@@ -43,6 +43,29 @@ variables.
 \description{
 Based on estimated SPVIM values, do variable selection using the
 specified error-controlling method.
+}
+\examples{
+\donttest{
+data("biomarkers")
+# subset to complete cases for illustration
+cc <- complete.cases(biomarkers)
+dat_cc <- biomarkers[cc, ]
+# use only the mucinous outcome, not the high-malignancy outcome
+y <- dat_cc$mucinous
+x <- dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))]
+feature_nms <- names(x)
+# estimate SPVIMs (using simple library and V = 2 for illustration only)
+set.seed(20231129)
+library("SuperLearner")
+est <- vimp::sp_vim(Y = y, X = x, V = 2, type = "auc", SL.library = "SL.glm", 
+                    cvControl = list(V = 2))
+# do intrinsic selection
+intrinsic_set <- intrinsic_selection(spvim_ests = est, sample_size = nrow(dat_cc), alpha = 0.2, 
+                                     feature_names = feature_nms, 
+                                     control = list(quantity = "gFWER", base_method = "Holm", 
+                                                    k = 1))
+intrinsic_set
+}
 }
 \seealso{
 \code{\link[vimp]{sp_vim}} for specific usage of

@@ -12,8 +12,24 @@
 #'   extrinsic importance of the feature), \code{rank} (the feature importance
 #'   rank, with 1 indicating the most important feature), and \code{weight}
 #'   (the algorithm's weight in the Super Learner)
+#' 
+#' @examples
+#' data("biomarkers")
+#' # subset to complete cases for illustration
+#' cc <- complete.cases(biomarkers)
+#' dat_cc <- biomarkers[cc, ]
+#' # use only the mucinous outcome, not the high-malignancy outcome
+#' y <- dat_cc$mucinous
+#' x <- dat_cc[, !(names(dat_cc) %in% c("mucinous", "high_malignancy"))]
+#' feature_nms <- names(x)
+#' # get the fit
+#' fit <- stats::glm(y ~ ., family = "binomial", data = data.frame(y = y, x))
+#' # extract importance
+#' importance <- extract_importance_glm(fit = fit, feature_names = feature_nms)
+#' importance
+#' 
 #' @export
-extract_importance_glm <- function(fit, feature_names, coef = 0) {
+extract_importance_glm <- function(fit = NULL, feature_names = "", coef = 0) {
   if (!inherits(fit, "glm")) {
     stop("This is not a glm object. Please use a different importance extraction function.")
   } else {

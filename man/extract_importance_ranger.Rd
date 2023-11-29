@@ -4,7 +4,7 @@
 \alias{extract_importance_ranger}
 \title{Extract the learner-specific importance from a ranger object}
 \usage{
-extract_importance_ranger(fit, feature_names, coef = 0)
+extract_importance_ranger(fit = NULL, feature_names = "", coef = 0)
 }
 \arguments{
 \item{fit}{the \code{ranger} object.}
@@ -23,4 +23,21 @@ rank, with 1 indicating the most important feature), and \code{weight}
 \description{
 Extract the individual-algorithm extrinsic importance from a ranger object,
 along with the importance rank.
+}
+\examples{
+data("biomarkers")
+# subset to complete cases for illustration
+cc <- complete.cases(biomarkers)
+dat_cc <- biomarkers[cc, ]
+# use only the mucinous outcome, not the high-malignancy outcome
+y <- dat_cc$mucinous
+x <- dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))]
+feature_nms <- names(x)
+# get the fit
+set.seed(20231129)
+fit <- ranger::ranger(y ~ ., data = data.frame(y = y, x), importance = "impurity")
+# extract importance
+importance <- extract_importance_ranger(fit = fit, feature_names = feature_nms)
+importance
+
 }

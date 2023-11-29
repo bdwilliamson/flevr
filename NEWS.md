@@ -7,7 +7,8 @@
 
 ## Minor changes
 
-None
+* Add `@examples` and `@return` sections in documentation for all functions
+* Use `inherit` to avoid redundant documentation of parameters/sections
 
 # v0.0.3
 

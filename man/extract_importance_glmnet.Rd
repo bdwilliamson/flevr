@@ -4,10 +4,10 @@
 \alias{extract_importance_glmnet}
 \title{Extract the learner-specific importance from a glmnet object}
 \usage{
-extract_importance_glmnet(fit, feature_names, coef = 0)
+extract_importance_glmnet(fit = NULL, feature_names = "", coef = 0)
 }
 \arguments{
-\item{fit}{the \code{glmnet} object.}
+\item{fit}{the \code{glmnet} or \code{cv.glmnet} object}
 
 \item{feature_names}{the feature names}
 
@@ -23,4 +23,22 @@ rank, with 1 indicating the most important feature), and \code{weight}
 \description{
 Extract the individual-algorithm extrinsic importance from a glmnet object,
 along with the importance rank.
+}
+\examples{
+data("biomarkers")
+# subset to complete cases for illustration
+cc <- complete.cases(biomarkers)
+dat_cc <- biomarkers[cc, ]
+# use only the mucinous outcome, not the high-malignancy outcome
+y <- dat_cc$mucinous
+x <- dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))]
+feature_nms <- names(x)
+# get the fit (using only 3 CV folds for illustration only)
+set.seed(20231129)
+fit <- glmnet::cv.glmnet(x = as.matrix(x), y = y, 
+                         family = "binomial", nfolds = 3)
+# extract importance
+importance <- extract_importance_glmnet(fit = fit, feature_names = feature_nms)
+importance
+
 }

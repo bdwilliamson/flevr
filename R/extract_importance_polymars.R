@@ -4,16 +4,29 @@
 #' along with the importance rank.
 #'
 #' @param fit the \code{polymars} object.
-#' @param feature_names the feature names
-#' @param coef the Super Learner coefficient associated with the learner.
+#' @inheritParams extract_importance_glm
 #'
-#' @return a tibble, with columns \code{algorithm} (the fitted algorithm),
-#'   \code{feature} (the feature), \code{importance} (the algorithm-specific
-#'   extrinsic importance of the feature), \code{rank} (the feature importance
-#'   rank, with 1 indicating the most important feature), and \code{weight}
-#'   (the algorithm's weight in the Super Learner)
+#' @inherit extract_importance_glm return
+#' 
+#' @examples
+#' data("biomarkers")
+#' # subset to complete cases for illustration
+#' cc <- complete.cases(biomarkers)
+#' dat_cc <- biomarkers[cc, ]
+#' # use only the mucinous outcome, not the high-malignancy outcome
+#' y <- dat_cc$mucinous
+#' x <- dat_cc[, !(names(dat_cc) %in% c("mucinous", "high_malignancy"))]
+#' feature_nms <- names(x)
+#' x_mat <- as.matrix(x)
+#' # get the fit
+#' set.seed(20231129)
+#' fit <- polspline::polyclass(y, x_mat)
+#' # extract importance
+#' importance <- extract_importance_polymars(fit = fit, feature_names = feature_nms)
+#' importance
+#' 
 #' @export
-extract_importance_polymars <- function(fit, feature_names, coef = 0) {
+extract_importance_polymars <- function(fit = NULL, feature_names = "", coef = 0) {
   if (!inherits(fit, "polymars") & !inherits(fit, "polyclass")) {
     stop("This is not a polymars object. Please use a different importance extraction function.")
   } else {

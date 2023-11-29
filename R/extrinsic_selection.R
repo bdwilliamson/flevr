@@ -22,12 +22,32 @@
 #' @return a tibble with the estimated extrinsic variable importance,
 #'    the corresponding variable importance ranks, and the selected
 #'    variables.
+#' 
+#' @examples
+#' data("biomarkers")
+#' # subset to complete cases for illustration
+#' cc <- complete.cases(biomarkers)
+#' dat_cc <- biomarkers[cc, ]
+#' # use only the mucinous outcome, not the high-malignancy outcome
+#' y <- dat_cc$mucinous
+#' x <- dat_cc[, !(names(dat_cc) %in% c("mucinous", "high_malignancy"))]
+#' feature_nms <- names(x)
+#' # get the fit (using a simple library and 2 folds for illustration only)
+#' library("SuperLearner")
+#' set.seed(20231129)
+#' fit <- SuperLearner::SuperLearner(Y = y, X = x, SL.library = c("SL.glm", "SL.mean"), 
+#'                                   cvControl = list(V = 2))
+#' # extract importance
+#' importance <- extrinsic_selection(fit = fit, feature_names = feature_nms, threshold = 1.5, 
+#'                                   import_type = "all")
+#' importance
+#' 
 #' @seealso \code{\link[SuperLearner]{SuperLearner}} for specific usage of
 #'    the \code{SuperLearner} function and package.
 #' @importFrom magrittr `%>%`
 #' @importFrom dplyr mutate
 #' @export
-extrinsic_selection <- function(fit, feature_names, threshold = 20,
+extrinsic_selection <- function(fit = NULL, feature_names = "", threshold = 20,
                                 import_type = "all", ...) {
   if (!any(grepl("SuperLearner", class(fit)))) {
     stop("The entered fitted ensemble must be a `SuperLearner` object.")
