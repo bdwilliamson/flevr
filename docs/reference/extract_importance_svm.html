@@ -71,7 +71,13 @@ along with the importance rank.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">extract_importance_svm</span><span class="op">(</span><span class="va">fit</span>, <span class="va">feature_names</span>, coef <span class="op">=</span> <span class="fl">0</span>, x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">extract_importance_svm</span><span class="op">(</span></span>
+<span>  fit <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  feature_names <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  coef <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  x <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  y <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -109,6 +115,28 @@ rank, with 1 indicating the most important feature), and <code>weight</code></p>
 <p>(the algorithm's weight in the Super Learner)</p>
     </div>
 
+    <div id="ref-examples">
+    <h2>Examples</h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"biomarkers"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># subset to complete cases for illustration</span></span></span>
+<span class="r-in"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">biomarkers</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dat_cc</span> <span class="op">&lt;-</span> <span class="va">biomarkers</span><span class="op">[</span><span class="va">cc</span>, <span class="op">]</span></span></span>
+<span class="r-in"><span><span class="co"># use only the mucinous outcome, not the high-malignancy outcome</span></span></span>
+<span class="r-in"><span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">dat_cc</span><span class="op">$</span><span class="va">mucinous</span></span></span>
+<span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">dat_cc</span><span class="op">[</span>, <span class="op">!</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dat_cc</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mucinous"</span>, <span class="st">"high_malignancy"</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">x_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">feature_nms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># get the fit </span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20231129</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">kernlab</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kernlab/man/ksvm.html" class="external-link">ksvm</a></span><span class="op">(</span><span class="va">x_mat</span>, <span class="va">y</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># extract importance</span></span></span>
+<span class="r-in"><span><span class="va">importance</span> <span class="op">&lt;-</span> <span class="fu">extract_importance_svm</span><span class="op">(</span>fit <span class="op">=</span> <span class="va">fit</span>, feature_names <span class="op">=</span> <span class="va">feature_nms</span>, x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in kpar(kernelf(fit)):</span> could not find function "kpar"</span>
+<span class="r-in"><span><span class="va">importance</span></span></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eval(expr, envir, enclos):</span> object 'importance' not found</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>

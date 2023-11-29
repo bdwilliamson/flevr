@@ -223,20 +223,20 @@ learners).</p>
 <span><span class="co">#&gt; Super Learner</span></span>
 <span><span class="co">#&gt; Version: 2.0-28.1</span></span>
 <span><span class="co">#&gt; Package created on 2021-05-04</span></span>
-<span><span class="va">learners</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.glm"</span>, <span class="st">"SL.ranger.imp"</span>, <span class="st">"SL.xgboost"</span><span class="op">)</span></span>
+<span><span class="va">learners</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SL.glm"</span>, <span class="st">"SL.ranger.imp"</span>, <span class="st">"SL.glmnet"</span><span class="op">)</span></span>
 <span><span class="va">V</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">SuperLearner</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SuperLearner/man/SuperLearner.html" class="external-link">SuperLearner</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">y_cc</span>, X <span class="op">=</span> <span class="va">x_df</span>,</span>
 <span>                                  SL.library <span class="op">=</span> <span class="va">learners</span>,</span>
 <span>                                  cvControl <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>V <span class="op">=</span> <span class="va">V</span><span class="op">)</span>,</span>
 <span>                                  family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required namespace: glmnet</span></span>
 <span><span class="co">#&gt; Loading required namespace: ranger</span></span>
-<span><span class="co">#&gt; Loading required namespace: xgboost</span></span>
 <span><span class="co">#&gt; Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == :</span></span>
 <span><span class="co">#&gt; prediction from rank-deficient fit; attr(*, "non-estim") has doubtful cases</span></span>
 <span><span class="co"># check the SL weights</span></span>
 <span><span class="va">fit</span><span class="op">$</span><span class="va">coef</span></span>
-<span><span class="co">#&gt;        SL.glm_All SL.ranger.imp_All    SL.xgboost_All </span></span>
-<span><span class="co">#&gt;         0.0000000         0.4684959         0.5315041</span></span>
+<span><span class="co">#&gt;        SL.glm_All SL.ranger.imp_All     SL.glmnet_All </span></span>
+<span><span class="co">#&gt;         0.0000000         0.7667208         0.2332792</span></span>
 <span><span class="co"># extract importance based on the whole Super Learner</span></span>
 <span><span class="va">sl_importance_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extract_importance_SL.html">extract_importance_SL</a></span><span class="op">(</span></span>
 <span>  fit <span class="op">=</span> <span class="va">fit</span>, feature_names <span class="op">=</span> <span class="va">x_names</span>, import_type <span class="op">=</span> <span class="st">"all"</span></span>
@@ -245,16 +245,16 @@ learners).</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 2</span></span></span>
 <span><span class="co">#&gt;    feature                  rank</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_telomerase_score    1.94</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab3_muc3ac_score        2.06</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> cea                      3.41</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab6_ab_score            3.59</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab4_glucose_score       4   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab1_actb                6   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab2_fluorescence_score  7.94</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab3_muc5ac_score        8.53</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab4_areg_score          8.59</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab1_molecules_score     8.94</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab3_muc3ac_score        3.33</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab6_ab_score            4.10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab1_actb                4.87</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab1_telomerase_score    5.63</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> cea                      6.40</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab4_glucose_score       7.17</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab4_areg_score          7.93</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab2_fluorescence_score  8.70</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab3_muc5ac_score        9.47</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab1_molecules_score    10.2 </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
 <p>Using the ensemble weights here means that weight approximately 0.53
 is given to the boosted trees, weight approximately 0.47 is given to the
@@ -270,16 +270,16 @@ the following code:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 2</span></span></span>
 <span><span class="co">#&gt;    feature                  rank</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_telomerase_score       1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> cea                         2</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab3_muc3ac_score           3</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab4_glucose_score          4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab6_ab_score               5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab1_actb                   6</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab2_fluorescence_score     7</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab1_molecules_score        8</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab3_muc3ac_score           1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab6_ab_score               2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab1_actb                   3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab1_telomerase_score       4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> cea                         5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab4_glucose_score          6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab4_areg_score             7</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab2_fluorescence_score     8</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab3_muc5ac_score           9</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab4_areg_score            10</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab1_molecules_score       10</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
 <p>In this case, this shows the importance in the boosted trees.</p>
 <p>Finally, to do variable selection, we need to select a threshold
@@ -293,16 +293,16 @@ the following code:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 3</span></span></span>
 <span><span class="co">#&gt;    feature                  rank selected</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_telomerase_score    1.94 TRUE    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab3_muc3ac_score        2.06 TRUE    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> cea                      3.41 TRUE    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab6_ab_score            3.59 TRUE    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab4_glucose_score       4    TRUE    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab1_actb                6    FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab2_fluorescence_score  7.94 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab3_muc5ac_score        8.53 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab4_areg_score          8.59 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab1_molecules_score     8.94 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab3_muc3ac_score        3.33 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab6_ab_score            4.10 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab1_actb                4.87 TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab1_telomerase_score    5.63 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> cea                      6.40 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab4_glucose_score       7.17 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab4_areg_score          7.93 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab2_fluorescence_score  8.70 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab3_muc5ac_score        9.47 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab1_molecules_score    10.2  FALSE   </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
 <p>Here, we select five variables, since these had weighted rank less
 than 5.</p>
