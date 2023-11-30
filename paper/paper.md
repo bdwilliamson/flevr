@@ -30,13 +30,13 @@ journal: JOSS
 
 # Summary
 
-Variable selection is a common goal in biomedical research, among other fields. Traditional tools for variable selection are generally not robust to departures from possibly restrictive modelling assumptions [@leng2006]. Additionally, in missing-data settings, difficult-to-interpret procedures to combine variable selection results are required if machine learning tools are used [@heymans2007]. 
+Variable selection is a common goal in biomedical research, among other fields. Traditional tools for variable selection are generally not robust to departures from possibly restrictive modelling assumptions [@leng2006]. Additionally, in settings with missing data, procedures to combine variable selection results across imputed datasets become more difficult to interpret when machine learning tools are used [@heymans2007]. 
 
-The `flevr` package for `R` [@r_software] provides researchers with the tools necessary to perform variable selection using either _intrinsic variable importance_ [@williamson2021vim2;@williamson2020spvim], which quantifies the population prediction potential of features, or to make use of the good prediction performance of the Super Learner [@vanderlaan2007super] to perform variable selection based on an ensemble of individual prediction algorithms. The package facilitates both handling missing data using multiple imputation [@mice2011] and incorporating state-of-the-art machine learning algorithms to perform variable selection.
+The `flevr` package for `R` [@r_software] provides researchers with the tools necessary to perform variable selection in settings with missing data based on flexible prediction approaches. One approach is to use the Super Learner [@vanderlaan2007super] to perform variable selection based on an ensemble of individual prediction algorithms. The Super Learner has asymptotic and finite-sample guarantees on its prediction performance [@vanderlaan2007super]. The second approach is to base variable selection on _intrinsic variable importance_ [@williamson2021vim2;@williamson2020spvim], which quantifies the population prediction potential of features. The package facilitates both handling missing data using multiple imputation [@mice2011] and incorporating state-of-the-art machine learning algorithms to perform variable selection.
 
 # Statement of need
 
-Variable selection in missing-data contexts is complicated by two issues: (i) a desire for the results to be robust to departures from simplifying modelling assumptions, and (ii) the need to incorporate a missing-data approach. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. The `flevr` `R` package provides an open-source tool for performing variable selection using flexible, ensemble machine learning algorithms. The _intrinsic selection_ approach (`intrinsic_selection`) is based on population variable importance; this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets [@heymans2007].
+Variable selection in missing-data contexts is complicated by two issues: (i) a desire for the results to be robust to departures from simplifying modelling assumptions, and (ii) the need to incorporate a missing-data approach. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. The `flevr` `R` package provides an open-source tool for performing variable selection using flexible, ensemble machine learning algorithms. The _intrinsic selection_ approach (`intrinsic_selection`) is based on population variable importance [@williamson2023flevr]; this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets [@heymans2007]. We also provide functions to perform variable selection based on the Super Learner [@vanderlaan2007super], improving robustness to model misspecification.
 
 # Examples
 
@@ -64,6 +64,7 @@ There are two main types of variable selection available in `flevr`: extrinsic a
 
 We recommend using the Super Learner [@vanderlaan2007super] to do extrinsic variable selection to protect against model misspecification. This requires specifying a _library_ of _candidate learners_ (e.g., lasso, random forests). We can do this in `flevr` using the following code:
 ```r
+library("flevr")
 set.seed(1234)
 # fit a Super Learner ensemble; note its simplicity, for speed
 library("SuperLearner")
@@ -77,20 +78,47 @@ sl_importance_all <- extract_importance_SL(
   fit = fit, feature_names = x_names, import_type = "all"
 )
 sl_importance_all
+
+# A tibble: 2 × 2
+#   feature  rank
+#   <chr>   <dbl>
+# 1 V2       1.01
+# 2 V1       1.99
 ```
 These results suggest that feature 2 is more important than feature 1 within the Super Learner ensemble (since a lower rank is better). If we want to scrutinize the importance of features within the best-fitting algorithm in the Super Learner ensemble, we can do the following:
 ```r
+# check the best-fitting learner
+fit
+# Call:  SuperLearner::SuperLearner(Y = y, X = x_df, SL.library = learners, cvControl = list(V = V)) 
+ 
+ 
+ 
+#                  Risk       Coef
+# SL.glm_All  0.9614026 0.98842732
+# SL.mean_All 1.8183525 0.01157268
+
+# importance within the best-fitting learner
 sl_importance_best <- extract_importance_SL(
   fit = fit, feature_names = x_names, import_type = "best"
 )
 sl_importance_best
+# # A tibble: 2 × 2
+#   feature  rank
+#   <chr>   <int>
+# 1 V2          1
+# 2 V1          2
 ```
-Finally, to do variable selection, we need to select a threshold (ideally before looking at the data). In this case, since there are only two variables, we choose a threshold of 1.5, which means we will select only one variable:
+Finally, to do variable selection, we need to select a threshold for the variable importance rank (ideally before looking at the data). In this case, since there are only two variables, we choose a threshold of 1.5, which means we will select only one variable:
 ```r
 extrinsic_selected <- extrinsic_selection(
   fit = fit, feature_names = x_names, threshold = 1.5, import_type = "all"
 )
 extrinsic_selected
+# A tibble: 2 × 3
+#   feature  rank selected
+#   <chr>   <dbl> <lgl>   
+# 1 V2       1.01 TRUE    
+# 2 V1       1.99 FALSE  
 ```
 In this case, we select only variable 2.
 
@@ -113,22 +141,31 @@ est <- suppressWarnings(
               cvControl = list(V = V), env = environment())
 )
 est
+# Variable importance estimates:
+#       Estimate  SE         95% CI                  VIMP > 0 p-value     
+# s = 1 0.1515809 0.06090463 [0.03221005, 0.2709518] TRUE     1.330062e-03
+# s = 2 0.2990449 0.06565597 [0.17036157, 0.4277282] TRUE     6.863052e-09
 ```
-This procedure again shows (correctly) that variable 2 is more important than variable 1 in this population. 
+This procedure again shows (correctly) that variable 2 is more important than variable 1 in this population, since the point estimate of variable importance is larger. 
 
-The next step is to choose an error rate to control and a method for controlling the family-wise error rate. Here, we choose the generalized family-wise error rate to control overall and choose Holm-adjusted p-values to control the individual family-wise error rate: 
+The next step is to choose an error rate to control and a method for controlling the family-wise error rate. Here, we choose to control the generalized family-wise error rate, setting `k = 1` and `alpha = 0.2` (so controlling the probability of making more than 1 type I error at 20%), and choose Holm-adjusted p-values to control the initial family-wise error rate: 
 ```r
 intrinsic_set <- intrinsic_selection(
   spvim_ests = est, sample_size = n, alpha = 0.2, feature_names = x_names,
   control = list( quantity = "gFWER", base_method = "Holm", k = 1)
 )
 intrinsic_set
+# A tibble: 2 × 6
+#   feature   est       p_value adjusted_p_value  rank selected
+#   <chr>   <dbl>         <dbl>            <dbl> <dbl> <lgl>   
+# 1 V1      0.152 0.00133           0.00133          2 TRUE    
+# 2 V2      0.299 0.00000000686     0.0000000137     1 TRUE
 ```
 In this case, we select both variables.
 
 ## Variable selection with missing data
 
-Settings with missing data render variable selection more challenging. In this section, we consider a dataset inspired by data collected by the Early Detection Research Network. Biomarkers developed at six "labs" are validated at at least one of four "validation sites" on 306 cysts. The data also include two binary outcome variables: whether or not the cyst was classified as mucinous, and whether or not the cyst was determined to have high malignant potential. The data contain some missing information, which complicates variable selection; only 212 cysts have complete information. We will use AUC to measure intrinsic importance. We begin by loading the data and performing multiple imputation.
+Settings with missing data render variable selection more challenging. In this section, we consider a simulated dataset inspired by data collected by the Early Detection Research Network. Biomarkers developed at six "labs" are validated at at least one of four "validation sites" on 306 cysts. The data also include two binary outcome variables: whether or not the cyst was classified as mucinous, and whether or not the cyst was determined to have high malignant potential. The data contain some missing information, which complicates variable selection; only 212 cysts have complete information. We will use AUC to measure intrinsic importance. We begin by loading the data and performing multiple imputation.
 
 ```r
 # load the dataset
@@ -177,8 +214,8 @@ for (i in 1:5) {
 # perform extrinsic variable selection
 selected_vars <- pool_selected_sets(sets = all_selected_vars, threshold = 3 / 5)
 x_names[selected_vars]
+# [1] "lab1_actb"             "lab1_molecules_score"  "lab1_telomerase_score"
 ```
-In this case, there is only one variable in common between the multiply-imputed approach and the approach dropping missing data. This serves to highlight that it is important in missing-data contexts to handle the missing data appropriately.
 
 ### Intrinsic selection with missing data
 
@@ -198,16 +235,26 @@ est_lst <- lapply(as.list(1:5), function(l) {
   )
 })
 ```
-Next, we use Rubin's rules [@rubin2018] to combine the variable importance estimates, and use this to perform variable selection. Here, we control the generalized family-wise error rate at 5, using Holm-adjusted p-values to control the initial family-wise error rate.
+Next, we use Rubin's rules [@rubin2018] to combine the variable importance estimates, and use this to perform variable selection. Here, we control the probability of making more than 5 errors (the generalized family-wise error rate) at 5%, using Holm-adjusted p-values to control the initial family-wise error rate.
 ```r
 intrinsic_set <- intrinsic_selection(
   spvim_ests = est_lst, sample_size = nrow(biomarkers),
   feature_names = x_names, alpha = 0.05, 
   control = list(quantity = "gFWER", base_method = "Holm", k = 5)
 )
-intrinsic_set
+library("dplyr")
+intrinsic_set %>%
+  filter(selected)
+# A tibble: 5 × 6
+#   feature                            est p_value adjusted_p_value  rank selected
+#   <chr>                            <dbl>   <dbl>            <dbl> <dbl> <lgl>   
+# 1 lab1_actb                       0.0334   0.409                1     2 TRUE    
+# 2 lab1_telomerase_score           0.0216   0.439                1     5 TRUE    
+# 3 lab3_muc3ac_score               0.0238   0.433                1     4 TRUE    
+# 4 lab6_ab_score                   0.0241   0.433                1     3 TRUE    
+# 5 lab2_fluorescence_mucinous_call 0.0354   0.396                1     1 TRUE
 ```
-We select five variables, here those with the top-5 estimated variable importance. The point estimates and p-values have been computed using Rubin's rules.
+We select five variables, here those with the top-5 estimated variable importance. The point estimates and p-values have been computed using Rubin's rules. Two of the variables are the same as those selected using extrinsic selection.
 
 # Availability
 
