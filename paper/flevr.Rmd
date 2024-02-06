@@ -1,45 +1,49 @@
 ---
-title: 'flevr: Flexible, Ensemble-based Variable Selection in R'
-tags:
-  - R
-  - Variable selection
-  - Machine learning
-  - Variable importance
-authors:
+title: "flevr: Flexible, Ensemble-based Variable Selection in R"
+date: "`r format(Sys.Date(), '%d %B %Y')`"
+abstract: >
+  Variable selection in missing-data contexts is complicated by two issues: (i) a desire for the results to be robust to departures from simplifying modelling assumptions, and (ii) the need to incorporate a missing-data approach. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. The flevr R package provides an open-source tool for performing variable selection using flexible, ensemble machine learning algorithms. An intrinsic selection approach based on population variable importance solves these issues. We illustrate the use of the package with several examples.
+draft: true
+author:  
   - name: Brian D. Williamson
+    affiliation: 
+    - Biostatistics Division, Kaiser Permanente Washington Health Research Institute
+    - Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center
+    - Department of Biostatistics, University of Washington
+    address:
+    - Biostatistics Division
+    - 1730 Minor Ave, Seattle, USA
+    url: https://bdwilliamson.github.io
     orcid: 0000-0002-7024-548X
-    affiliation: "1, 2, 3" # (Multiple affiliations must be quoted)
+    email: brian.d.williamson@kp.org
   - name: Ying Huang
+    affiliation:
+    - Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center
+    - Department of Biostatistics, University of Washington
+    email: yhuang@fredhutch.org
     orcid: 0000-0002-9655-7502
-    affiliation: "2, 3"
-affiliations:
- - name: Biostatistics Division, Kaiser Permanente Washington Health Research Institute, Seattle, USA
-   index: 1
- - name: Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center, Seattle, USA
-   index: 2
- - name: Department of Biostatistics, University of Washington, Seattle, USA
-   index: 3
-citation_author: Williamson et al.
-date: `r format(Sys.Date(), "%d %B %Y")`
-bibliography: paper.bib
-output: rticles::joss_article
-csl: apa.csl
-journal: JOSS
+type: package
+output: 
+  rjtools::rjournal_article:
+    self_contained: yes
+    toc: no
+bibliography: flevr.bib
+
 ---
 
-# Summary
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
 
-Variable selection is a common goal in biomedical research, among other fields. Traditional tools for variable selection are generally not robust to departures from possibly restrictive modelling assumptions [@leng2006]. Additionally, in settings with missing data, procedures to combine variable selection results across imputed datasets become more difficult to interpret when machine learning tools are used [@heymans2007]. 
+# Introduction
 
-The `flevr` package for `R` [@r_software] provides researchers with the tools necessary to perform variable selection in settings with missing data based on flexible prediction approaches. One approach is to use the Super Learner [@vanderlaan2007super] to perform variable selection based on an ensemble of individual prediction algorithms. The Super Learner has asymptotic and finite-sample guarantees on its prediction performance [@vanderlaan2007super]. The second approach is to base variable selection on _intrinsic variable importance_ [@williamson2021vim2;@williamson2020spvim], which quantifies the population prediction potential of features. The package facilitates both handling missing data using multiple imputation [@mice2011] and incorporating state-of-the-art machine learning algorithms to perform variable selection.
+Variable selection is a common goal in biomedical research, among other fields. Traditional tools for variable selection are generally not robust to departures from possibly restrictive modelling assumptions [@leng2006]. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. However, in settings with missing data, procedures to combine variable selection results across imputed datasets become more difficult to interpret when machine learning tools are used [@heymans2007]. 
 
-# Statement of need
-
-Variable selection in missing-data contexts is complicated by two issues: (i) a desire for the results to be robust to departures from simplifying modelling assumptions, and (ii) the need to incorporate a missing-data approach. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. The `flevr` `R` package provides an open-source tool for performing variable selection using flexible, ensemble machine learning algorithms. The _intrinsic selection_ approach (`intrinsic_selection`) is based on population variable importance [@williamson2023flevr]; this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets [@heymans2007]. We also provide functions to perform variable selection based on the Super Learner [@vanderlaan2007super], improving robustness to model misspecification.
+The `flevr` package for `R` [@r_software] provides researchers with the tools necessary to perform variable selection in settings with missing data based on flexible prediction approaches. One approach is to use the Super Learner [@vanderlaan2007super] to perform variable selection based on an ensemble of individual prediction algorithms. The Super Learner has asymptotic and finite-sample guarantees on its prediction performance [@vanderlaan2007super]. The second approach is to base variable selection on _intrinsic variable importance_ [@williamson2021vim2;@williamson2020spvim], which quantifies the population prediction potential of features. The package facilitates both handling missing data using multiple imputation [@mice2011] and incorporating state-of-the-art machine learning algorithms to perform variable selection. The _intrinsic selection_ approach (`intrinsic_selection`) is based on population variable importance [@williamson2023flevr]; this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets [@heymans2007]. We also provide functions to perform variable selection based on the Super Learner [@vanderlaan2007super], improving robustness to model misspecification.
 
 # Examples
 
-This section should serve as a quick guide to using the `flevr` package --- we will cover the main functions for doing extrinsic and intrinsic variable selection using a simulated data example. 
+This section should serve as a guide to using the `flevr` package --- we will cover the main functions for doing extrinsic and intrinsic variable selection using a simulated data example. 
 
 First, we create some data:
 ```r
@@ -259,21 +263,6 @@ We select five variables, here those with the top-5 estimated variable importanc
 
 The `flevr` package is publicly available on [GitHub](https://github.com/bdwilliamson/flevr); stable releases are publicly available on the [Comprehensive R Archive Network](https://cran.r-project.org/package=flevr). Documentation and examples may be found in the package manual pages and vignettes, and on the `pkgdown` website [@wickham_pkgdown] at [https://bdwilliamson.github.io/flevr](https://bdwilliamson.github.io/flevr).
 
-<!-- # Citations
-
-Citations to entries in paper.bib should be in
-[rMarkdown](https://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
-
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
--->
-
 # Acknowledgements
 
 The authors gratefully acknowledge bug reports and feature requests submitted by Bhavesh Borate.
-
-# References
-

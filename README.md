@@ -12,7 +12,7 @@ Methodology authors: [Brian Williamson](https://bdwilliamson.github.io), [Ying H
 
 `flevr` is an `R` package for doing variable selection based on flexible ensembles. The package provides functions for extrinsic variable selection using the [Super Learner](https://github.com/ecpolley/SuperLearner) and for intrinsic variable selection using the Shapley Population Variable Importance Measure ([SPVIM](https://github.com/bdwilliamson/vimp)).
 
-The author and maintainer of the `flevr` package is  [Brian Williamson](https://bdwilliamson.github.io). For details on the method, check out our [preprint](https://arxiv.org/abs/2202.12989).
+The author and maintainer of the `flevr` package is  [Brian Williamson](https://bdwilliamson.github.io). For details on the method, check out our [paper](https://arxiv.org/abs/2202.12989).
 
 ## Installation
 

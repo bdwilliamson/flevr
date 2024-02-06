@@ -1,0 +1,73 @@
+Initial check results: 
+
+SUCCESS: Submission has consistently named tex, bib, and R files
+SUCCESS: File and directory names are compliant.
+ERROR: Image(s) detected in the main directory: Rlogo-5.png.
+They should be placed in the figures/ folder.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: motivation-letter
+ERROR: Article title not in title case! Suggest title: Flevr: Flexible, Ensemble-Based Variable Selection in R.
+SUCCESS: Section titles formatted in sentence case.
+ERROR: Abstract should be plain text without package markups,
+mathmatic notations, citation, or other formattings.
+NOTE: A potential list of spelling to check: modelling, interpretable, flevr, et, al, der, misspecification, biomarkers, mucinous, df, sp, env, acknowledgements, pre, heymans, leng, rubin, vanderlaan, wickham, pkgdown, williamson, spvim, hapley
+SUCCESS: CRAN activities have been detected for package flevr
+SUCCESS: No error with the use of \pkg markup.
+SUCCESS: All packages marked-up with \CRANpkg or \BIOpkg are available on CRAN or Bioconductor.
+WARNING: Citation should include a link to the reference, preferably a
+DOI, unless online resources cannot be found.
+References without DOI or URL: leng2006, vanderlaan2007super, williamson2020a, vanderlaan2007.
+SUCCESS: No customised csl file used. Good!
+Initial check results: 
+
+SUCCESS: Submission has consistently named tex, bib, and R files
+SUCCESS: File and directory names are compliant.
+ERROR: Image(s) detected in the main directory: Rlogo-5.png.
+They should be placed in the figures/ folder.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: motivation-letter
+ERROR: Article title not in title case! Suggest title: Flevr: Flexible, Ensemble-Based Variable Selection in R.
+SUCCESS: Section titles formatted in sentence case.
+ERROR: Abstract should be plain text without package markups,
+mathmatic notations, citation, or other formattings.
+NOTE: A potential list of spelling to check: modelling, interpretable, flevr, et, al, der, misspecification, biomarkers, mucinous, df, sp, env, acknowledgements, pre, heymans, leng, rubin, vanderlaan, wickham, pkgdown, williamson, spvim, hapley
+SUCCESS: CRAN activities have been detected for package flevr
+SUCCESS: No error with the use of \pkg markup.
+SUCCESS: All packages marked-up with \CRANpkg or \BIOpkg are available on CRAN or Bioconductor.
+SUCCESS: All the references contain DOI or URL
+SUCCESS: No customised csl file used. Good!
+Initial check results: 
+
+SUCCESS: Submission has consistently named tex, bib, and R files
+SUCCESS: File and directory names are compliant.
+ERROR: Image(s) detected in the main directory: Rlogo-5.png.
+They should be placed in the figures/ folder.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: motivation-letter
+ERROR: Article title not in title case! Suggest title: Flevr: Flexible, Ensemble-Based Variable Selection in R.
+SUCCESS: Section titles formatted in sentence case.
+ERROR: Abstract should be plain text without package markups,
+mathmatic notations, citation, or other formattings.
+NOTE: A potential list of spelling to check: modelling, interpretable, flevr, et, al, der, misspecification, biomarkers, mucinous, df, sp, env, acknowledgements, pre, heymans, leng, rubin, vanderlaan, wickham, pkgdown, williamson, spvim, hapley
+SUCCESS: CRAN activities have been detected for package flevr
+SUCCESS: No error with the use of \pkg markup.
+SUCCESS: All packages marked-up with \CRANpkg or \BIOpkg are available on CRAN or Bioconductor.
+SUCCESS: All the references contain DOI or URL
+SUCCESS: No customised csl file used. Good!
+Initial check results: 
+
+SUCCESS: Submission has consistently named tex, bib, and R files
+SUCCESS: File and directory names are compliant.
+ERROR: Image(s) detected in the main directory: Rlogo-5.png.
+They should be placed in the figures/ folder.
+SUCCESS: No problematic file found
+SUCCESS: Possible motivation letter found: motivation-letter
+ERROR: Article title not in title case! Suggest title: Flevr: Flexible, Ensemble-Based Variable Selection in R.
+SUCCESS: Section titles formatted in sentence case.
+SUCCESS: Abstract formatted in plain text.
+NOTE: A potential list of spelling to check: modelling, interpretable, flevr, et, al, misspecification, biomarkers, mucinous, df, sp, env, acknowledgements, pre, heymans, vanderlaan, der, leng, rubin, wickham, pkgdown, williamson, spvim, hapley
+SUCCESS: CRAN activities have been detected for package flevr
+SUCCESS: No error with the use of \pkg markup.
+SUCCESS: All packages marked-up with \CRANpkg or \BIOpkg are available on CRAN or Bioconductor.
+SUCCESS: All the references contain DOI or URL
+SUCCESS: No customised csl file used. Good!

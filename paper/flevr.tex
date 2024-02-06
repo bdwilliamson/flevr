@@ -1,0 +1,326 @@
+% !TeX root = RJwrapper.tex
+\title{flevr: Flexible, Ensemble-based Variable Selection in R}
+
+
+\author{by Brian D. Williamson and Ying Huang}
+
+\maketitle
+
+\abstract{%
+Variable selection in missing-data contexts is complicated by two issues: (i) a desire for the results to be robust to departures from simplifying modelling assumptions, and (ii) the need to incorporate a missing-data approach. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. The flevr R package provides an open-source tool for performing variable selection using flexible, ensemble machine learning algorithms. An intrinsic selection approach based on population variable importance solves these issues. We illustrate the use of the package with several examples.
+}
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+Variable selection is a common goal in biomedical research, among other fields. Traditional tools for variable selection are generally not robust to departures from possibly restrictive modelling assumptions (Leng, Lin, and Wahba 2006). Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. However, in settings with missing data, procedures to combine variable selection results across imputed datasets become more difficult to interpret when machine learning tools are used (Heymans et al. 2007).
+
+The \texttt{flevr} package for \texttt{R} (R Core Team 2023) provides researchers with the tools necessary to perform variable selection in settings with missing data based on flexible prediction approaches. One approach is to use the Super Learner (Laan, Polley, and Hubbard 2007) to perform variable selection based on an ensemble of individual prediction algorithms. The Super Learner has asymptotic and finite-sample guarantees on its prediction performance (Laan, Polley, and Hubbard 2007). The second approach is to base variable selection on \emph{intrinsic variable importance} (Williamson et al. 2021; Williamson and Feng 2020), which quantifies the population prediction potential of features. The package facilitates both handling missing data using multiple imputation (van Buuren and Groothuis-Oudshoorn 2011) and incorporating state-of-the-art machine learning algorithms to perform variable selection. The \emph{intrinsic selection} approach (\texttt{intrinsic\_selection}) is based on population variable importance (Williamson and Huang 2023); this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets (Heymans et al. 2007). We also provide functions to perform variable selection based on the Super Learner (Laan, Polley, and Hubbard 2007), improving robustness to model misspecification.
+
+\hypertarget{examples}{%
+\section{Examples}\label{examples}}
+
+This section should serve as a guide to using the \texttt{flevr} package --- we will cover the main functions for doing extrinsic and intrinsic variable selection using a simulated data example.
+
+First, we create some data:
+
+\begin{verbatim}
+# generate the data -- note that this is a simple setting, for speed
+set.seed(4747)
+p <- 2
+n <- 500
+# generate features
+x <- replicate(p, stats::rnorm(n, 0, 1))
+x_df <- as.data.frame(x)
+x_names <- names(x_df)
+# generate outcomes
+y <- 1 + 0.5 * x[, 1] + 0.75 * x[, 2] + stats::rnorm(n, 0, 1)
+\end{verbatim}
+
+This creates a matrix of covariates \texttt{x} with 2 columns and a vector \texttt{y} of normally-distributed outcome values for a sample of \texttt{n\ =\ 500} study participants.
+
+There are two main types of variable selection available in \texttt{flevr}: extrinsic and intrinsic. Extrinsic selection is the most common type of variable selection: in this approach, a given algorithm (and perhaps its associated algorithm-specific variable importance) is used for variable selection. The lasso is a widely-used example of extrinsic selection. Intrinsic selection, on the other hand, uses estimated intrinsic variable importance (a population quantity) to perform variable selection. This intrinsic importance is both defined and estimated in a model-agnostic manner.
+
+\hypertarget{extrinsic-variable-selection}{%
+\subsection{Extrinsic variable selection}\label{extrinsic-variable-selection}}
+
+We recommend using the Super Learner (Laan, Polley, and Hubbard 2007) to do extrinsic variable selection to protect against model misspecification. This requires specifying a \emph{library} of \emph{candidate learners} (e.g., lasso, random forests). We can do this in \texttt{flevr} using the following code:
+
+\begin{verbatim}
+library("flevr")
+set.seed(1234)
+# fit a Super Learner ensemble; note its simplicity, for speed
+library("SuperLearner")
+learners <- c("SL.glm", "SL.mean")
+V <- 2
+fit <- SuperLearner::SuperLearner(Y = y, X = x_df,
+                                  SL.library = learners,
+                                  cvControl = list(V = V))
+# extract importance based on the whole Super Learner
+sl_importance_all <- extract_importance_SL(
+  fit = fit, feature_names = x_names, import_type = "all"
+)
+sl_importance_all
+
+# A tibble: 2 × 2
+#   feature  rank
+#   <chr>   <dbl>
+# 1 V2       1.01
+# 2 V1       1.99
+\end{verbatim}
+
+These results suggest that feature 2 is more important than feature 1 within the Super Learner ensemble (since a lower rank is better). If we want to scrutinize the importance of features within the best-fitting algorithm in the Super Learner ensemble, we can do the following:
+
+\begin{verbatim}
+# check the best-fitting learner
+fit
+# Call:  SuperLearner::SuperLearner(Y = y, X = x_df, SL.library = learners, cvControl = list(V = V)) 
+ 
+ 
+ 
+#                  Risk       Coef
+# SL.glm_All  0.9614026 0.98842732
+# SL.mean_All 1.8183525 0.01157268
+
+# importance within the best-fitting learner
+sl_importance_best <- extract_importance_SL(
+  fit = fit, feature_names = x_names, import_type = "best"
+)
+sl_importance_best
+# # A tibble: 2 × 2
+#   feature  rank
+#   <chr>   <int>
+# 1 V2          1
+# 2 V1          2
+\end{verbatim}
+
+Finally, to do variable selection, we need to select a threshold for the variable importance rank (ideally before looking at the data). In this case, since there are only two variables, we choose a threshold of 1.5, which means we will select only one variable:
+
+\begin{verbatim}
+extrinsic_selected <- extrinsic_selection(
+  fit = fit, feature_names = x_names, threshold = 1.5, import_type = "all"
+)
+extrinsic_selected
+# A tibble: 2 × 3
+#   feature  rank selected
+#   <chr>   <dbl> <lgl>   
+# 1 V2       1.01 TRUE    
+# 2 V1       1.99 FALSE  
+\end{verbatim}
+
+In this case, we select only variable 2.
+
+\hypertarget{intrinsic-variable-selection}{%
+\subsection{Intrinsic variable selection}\label{intrinsic-variable-selection}}
+
+Intrinsic variable selection is based on population variable importance (Williamson et al. 2021; Williamson and Feng 2020). Intrinsic selection (Williamson and Huang 2023) also uses the Super Learner under the hood, and requires specifying a useful \emph{measure of predictiveness} (e.g., R-squared or classification accuracy). The first step in doing intrinsic selection is estimating the variable importance:
+
+\begin{verbatim}
+set.seed(1234)
+
+# set up a library for SuperLearner
+learners <- "SL.glm"
+univariate_learners <- "SL.glm"
+V <- 2
+
+# estimate the SPVIMs
+library("vimp")
+est <- suppressWarnings(
+  sp_vim(Y = y, X = x, V = V, type = "r_squared",
+              SL.library = learners, gamma = .1, alpha = 0.05, delta = 0,
+              cvControl = list(V = V), env = environment())
+)
+est
+# Variable importance estimates:
+#       Estimate  SE         95% CI                  VIMP > 0 p-value     
+# s = 1 0.1515809 0.06090463 [0.03221005, 0.2709518] TRUE     1.330062e-03
+# s = 2 0.2990449 0.06565597 [0.17036157, 0.4277282] TRUE     6.863052e-09
+\end{verbatim}
+
+This procedure again shows (correctly) that variable 2 is more important than variable 1 in this population, since the point estimate of variable importance is larger.
+
+The next step is to choose an error rate to control and a method for controlling the family-wise error rate. Here, we choose to control the generalized family-wise error rate, setting \texttt{k\ =\ 1} and \texttt{alpha\ =\ 0.2} (so controlling the probability of making more than 1 type I error at 20\%), and choose Holm-adjusted p-values to control the initial family-wise error rate:
+
+\begin{verbatim}
+intrinsic_set <- intrinsic_selection(
+  spvim_ests = est, sample_size = n, alpha = 0.2, feature_names = x_names,
+  control = list( quantity = "gFWER", base_method = "Holm", k = 1)
+)
+intrinsic_set
+# A tibble: 2 × 6
+#   feature   est       p_value adjusted_p_value  rank selected
+#   <chr>   <dbl>         <dbl>            <dbl> <dbl> <lgl>   
+# 1 V1      0.152 0.00133           0.00133          2 TRUE    
+# 2 V2      0.299 0.00000000686     0.0000000137     1 TRUE
+\end{verbatim}
+
+In this case, we select both variables.
+
+\hypertarget{variable-selection-with-missing-data}{%
+\subsection{Variable selection with missing data}\label{variable-selection-with-missing-data}}
+
+Settings with missing data render variable selection more challenging. In this section, we consider a simulated dataset inspired by data collected by the Early Detection Research Network. Biomarkers developed at six ``labs'' are validated at at least one of four ``validation sites'' on 306 cysts. The data also include two binary outcome variables: whether or not the cyst was classified as mucinous, and whether or not the cyst was determined to have high malignant potential. The data contain some missing information, which complicates variable selection; only 212 cysts have complete information. We will use AUC to measure intrinsic importance. We begin by loading the data and performing multiple imputation.
+
+\begin{verbatim}
+# load the dataset
+data("biomarkers")
+library("dplyr")
+# set up vector "y" of outcomes and matrix "x" of features
+y <- biomarkers$mucinous
+x <- biomarkers %>%
+  na.omit() %>%
+  select(starts_with("lab"), starts_with("cea"))
+x_names <- names(x)
+library("mice")
+set.seed(20231121)
+mi_biomarkers <- mice::mice(data = biomarkers, m = 5, printFlag = FALSE)
+imputed_biomarkers <- mice::complete(mi_biomarkers, action = "long") %>%
+  rename(imp = .imp, id = .id)
+\end{verbatim}
+
+\hypertarget{extrinsic-selection-with-missing-data}{%
+\subsubsection{Extrinsic selection with missing data}\label{extrinsic-selection-with-missing-data}}
+
+We can perform extrinsic variable selection using the imputed data. First, we fit a Super Learner and perform extrinsic variable selection for each imputed dataset. Then, we select a final set of variables based on those that are selected in a pre-specified number of imputed datasets (e.g., 3 of 5) (Heymans et al. 2007). Again, we use a rank of 5 for each imputed dataset to select variables.
+
+\begin{verbatim}
+extrinsic_learners <- c("SL.glm", "SL.ranger.imp", "SL.xgboost")
+set.seed(20231121)
+# set up a list to collect selected sets
+all_selected_vars <- vector("list", length = 5)
+# for each imputed dataset, do extrinsic selection
+for (i in 1:5) {
+  # fit a Super Learner
+  these_data <- imputed_biomarkers %>%
+    filter(imp == i)
+  this_y <- these_data$mucinous
+  this_x <- these_data %>%
+    select(starts_with("lab"), starts_with("cea"))
+  this_x_df <- as.data.frame(this_x)
+  fit <- SuperLearner::SuperLearner(Y = this_y, X = this_x_df,
+                                  SL.library = extrinsic_learners,
+                                  cvControl = list(V = V),
+                                  family = "binomial")
+  # do extrinsic selection
+  all_selected_vars[[i]] <- extrinsic_selection(
+    fit = fit, feature_names = x_names, threshold = 5, import_type = "all"
+  )$selected
+}
+# perform extrinsic variable selection
+selected_vars <- pool_selected_sets(sets = all_selected_vars, threshold = 3 / 5)
+x_names[selected_vars]
+# [1] "lab1_actb"             "lab1_molecules_score"  "lab1_telomerase_score"
+\end{verbatim}
+
+\hypertarget{intrinsic-selection-with-missing-data}{%
+\subsubsection{Intrinsic selection with missing data}\label{intrinsic-selection-with-missing-data}}
+
+To perform intrinsic variable selection using the imputed data, we first estimate variable importance for each imputed dataset.
+
+\begin{verbatim}
+set.seed(20231121)
+est_lst <- lapply(as.list(1:5), function(l) {
+  this_x <- imputed_biomarkers %>%
+    filter(imp == l) %>%
+    select(starts_with("lab"), starts_with("cea"))
+  this_y <- biomarkers$mucinous
+  suppressWarnings(
+    sp_vim(Y = this_y, X = this_x, V = V, type = "auc", 
+    SL.library = learners, gamma = 0.1, alpha = 0.05, delta = 0,
+    cvControl = list(V = V), env = environment())
+  )
+})
+\end{verbatim}
+
+Next, we use Rubin's rules (Rubin 2018) to combine the variable importance estimates, and use this to perform variable selection. Here, we control the probability of making more than 5 errors (the generalized family-wise error rate) at 5\%, using Holm-adjusted p-values to control the initial family-wise error rate.
+
+\begin{verbatim}
+intrinsic_set <- intrinsic_selection(
+  spvim_ests = est_lst, sample_size = nrow(biomarkers),
+  feature_names = x_names, alpha = 0.05, 
+  control = list(quantity = "gFWER", base_method = "Holm", k = 5)
+)
+library("dplyr")
+intrinsic_set %>%
+  filter(selected)
+# A tibble: 5 × 6
+#   feature                            est p_value adjusted_p_value  rank selected
+#   <chr>                            <dbl>   <dbl>            <dbl> <dbl> <lgl>   
+# 1 lab1_actb                       0.0334   0.409                1     2 TRUE    
+# 2 lab1_telomerase_score           0.0216   0.439                1     5 TRUE    
+# 3 lab3_muc3ac_score               0.0238   0.433                1     4 TRUE    
+# 4 lab6_ab_score                   0.0241   0.433                1     3 TRUE    
+# 5 lab2_fluorescence_mucinous_call 0.0354   0.396                1     1 TRUE
+\end{verbatim}
+
+We select five variables, here those with the top-5 estimated variable importance. The point estimates and p-values have been computed using Rubin's rules. Two of the variables are the same as those selected using extrinsic selection.
+
+\hypertarget{availability}{%
+\section{Availability}\label{availability}}
+
+The \texttt{flevr} package is publicly available on \href{https://github.com/bdwilliamson/flevr}{GitHub}; stable releases are publicly available on the \href{https://cran.r-project.org/package=flevr}{Comprehensive R Archive Network}. Documentation and examples may be found in the package manual pages and vignettes, and on the \texttt{pkgdown} website (Wickham and Hesselberth 2022) at \url{https://bdwilliamson.github.io/flevr}.
+
+\hypertarget{acknowledgements}{%
+\section{Acknowledgements}\label{acknowledgements}}
+
+The authors gratefully acknowledge bug reports and feature requests submitted by Bhavesh Borate.
+
+\hypertarget{references}{%
+\section*{References}\label{references}}
+\addcontentsline{toc}{section}{References}
+
+\hypertarget{refs}{}
+\begin{CSLReferences}{1}{0}
+\leavevmode\vadjust pre{\hypertarget{ref-heymans2007}{}}%
+Heymans, Martijn W, Stef van Buuren, Dirk L Knol, Willem Van Mechelen, and Henrica CW De Vet. 2007. {``Variable Selection Under Multiple Imputation Using the Bootstrap in a Prognostic Study.''} \emph{BMC Medical Research Methodology} 7: 1--10. \url{https://doi.org/10.1186/1471-2288-7-33}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-vanderlaan2007super}{}}%
+Laan, MJ van der, EC Polley, and AE Hubbard. 2007. {``Super Learner.''} \emph{Statistical Applications in Genetics and Molecular Biology} 6 (1): Online Article 25. \url{https://doi.org/10.2202/1544-6115.1309}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-leng2006}{}}%
+Leng, C, Y Lin, and G Wahba. 2006. {``A Note on the Lasso and Related Procedures in Model Selection.''} \emph{Statistica Sinica} 16: 1273--84. \url{https://www.jstor.org/stable/24307787}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-r_software}{}}%
+R Core Team. 2023. \emph{R: A Language and Environment for Statistical Computing}. Vienna, Austria: R Foundation for Statistical Computing. \url{https://www.R-project.org/}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-rubin2018}{}}%
+Rubin, Donald B. 2018. {``Multiple Imputation.''} In \emph{Flexible Imputation of Missing Data, Second Edition}, 29--62. Chapman; Hall/CRC. \url{https://doi.org/10.1201/9780429492259}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-mice2011}{}}%
+van Buuren, Stef, and Karin Groothuis-Oudshoorn. 2011. {``{mice}: Multivariate Imputation by Chained Equations in r.''} \emph{Journal of Statistical Software} 45 (3): 1--67. \url{https://doi.org/10.18637/jss.v045.i03}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-wickham_pkgdown}{}}%
+Wickham, Hadley, and Jay Hesselberth. 2022. \emph{{pkgdown}: Make Static HTML Documentation for a Package}. \url{https://CRAN.R-project.org/package=pkgdown}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-williamson2020spvim}{}}%
+Williamson, BD, and J Feng. 2020. {``Efficient Nonparametric Statistical Inference on Population Feature Importance Using {S}hapley Values.''} In \emph{Proceedings of the 37th International Conference on Machine Learning}, 119:10282--91. Proceedings of Machine Learning Research. \url{http://proceedings.mlr.press/v119/williamson20a.html}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-williamson2021vim2}{}}%
+Williamson, BD, PB Gilbert, NR Simon, and M Carone. 2021. {``A General Framework for Inference on Algorithm-Agnostic Variable Importance.''} \emph{Journal of the American Statistical Association (Theory \& Methods)}. \url{https://doi.org/10.1080/01621459.2021.2003200}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-williamson2023flevr}{}}%
+Williamson, BD, and Y Huang. 2023. {``Flexible Variable Selection in the Presence of Missing Data.''} \emph{International Journal of Biostatistics}. \url{https://arxiv.org/abs/2202.12989}.
+
+\end{CSLReferences}
+
+\bibliography{paper.bib}
+
+\address{%
+Brian D. Williamson\\
+Biostatistics Division, Kaiser Permanente Washington Health Research InstituteVaccine and Infectious Disease Division, Fred Hutchinson Cancer CenterDepartment of Biostatistics, University of Washington\\%
+Biostatistics Division\\ 1730 Minor Ave, Seattle, USA\\
+%
+\url{https://bdwilliamson.github.io}\\%
+\textit{ORCiD: \href{https://orcid.org/0000-0002-7024-548X}{0000-0002-7024-548X}}\\%
+\href{mailto:brian.d.williamson@kp.org}{\nolinkurl{brian.d.williamson@kp.org}}%
+}
+
+\address{%
+Ying Huang\\
+Vaccine and Infectious Disease Division, Fred Hutchinson Cancer CenterDepartment of Biostatistics, University of Washington\\%
+\\
+%
+%
+\textit{ORCiD: \href{https://orcid.org/0000-0002-9655-7502}{0000-0002-9655-7502}}\\%
+\href{mailto:yhuang@fredhutch.org}{\nolinkurl{yhuang@fredhutch.org}}%
+}
