@@ -2,33 +2,34 @@
 title: "flevr: Flexible, Ensemble-based Variable Selection in R"
 date: "`r format(Sys.Date(), '%d %B %Y')`"
 abstract: >
-  Variable selection in missing-data contexts is complicated by two issues: (i) a desire for the results to be robust to departures from simplifying modelling assumptions, and (ii) the need to incorporate a missing-data approach. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. The flevr R package provides an open-source tool for performing variable selection using flexible, ensemble machine learning algorithms. An intrinsic selection approach based on population variable importance solves these issues. We illustrate the use of the package with several examples.
+  Variable selection in missing-data contexts is complicated by two issues: (i) a desire for the results to be robust to departures from simplifying modelling assumptions, and (ii) the need to incorporate a missing-data approach. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are neither easily interpretable nor implemented in easy-to-use software. The flevr R package provides an open-source tool for performing variable selection using flexible, ensemble machine learning algorithms. An intrinsic selection approach based on population variable importance solves these issues. We illustrate the use of the package with several examples.
 draft: true
 author:  
   - name: Brian D. Williamson
-    affiliation: 
-    - Biostatistics Division, Kaiser Permanente Washington Health Research Institute
-    - Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center
-    - Department of Biostatistics, University of Washington
-    address:
-    - Biostatistics Division
-    - 1730 Minor Ave, Seattle, USA
+    affiliation:
+      - KPWHRI
+      - Fred Hutch
+      - UW
+    corresponding: brian.d.williamson@kp.org
     url: https://bdwilliamson.github.io
     orcid: 0000-0002-7024-548X
     email: brian.d.williamson@kp.org
   - name: Ying Huang
     affiliation:
-    - Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center
-    - Department of Biostatistics, University of Washington
+      - Fred Hutch
+      - UW
     email: yhuang@fredhutch.org
     orcid: 0000-0002-9655-7502
-type: package
-output: 
-  rjtools::rjournal_article:
-    self_contained: yes
-    toc: no
+address:
+  - code: KPWHRI
+    address: Biostatistics Division, Kaiser Permanente Washington Health Research Institute, Seattle, WA
+  - code: Fred Hutch
+    address: Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center, Seattle, WA
+  - code: UW
+    address: Department of Biostatistics, University of Washington, Seattle, WA
+output: rticles::plos_article
+csl: http://www.zotero.org/styles/plos
 bibliography: flevr.bib
-
 ---
 
 ```{r setup, include=FALSE}
@@ -39,7 +40,27 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 Variable selection is a common goal in biomedical research, among other fields. Traditional tools for variable selection are generally not robust to departures from possibly restrictive modelling assumptions [@leng2006]. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. However, in settings with missing data, procedures to combine variable selection results across imputed datasets become more difficult to interpret when machine learning tools are used [@heymans2007]. 
 
-The `flevr` package for `R` [@r_software] provides researchers with the tools necessary to perform variable selection in settings with missing data based on flexible prediction approaches. One approach is to use the Super Learner [@vanderlaan2007super] to perform variable selection based on an ensemble of individual prediction algorithms. The Super Learner has asymptotic and finite-sample guarantees on its prediction performance [@vanderlaan2007super]. The second approach is to base variable selection on _intrinsic variable importance_ [@williamson2021vim2;@williamson2020spvim], which quantifies the population prediction potential of features. The package facilitates both handling missing data using multiple imputation [@mice2011] and incorporating state-of-the-art machine learning algorithms to perform variable selection. The _intrinsic selection_ approach (`intrinsic_selection`) is based on population variable importance [@williamson2023flevr]; this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets [@heymans2007]. We also provide functions to perform variable selection based on the Super Learner [@vanderlaan2007super], improving robustness to model misspecification.
+Often, in missing-data settings, variable selection is accomplished in one of two ways. Methods for variable selection with full observation of all variables can be adapted to the missing-data setting by using likelihood-based methods [@little1985] or methods based on inverse probability weighting [@tsiatis2007;@bang2005;@johnson2008;@wolfson2012]. While these approaches can be quite useful, they are often tailored to specific data-generating or missing-data processes, rendering their implementation in software difficult. In contrast, approaches based on multiple imputation [@rubin1987;@vanbuuren2007]---implemented in the R package `mice` [@mice2011], among other packages---are easy to incorporate into analysis pipelines and therefore are widely used. After the missing data are multiply imputed, any variable selection method can be used on the imputed datasets. However, the selected variables across different imputed datasets may be different, and thus must be harmonized across all imputed datasets; often, variables that are selected in some large proportion of datasets are retained in the final selected set [@heymans2007].
+
+There is a substantial literature on variable selection with fully-observed data; software implementations are also common, with 95 packages on the Comprehensive R Archive Network (CRAN) having "variable selection" in the title as of February 2024. Several commonly-used methods include the lasso [@tibshirani1996], implemented in the R package `glmnet` [@glmnet]; stability selection [@meinshausen2010], implemented in the R package `stabs` [@Hofner:StabSel:2015;Hofner:pkg_stabs:2021]; and knockoffs [@barber2015], implemented in the R package `knockoff` [@knockoff]. However, prior to our package `flevr` (described below), only one R package available on CRAN, `miselect` [@miselect], explicitly mentions missing data in its title. This package forces selection of the same variables across multiply-imputed datasets [@du2022variable]; while potentially useful in some contexts, this may be undesirable in other contexts. Additionally, using a single algorithm to perform variable selection carries the risk that if the underlying model assumptions are not met (e.g., a linear regression model for the lasso), the selected variables might not be correct. Approaches based on ensembles of multiple algorithms may be more robust to this misspecification; examples include random forests [@breiman2001], majority vote over the ensemble [@xin2012], and rank-based weighting [@saeys2008], but there is no `R` implementation of these approaches on CRAN. 
+
+The `flevr` package for `R` [@r_software] provides researchers with the tools necessary to perform variable selection in settings with missing data based on flexible prediction approaches. One approach that we implement is to use the Super Learner [@vanderlaan2007super] to perform variable selection based on an ensemble of individual prediction algorithms, an approach we call _extrinsic selection_. The Super Learner has asymptotic and finite-sample guarantees on its prediction performance [@vanderlaan2007super], improving robustness of selected variables to model misspecification. The second approach is to base variable selection on _intrinsic variable importance_ [@williamson2021vim2;@williamson2020spvim], which quantifies the population prediction potential of features. The package facilitates both handling missing data using multiple imputation [@rubin1987] and incorporating state-of-the-art machine learning algorithms to perform variable selection. The _intrinsic selection_ approach (`intrinsic_selection`) is based on population variable importance [@williamson2023flevr]; this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets [@heymans2007]. To our knowledge, this is the first `R` package implementing both general-purpose ensemble-based variable selection and intrinsic variable selection.
+
+# Methods
+
+This section should involve some math, but not be as deep as either the original intrinsic selection paper or the companion paper
+
+## Motivating dataset
+
+describe the dataset
+
+## Extrinsic variable selection
+
+cite the companion paper; add math supporting this method
+
+## Intrinsic variable selection
+
+[@williamson2023flevr]; add math supporting this method
 
 # Examples
 
@@ -258,6 +279,10 @@ intrinsic_set %>%
 # 5 lab2_fluorescence_mucinous_call 0.0354   0.396                1     1 TRUE
 ```
 We select five variables, here those with the top-5 estimated variable importance. The point estimates and p-values have been computed using Rubin's rules. Two of the variables are the same as those selected using extrinsic selection.
+
+# Conclusion
+
+add a conclusion here
 
 # Availability
 

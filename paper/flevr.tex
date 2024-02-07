@@ -1,326 +1,922 @@
-% !TeX root = RJwrapper.tex
-\title{flevr: Flexible, Ensemble-based Variable Selection in R}
+% Template for PLoS
+% Version 3.5 March 2018
+%
+% % % % % % % % % % % % % % % % % % % % % %
+%
+% -- IMPORTANT NOTE
+%
+% This template contains comments intended
+% to minimize problems and delays during our production
+% process. Please follow the template instructions
+% whenever possible.
+%
+% % % % % % % % % % % % % % % % % % % % % % %
+%
+% Once your paper is accepted for publication,
+% PLEASE REMOVE ALL TRACKED CHANGES in this file
+% and leave only the final text of your manuscript.
+% PLOS recommends the use of latexdiff to track changes during review, as this will help to maintain a clean tex file.
+% Visit https://www.ctan.org/pkg/latexdiff?lang=en for info or contact us at latex@plos.org.
+%
+%
+% There are no restrictions on package use within the LaTeX files except that
+% no packages listed in the template may be deleted.
+%
+% Please do not include colors or graphics in the text.
+%
+% The manuscript LaTeX source should be contained within a single file (do not use \input, \externaldocument, or similar commands).
+%
+% % % % % % % % % % % % % % % % % % % % % % %
+%
+% -- FIGURES AND TABLES
+%
+% Please include tables/figure captions directly after the paragraph where they are first cited in the text.
+%
+% DO NOT INCLUDE GRAPHICS IN YOUR MANUSCRIPT
+% - Figures should be uploaded separately from your manuscript file.
+% - Figures generated using LaTeX should be extracted and removed from the PDF before submission.
+% - Figures containing multiple panels/subfigures must be combined into one image file before submission.
+% For figure citations, please use "Fig" instead of "Figure".
+% See http://journals.plos.org/plosone/s/figures for PLOS figure guidelines.
+%
+% Tables should be cell-based and may not contain:
+% - spacing/line breaks within cells to alter layout or alignment
+% - do not nest tabular environments (no tabular environments within tabular environments)
+% - no graphics or colored text (cell background color/shading OK)
+% See http://journals.plos.org/plosone/s/tables for table guidelines.
+%
+% For tables that exceed the width of the text column, use the adjustwidth environment as illustrated in the example table in text below.
+%
+% % % % % % % % % % % % % % % % % % % % % % % %
+%
+% -- EQUATIONS, MATH SYMBOLS, SUBSCRIPTS, AND SUPERSCRIPTS
+%
+% IMPORTANT
+% Below are a few tips to help format your equations and other special characters according to our specifications. For more tips to help reduce the possibility of formatting errors during conversion, please see our LaTeX guidelines at http://journals.plos.org/plosone/s/latex
+%
+% For inline equations, please be sure to include all portions of an equation in the math environment.
+%
+% Do not include text that is not math in the math environment.
+%
+% Please add line breaks to long display equations when possible in order to fit size of the column.
+%
+% For inline equations, please do not include punctuation (commas, etc) within the math environment unless this is part of the equation.
+%
+% When adding superscript or subscripts outside of brackets/braces, please group using {}.
+%
+% Do not use \cal for caligraphic font.  Instead, use \mathcal{}
+%
+% % % % % % % % % % % % % % % % % % % % % % % %
+%
+% Please contact latex@plos.org with any questions.
+%
+% % % % % % % % % % % % % % % % % % % % % % % %
+
+\documentclass[10pt,letterpaper]{article}
+\usepackage[top=0.85in,left=2.75in,footskip=0.75in]{geometry}
+
+% amsmath and amssymb packages, useful for mathematical formulas and symbols
+\usepackage{amsmath,amssymb}
+
+% Use adjustwidth environment to exceed column width (see example table in text)
+\usepackage{changepage}
 
 
-\author{by Brian D. Williamson and Ying Huang}
+% textcomp package and marvosym package for additional characters
+\usepackage{textcomp,marvosym}
 
-\maketitle
+% cite package, to clean up citations in the main text. Do not remove.
+% \usepackage{cite}
 
-\abstract{%
-Variable selection in missing-data contexts is complicated by two issues: (i) a desire for the results to be robust to departures from simplifying modelling assumptions, and (ii) the need to incorporate a missing-data approach. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. The flevr R package provides an open-source tool for performing variable selection using flexible, ensemble machine learning algorithms. An intrinsic selection approach based on population variable importance solves these issues. We illustrate the use of the package with several examples.
+% Use nameref to cite supporting information files (see Supporting Information section for more info)
+\usepackage{nameref,hyperref}
+
+% line numbers
+\usepackage[right]{lineno}
+
+% ligatures disabled
+\usepackage{microtype}
+\DisableLigatures[f]{encoding = *, family = * }
+
+% color can be used to apply background shading to table cells only
+\usepackage[table]{xcolor}
+
+% array package and thick rules for tables
+\usepackage{array}
+
+% create "+" rule type for thick vertical lines
+\newcolumntype{+}{!{\vrule width 2pt}}
+
+% create \thickcline for thick horizontal lines of variable length
+\newlength\savedwidth
+\newcommand\thickcline[1]{%
+  \noalign{\global\savedwidth\arrayrulewidth\global\arrayrulewidth 2pt}%
+  \cline{#1}%
+  \noalign{\vskip\arrayrulewidth}%
+  \noalign{\global\arrayrulewidth\savedwidth}%
 }
 
+% \thickhline command for thick horizontal lines that span the table
+\newcommand\thickhline{\noalign{\global\savedwidth\arrayrulewidth\global\arrayrulewidth 2pt}%
+\hline
+\noalign{\global\arrayrulewidth\savedwidth}}
+
+
+% Remove comment for double spacing
+%\usepackage{setspace}
+%\doublespacing
+
+% Text layout
+\raggedright
+\setlength{\parindent}{0.5cm}
+\textwidth 5.25in
+\textheight 8.75in
+
+% Bold the 'Figure #' in the caption and separate it from the title/caption with a period
+% Captions will be left justified
+\usepackage[aboveskip=1pt,labelfont=bf,labelsep=period,justification=raggedright,singlelinecheck=off]{caption}
+\renewcommand{\figurename}{Fig}
+
+% Use the PLoS provided BiBTeX style
+% \bibliographystyle{plos2015}
+
+% Remove brackets from numbering in List of References
+\makeatletter
+\renewcommand{\@biblabel}[1]{\quad#1.}
+\makeatother
+
+
+
+% Header and Footer with logo
+\usepackage{lastpage,fancyhdr,graphicx}
+\usepackage{epstopdf}
+%\pagestyle{myheadings}
+\pagestyle{fancy}
+\fancyhf{}
+%\setlength{\headheight}{27.023pt}
+%\lhead{\includegraphics[width=2.0in]{PLOS-submission.eps}}
+\rfoot{\thepage/\pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrule}{\hrule height 2pt \vspace{2mm}}
+\fancyheadoffset[L]{2.25in}
+\fancyfootoffset[L]{2.25in}
+\lfoot{\today}
+
+%% Include all macros below
+
+\newcommand{\lorem}{{\bf LOREM}}
+\newcommand{\ipsum}{{\bf IPSUM}}
+
+% Pandoc syntax highlighting
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+
+% tightlist command for lists without linebreak
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+% Pandoc citation processing
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+% for Pandoc 2.8 to 2.10.1
+\newenvironment{cslreferences}%
+  {}%
+  {\par}
+% For Pandoc 2.11+
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+
+
+\usepackage{forarray}
+\usepackage{xstring}
+\newcommand{\getIndex}[2]{
+  \ForEach{,}{\IfEq{#1}{\thislevelitem}{\number\thislevelcount\ExitForEach}{}}{#2}
+}
+
+\setcounter{secnumdepth}{0}
+
+\newcommand{\getAff}[1]{
+  \getIndex{#1}{KPWHRI,Fred Hutch,UW}
+}
+
+\begin{document}
+\vspace*{0.2in}
+
+
+% Title must be 250 characters or less.
+\begin{flushleft}
+{\Large
+\textbf\newline{flevr: Flexible, Ensemble-based Variable Selection in
+R} % Please use "sentence case" for title and headings (capitalize only the first word in a title (or heading), the first word in a subtitle (or subheading), and any proper nouns).
+}
+\newline
+% Insert author names, affiliations and corresponding author email (do not include titles, positions, or degrees).
+\\
+Brian D. Williamson\textsuperscript{\getAff{KPWHRI}, \getAff{Fred
+Hutch}, \getAff{UW}}\textsuperscript{*},
+Ying Huang\textsuperscript{\getAff{Fred Hutch}, \getAff{UW}}\\
+\bigskip
+\textbf{\getAff{KPWHRI}}Biostatistics Division, Kaiser Permanente
+Washington Health Research Institute, Seattle, WA\\
+\textbf{\getAff{Fred Hutch}}Vaccine and Infectious Disease Division,
+Fred Hutchinson Cancer Center, Seattle, WA\\
+\textbf{\getAff{UW}}Department of Biostatistics, University of
+Washington, Seattle, WA\\
+\bigskip
+* Corresponding author: brian.d.williamson@kp.org\\
+\end{flushleft}
+% Please keep the abstract below 300 words
+\section*{Abstract}
+Variable selection in missing-data contexts is complicated by two
+issues: (i) a desire for the results to be robust to departures from
+simplifying modelling assumptions, and (ii) the need to incorporate a
+missing-data approach. Often, researchers turn to machine learning to
+increase robustness, but the options for missing-data variable selection
+when machine learning tools have been used are neither easily
+interpretable nor implemented in easy-to-use software. The flevr R
+package provides an open-source tool for performing variable selection
+using flexible, ensemble machine learning algorithms. An intrinsic
+selection approach based on population variable importance solves these
+issues. We illustrate the use of the package with several examples.
+
+% Please keep the Author Summary between 150 and 200 words
+% Use first person. PLOS ONE authors please skip this step.
+% Author Summary not valid for PLOS ONE submissions.
+
+\linenumbers
+
+% Use "Eq" instead of "Equation" for equation citations.
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
 
-Variable selection is a common goal in biomedical research, among other fields. Traditional tools for variable selection are generally not robust to departures from possibly restrictive modelling assumptions (Leng, Lin, and Wahba 2006). Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. However, in settings with missing data, procedures to combine variable selection results across imputed datasets become more difficult to interpret when machine learning tools are used (Heymans et al. 2007).
+Variable selection is a common goal in biomedical research, among other
+fields. Traditional tools for variable selection are generally not
+robust to departures from possibly restrictive modelling assumptions
+{[}1{]}. Often, researchers turn to machine learning to increase
+robustness, but the options for missing-data variable selection when
+machine learning tools have been used are not easily interpretable.
+However, in settings with missing data, procedures to combine variable
+selection results across imputed datasets become more difficult to
+interpret when machine learning tools are used {[}2{]}.
 
-The \texttt{flevr} package for \texttt{R} (R Core Team 2023) provides researchers with the tools necessary to perform variable selection in settings with missing data based on flexible prediction approaches. One approach is to use the Super Learner (Laan, Polley, and Hubbard 2007) to perform variable selection based on an ensemble of individual prediction algorithms. The Super Learner has asymptotic and finite-sample guarantees on its prediction performance (Laan, Polley, and Hubbard 2007). The second approach is to base variable selection on \emph{intrinsic variable importance} (Williamson et al. 2021; Williamson and Feng 2020), which quantifies the population prediction potential of features. The package facilitates both handling missing data using multiple imputation (van Buuren and Groothuis-Oudshoorn 2011) and incorporating state-of-the-art machine learning algorithms to perform variable selection. The \emph{intrinsic selection} approach (\texttt{intrinsic\_selection}) is based on population variable importance (Williamson and Huang 2023); this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets (Heymans et al. 2007). We also provide functions to perform variable selection based on the Super Learner (Laan, Polley, and Hubbard 2007), improving robustness to model misspecification.
+Often, in missing-data settings, variable selection is accomplished in
+one of two ways. Methods for variable selection with full observation of
+all variables can be adapted to the missing-data setting by using
+likelihood-based methods {[}3{]} or methods based on inverse probability
+weighting {[}4--7{]}. While these approaches can be quite useful, they
+are often tailored to specific data-generating or missing-data
+processes, rendering their implementation in software difficult. In
+contrast, approaches based on multiple imputation
+{[}8,9{]}---implemented in the R package \texttt{mice} {[}10{]}, among
+other packages---are easy to incorporate into analysis pipelines and
+therefore are widely used. After the missing data are multiply imputed,
+any variable selection method can be used on the imputed datasets.
+However, the selected variables across different imputed datasets may be
+different, and thus must be harmonized across all imputed datasets;
+often, variables that are selected in some large proportion of datasets
+are retained in the final selected set {[}2{]}.
+
+There is a substantial literature on variable selection with
+fully-observed data; software implementations are also common, with 95
+packages on the Comprehensive R Archive Network (CRAN) having ``variable
+selection'' in the title as of February 2024. Several commonly-used
+methods include the lasso {[}\textbf{tibshirani1996?}{]}, implemented in
+the R package \texttt{glmnet} {[}11{]}; stability selection {[}12{]},
+implemented in the R package \texttt{stabs}
+{[}{[}13{]};Hofner:pkg\_stabs:2021{]}; and knockoffs {[}14{]},
+implemented in the R package \texttt{knockoff} {[}15{]}. However, prior
+to our package \texttt{flevr} (described below), only one R package
+available on CRAN, \texttt{miselect} {[}16{]}, explicitly mentions
+missing data in its title. This package forces selection of the same
+variables across multiply-imputed datasets {[}17{]}; while potentially
+useful in some contexts, this may be undesirable in other contexts.
+Additionally, using a single algorithm to perform variable selection
+carries the risk that if the underlying model assumptions are not met
+(e.g., a linear regression model for the lasso), the selected variables
+might not be correct. Approaches based on ensembles of multiple
+algorithms may be more robust to this misspecification; examples include
+random forests {[}18{]}, majority vote over the ensemble {[}19{]}, and
+rank-based weighting {[}20{]}, but there is no \texttt{R} implementation
+of these approaches on CRAN.
+
+The \texttt{flevr} package for \texttt{R} {[}21{]} provides researchers
+with the tools necessary to perform variable selection in settings with
+missing data based on flexible prediction approaches. One approach that
+we implement is to use the Super Learner {[}22{]} to perform variable
+selection based on an ensemble of individual prediction algorithms, an
+approach we call \emph{extrinsic selection}. The Super Learner has
+asymptotic and finite-sample guarantees on its prediction performance
+{[}22{]}, improving robustness of selected variables to model
+misspecification. The second approach is to base variable selection on
+\emph{intrinsic variable importance} {[}23,24{]}, which quantifies the
+population prediction potential of features. The package facilitates
+both handling missing data using multiple imputation {[}8{]} and
+incorporating state-of-the-art machine learning algorithms to perform
+variable selection. The \emph{intrinsic selection} approach
+(\texttt{intrinsic\_selection}) is based on population variable
+importance {[}25{]}; this approach outputs a single set of selected
+variables, in contrast to other procedures that require post-hoc
+harmonization of multiple selected sets {[}2{]}. To our knowledge, this
+is the first \texttt{R} package implementing both general-purpose
+ensemble-based variable selection and intrinsic variable selection.
+
+\hypertarget{methods}{%
+\section{Methods}\label{methods}}
+
+This section should involve some math, but not be as deep as either the
+original intrinsic selection paper or the companion paper
+
+\hypertarget{motivating-dataset}{%
+\subsection{Motivating dataset}\label{motivating-dataset}}
+
+describe the dataset
+
+\hypertarget{extrinsic-variable-selection}{%
+\subsection{Extrinsic variable
+selection}\label{extrinsic-variable-selection}}
+
+cite the companion paper; add math supporting this method
+
+\hypertarget{intrinsic-variable-selection}{%
+\subsection{Intrinsic variable
+selection}\label{intrinsic-variable-selection}}
+
+{[}25{]}; add math supporting this method
 
 \hypertarget{examples}{%
 \section{Examples}\label{examples}}
 
-This section should serve as a guide to using the \texttt{flevr} package --- we will cover the main functions for doing extrinsic and intrinsic variable selection using a simulated data example.
+This section should serve as a guide to using the \texttt{flevr} package
+--- we will cover the main functions for doing extrinsic and intrinsic
+variable selection using a simulated data example.
 
 First, we create some data:
 
-\begin{verbatim}
-# generate the data -- note that this is a simple setting, for speed
-set.seed(4747)
-p <- 2
-n <- 500
-# generate features
-x <- replicate(p, stats::rnorm(n, 0, 1))
-x_df <- as.data.frame(x)
-x_names <- names(x_df)
-# generate outcomes
-y <- 1 + 0.5 * x[, 1] + 0.75 * x[, 2] + stats::rnorm(n, 0, 1)
-\end{verbatim}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# generate the data {-}{-} note that this is a simple setting, for speed}
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{4747}\NormalTok{)}
+\NormalTok{p }\OtherTok{\textless{}{-}} \DecValTok{2}
+\NormalTok{n }\OtherTok{\textless{}{-}} \DecValTok{500}
+\CommentTok{\# generate features}
+\NormalTok{x }\OtherTok{\textless{}{-}} \FunctionTok{replicate}\NormalTok{(p, stats}\SpecialCharTok{::}\FunctionTok{rnorm}\NormalTok{(n, }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{))}
+\NormalTok{x\_df }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(x)}
+\NormalTok{x\_names }\OtherTok{\textless{}{-}} \FunctionTok{names}\NormalTok{(x\_df)}
+\CommentTok{\# generate outcomes}
+\NormalTok{y }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{+} \FloatTok{0.5} \SpecialCharTok{*}\NormalTok{ x[, }\DecValTok{1}\NormalTok{] }\SpecialCharTok{+} \FloatTok{0.75} \SpecialCharTok{*}\NormalTok{ x[, }\DecValTok{2}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ stats}\SpecialCharTok{::}\FunctionTok{rnorm}\NormalTok{(n, }\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
 
-This creates a matrix of covariates \texttt{x} with 2 columns and a vector \texttt{y} of normally-distributed outcome values for a sample of \texttt{n\ =\ 500} study participants.
+This creates a matrix of covariates \texttt{x} with 2 columns and a
+vector \texttt{y} of normally-distributed outcome values for a sample of
+\texttt{n\ =\ 500} study participants.
 
-There are two main types of variable selection available in \texttt{flevr}: extrinsic and intrinsic. Extrinsic selection is the most common type of variable selection: in this approach, a given algorithm (and perhaps its associated algorithm-specific variable importance) is used for variable selection. The lasso is a widely-used example of extrinsic selection. Intrinsic selection, on the other hand, uses estimated intrinsic variable importance (a population quantity) to perform variable selection. This intrinsic importance is both defined and estimated in a model-agnostic manner.
+There are two main types of variable selection available in
+\texttt{flevr}: extrinsic and intrinsic. Extrinsic selection is the most
+common type of variable selection: in this approach, a given algorithm
+(and perhaps its associated algorithm-specific variable importance) is
+used for variable selection. The lasso is a widely-used example of
+extrinsic selection. Intrinsic selection, on the other hand, uses
+estimated intrinsic variable importance (a population quantity) to
+perform variable selection. This intrinsic importance is both defined
+and estimated in a model-agnostic manner.
 
-\hypertarget{extrinsic-variable-selection}{%
-\subsection{Extrinsic variable selection}\label{extrinsic-variable-selection}}
+\hypertarget{extrinsic-variable-selection-1}{%
+\subsection{Extrinsic variable
+selection}\label{extrinsic-variable-selection-1}}
 
-We recommend using the Super Learner (Laan, Polley, and Hubbard 2007) to do extrinsic variable selection to protect against model misspecification. This requires specifying a \emph{library} of \emph{candidate learners} (e.g., lasso, random forests). We can do this in \texttt{flevr} using the following code:
+We recommend using the Super Learner {[}22{]} to do extrinsic variable
+selection to protect against model misspecification. This requires
+specifying a \emph{library} of \emph{candidate learners} (e.g., lasso,
+random forests). We can do this in \texttt{flevr} using the following
+code:
 
-\begin{verbatim}
-library("flevr")
-set.seed(1234)
-# fit a Super Learner ensemble; note its simplicity, for speed
-library("SuperLearner")
-learners <- c("SL.glm", "SL.mean")
-V <- 2
-fit <- SuperLearner::SuperLearner(Y = y, X = x_df,
-                                  SL.library = learners,
-                                  cvControl = list(V = V))
-# extract importance based on the whole Super Learner
-sl_importance_all <- extract_importance_SL(
-  fit = fit, feature_names = x_names, import_type = "all"
-)
-sl_importance_all
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(}\StringTok{"flevr"}\NormalTok{)}
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
+\CommentTok{\# fit a Super Learner ensemble; note its simplicity, for speed}
+\FunctionTok{library}\NormalTok{(}\StringTok{"SuperLearner"}\NormalTok{)}
+\NormalTok{learners }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"SL.glm"}\NormalTok{, }\StringTok{"SL.mean"}\NormalTok{)}
+\NormalTok{V }\OtherTok{\textless{}{-}} \DecValTok{2}
+\NormalTok{fit }\OtherTok{\textless{}{-}}\NormalTok{ SuperLearner}\SpecialCharTok{::}\FunctionTok{SuperLearner}\NormalTok{(}\AttributeTok{Y =}\NormalTok{ y, }\AttributeTok{X =}\NormalTok{ x\_df,}
+                                  \AttributeTok{SL.library =}\NormalTok{ learners,}
+                                  \AttributeTok{cvControl =} \FunctionTok{list}\NormalTok{(}\AttributeTok{V =}\NormalTok{ V))}
+\CommentTok{\# extract importance based on the whole Super Learner}
+\NormalTok{sl\_importance\_all }\OtherTok{\textless{}{-}} \FunctionTok{extract\_importance\_SL}\NormalTok{(}
+  \AttributeTok{fit =}\NormalTok{ fit, }\AttributeTok{feature\_names =}\NormalTok{ x\_names, }\AttributeTok{import\_type =} \StringTok{"all"}
+\NormalTok{)}
+\NormalTok{sl\_importance\_all}
 
-# A tibble: 2 × 2
-#   feature  rank
-#   <chr>   <dbl>
-# 1 V2       1.01
-# 2 V1       1.99
-\end{verbatim}
+\CommentTok{\# A tibble: 2 × 2}
+\CommentTok{\#   feature  rank}
+\CommentTok{\#   \textless{}chr\textgreater{}   \textless{}dbl\textgreater{}}
+\CommentTok{\# 1 V2       1.01}
+\CommentTok{\# 2 V1       1.99}
+\end{Highlighting}
+\end{Shaded}
 
-These results suggest that feature 2 is more important than feature 1 within the Super Learner ensemble (since a lower rank is better). If we want to scrutinize the importance of features within the best-fitting algorithm in the Super Learner ensemble, we can do the following:
+These results suggest that feature 2 is more important than feature 1
+within the Super Learner ensemble (since a lower rank is better). If we
+want to scrutinize the importance of features within the best-fitting
+algorithm in the Super Learner ensemble, we can do the following:
 
-\begin{verbatim}
-# check the best-fitting learner
-fit
-# Call:  SuperLearner::SuperLearner(Y = y, X = x_df, SL.library = learners, cvControl = list(V = V)) 
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# check the best{-}fitting learner}
+\NormalTok{fit}
+\CommentTok{\# Call:  SuperLearner::SuperLearner(Y = y, X = x\_df, SL.library = learners, cvControl = list(V = V)) }
  
  
  
-#                  Risk       Coef
-# SL.glm_All  0.9614026 0.98842732
-# SL.mean_All 1.8183525 0.01157268
+\CommentTok{\#                  Risk       Coef}
+\CommentTok{\# SL.glm\_All  0.9614026 0.98842732}
+\CommentTok{\# SL.mean\_All 1.8183525 0.01157268}
 
-# importance within the best-fitting learner
-sl_importance_best <- extract_importance_SL(
-  fit = fit, feature_names = x_names, import_type = "best"
-)
-sl_importance_best
-# # A tibble: 2 × 2
-#   feature  rank
-#   <chr>   <int>
-# 1 V2          1
-# 2 V1          2
-\end{verbatim}
+\CommentTok{\# importance within the best{-}fitting learner}
+\NormalTok{sl\_importance\_best }\OtherTok{\textless{}{-}} \FunctionTok{extract\_importance\_SL}\NormalTok{(}
+  \AttributeTok{fit =}\NormalTok{ fit, }\AttributeTok{feature\_names =}\NormalTok{ x\_names, }\AttributeTok{import\_type =} \StringTok{"best"}
+\NormalTok{)}
+\NormalTok{sl\_importance\_best}
+\CommentTok{\# \# A tibble: 2 × 2}
+\CommentTok{\#   feature  rank}
+\CommentTok{\#   \textless{}chr\textgreater{}   \textless{}int\textgreater{}}
+\CommentTok{\# 1 V2          1}
+\CommentTok{\# 2 V1          2}
+\end{Highlighting}
+\end{Shaded}
 
-Finally, to do variable selection, we need to select a threshold for the variable importance rank (ideally before looking at the data). In this case, since there are only two variables, we choose a threshold of 1.5, which means we will select only one variable:
+Finally, to do variable selection, we need to select a threshold for the
+variable importance rank (ideally before looking at the data). In this
+case, since there are only two variables, we choose a threshold of 1.5,
+which means we will select only one variable:
 
-\begin{verbatim}
-extrinsic_selected <- extrinsic_selection(
-  fit = fit, feature_names = x_names, threshold = 1.5, import_type = "all"
-)
-extrinsic_selected
-# A tibble: 2 × 3
-#   feature  rank selected
-#   <chr>   <dbl> <lgl>   
-# 1 V2       1.01 TRUE    
-# 2 V1       1.99 FALSE  
-\end{verbatim}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{extrinsic\_selected }\OtherTok{\textless{}{-}} \FunctionTok{extrinsic\_selection}\NormalTok{(}
+  \AttributeTok{fit =}\NormalTok{ fit, }\AttributeTok{feature\_names =}\NormalTok{ x\_names, }\AttributeTok{threshold =} \FloatTok{1.5}\NormalTok{, }\AttributeTok{import\_type =} \StringTok{"all"}
+\NormalTok{)}
+\NormalTok{extrinsic\_selected}
+\CommentTok{\# A tibble: 2 × 3}
+\CommentTok{\#   feature  rank selected}
+\CommentTok{\#   \textless{}chr\textgreater{}   \textless{}dbl\textgreater{} \textless{}lgl\textgreater{}   }
+\CommentTok{\# 1 V2       1.01 TRUE    }
+\CommentTok{\# 2 V1       1.99 FALSE  }
+\end{Highlighting}
+\end{Shaded}
 
 In this case, we select only variable 2.
 
-\hypertarget{intrinsic-variable-selection}{%
-\subsection{Intrinsic variable selection}\label{intrinsic-variable-selection}}
+\hypertarget{intrinsic-variable-selection-1}{%
+\subsection{Intrinsic variable
+selection}\label{intrinsic-variable-selection-1}}
 
-Intrinsic variable selection is based on population variable importance (Williamson et al. 2021; Williamson and Feng 2020). Intrinsic selection (Williamson and Huang 2023) also uses the Super Learner under the hood, and requires specifying a useful \emph{measure of predictiveness} (e.g., R-squared or classification accuracy). The first step in doing intrinsic selection is estimating the variable importance:
+Intrinsic variable selection is based on population variable importance
+{[}23,24{]}. Intrinsic selection {[}25{]} also uses the Super Learner
+under the hood, and requires specifying a useful \emph{measure of
+predictiveness} (e.g., R-squared or classification accuracy). The first
+step in doing intrinsic selection is estimating the variable importance:
 
-\begin{verbatim}
-set.seed(1234)
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
 
-# set up a library for SuperLearner
-learners <- "SL.glm"
-univariate_learners <- "SL.glm"
-V <- 2
+\CommentTok{\# set up a library for SuperLearner}
+\NormalTok{learners }\OtherTok{\textless{}{-}} \StringTok{"SL.glm"}
+\NormalTok{univariate\_learners }\OtherTok{\textless{}{-}} \StringTok{"SL.glm"}
+\NormalTok{V }\OtherTok{\textless{}{-}} \DecValTok{2}
 
-# estimate the SPVIMs
-library("vimp")
-est <- suppressWarnings(
-  sp_vim(Y = y, X = x, V = V, type = "r_squared",
-              SL.library = learners, gamma = .1, alpha = 0.05, delta = 0,
-              cvControl = list(V = V), env = environment())
-)
-est
-# Variable importance estimates:
-#       Estimate  SE         95% CI                  VIMP > 0 p-value     
-# s = 1 0.1515809 0.06090463 [0.03221005, 0.2709518] TRUE     1.330062e-03
-# s = 2 0.2990449 0.06565597 [0.17036157, 0.4277282] TRUE     6.863052e-09
-\end{verbatim}
+\CommentTok{\# estimate the SPVIMs}
+\FunctionTok{library}\NormalTok{(}\StringTok{"vimp"}\NormalTok{)}
+\NormalTok{est }\OtherTok{\textless{}{-}} \FunctionTok{suppressWarnings}\NormalTok{(}
+  \FunctionTok{sp\_vim}\NormalTok{(}\AttributeTok{Y =}\NormalTok{ y, }\AttributeTok{X =}\NormalTok{ x, }\AttributeTok{V =}\NormalTok{ V, }\AttributeTok{type =} \StringTok{"r\_squared"}\NormalTok{,}
+              \AttributeTok{SL.library =}\NormalTok{ learners, }\AttributeTok{gamma =}\NormalTok{ .}\DecValTok{1}\NormalTok{, }\AttributeTok{alpha =} \FloatTok{0.05}\NormalTok{, }\AttributeTok{delta =} \DecValTok{0}\NormalTok{,}
+              \AttributeTok{cvControl =} \FunctionTok{list}\NormalTok{(}\AttributeTok{V =}\NormalTok{ V), }\AttributeTok{env =} \FunctionTok{environment}\NormalTok{())}
+\NormalTok{)}
+\NormalTok{est}
+\CommentTok{\# Variable importance estimates:}
+\CommentTok{\#       Estimate  SE         95\% CI                  VIMP \textgreater{} 0 p{-}value     }
+\CommentTok{\# s = 1 0.1515809 0.06090463 [0.03221005, 0.2709518] TRUE     1.330062e{-}03}
+\CommentTok{\# s = 2 0.2990449 0.06565597 [0.17036157, 0.4277282] TRUE     6.863052e{-}09}
+\end{Highlighting}
+\end{Shaded}
 
-This procedure again shows (correctly) that variable 2 is more important than variable 1 in this population, since the point estimate of variable importance is larger.
+This procedure again shows (correctly) that variable 2 is more important
+than variable 1 in this population, since the point estimate of variable
+importance is larger.
 
-The next step is to choose an error rate to control and a method for controlling the family-wise error rate. Here, we choose to control the generalized family-wise error rate, setting \texttt{k\ =\ 1} and \texttt{alpha\ =\ 0.2} (so controlling the probability of making more than 1 type I error at 20\%), and choose Holm-adjusted p-values to control the initial family-wise error rate:
+The next step is to choose an error rate to control and a method for
+controlling the family-wise error rate. Here, we choose to control the
+generalized family-wise error rate, setting \texttt{k\ =\ 1} and
+\texttt{alpha\ =\ 0.2} (so controlling the probability of making more
+than 1 type I error at 20\%), and choose Holm-adjusted p-values to
+control the initial family-wise error rate:
 
-\begin{verbatim}
-intrinsic_set <- intrinsic_selection(
-  spvim_ests = est, sample_size = n, alpha = 0.2, feature_names = x_names,
-  control = list( quantity = "gFWER", base_method = "Holm", k = 1)
-)
-intrinsic_set
-# A tibble: 2 × 6
-#   feature   est       p_value adjusted_p_value  rank selected
-#   <chr>   <dbl>         <dbl>            <dbl> <dbl> <lgl>   
-# 1 V1      0.152 0.00133           0.00133          2 TRUE    
-# 2 V2      0.299 0.00000000686     0.0000000137     1 TRUE
-\end{verbatim}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{intrinsic\_set }\OtherTok{\textless{}{-}} \FunctionTok{intrinsic\_selection}\NormalTok{(}
+  \AttributeTok{spvim\_ests =}\NormalTok{ est, }\AttributeTok{sample\_size =}\NormalTok{ n, }\AttributeTok{alpha =} \FloatTok{0.2}\NormalTok{, }\AttributeTok{feature\_names =}\NormalTok{ x\_names,}
+  \AttributeTok{control =} \FunctionTok{list}\NormalTok{( }\AttributeTok{quantity =} \StringTok{"gFWER"}\NormalTok{, }\AttributeTok{base\_method =} \StringTok{"Holm"}\NormalTok{, }\AttributeTok{k =} \DecValTok{1}\NormalTok{)}
+\NormalTok{)}
+\NormalTok{intrinsic\_set}
+\CommentTok{\# A tibble: 2 × 6}
+\CommentTok{\#   feature   est       p\_value adjusted\_p\_value  rank selected}
+\CommentTok{\#   \textless{}chr\textgreater{}   \textless{}dbl\textgreater{}         \textless{}dbl\textgreater{}            \textless{}dbl\textgreater{} \textless{}dbl\textgreater{} \textless{}lgl\textgreater{}   }
+\CommentTok{\# 1 V1      0.152 0.00133           0.00133          2 TRUE    }
+\CommentTok{\# 2 V2      0.299 0.00000000686     0.0000000137     1 TRUE}
+\end{Highlighting}
+\end{Shaded}
 
 In this case, we select both variables.
 
 \hypertarget{variable-selection-with-missing-data}{%
-\subsection{Variable selection with missing data}\label{variable-selection-with-missing-data}}
+\subsection{Variable selection with missing
+data}\label{variable-selection-with-missing-data}}
 
-Settings with missing data render variable selection more challenging. In this section, we consider a simulated dataset inspired by data collected by the Early Detection Research Network. Biomarkers developed at six ``labs'' are validated at at least one of four ``validation sites'' on 306 cysts. The data also include two binary outcome variables: whether or not the cyst was classified as mucinous, and whether or not the cyst was determined to have high malignant potential. The data contain some missing information, which complicates variable selection; only 212 cysts have complete information. We will use AUC to measure intrinsic importance. We begin by loading the data and performing multiple imputation.
+Settings with missing data render variable selection more challenging.
+In this section, we consider a simulated dataset inspired by data
+collected by the Early Detection Research Network. Biomarkers developed
+at six ``labs'' are validated at at least one of four ``validation
+sites'' on 306 cysts. The data also include two binary outcome
+variables: whether or not the cyst was classified as mucinous, and
+whether or not the cyst was determined to have high malignant potential.
+The data contain some missing information, which complicates variable
+selection; only 212 cysts have complete information. We will use AUC to
+measure intrinsic importance. We begin by loading the data and
+performing multiple imputation.
 
-\begin{verbatim}
-# load the dataset
-data("biomarkers")
-library("dplyr")
-# set up vector "y" of outcomes and matrix "x" of features
-y <- biomarkers$mucinous
-x <- biomarkers %>%
-  na.omit() %>%
-  select(starts_with("lab"), starts_with("cea"))
-x_names <- names(x)
-library("mice")
-set.seed(20231121)
-mi_biomarkers <- mice::mice(data = biomarkers, m = 5, printFlag = FALSE)
-imputed_biomarkers <- mice::complete(mi_biomarkers, action = "long") %>%
-  rename(imp = .imp, id = .id)
-\end{verbatim}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# load the dataset}
+\FunctionTok{data}\NormalTok{(}\StringTok{"biomarkers"}\NormalTok{)}
+\FunctionTok{library}\NormalTok{(}\StringTok{"dplyr"}\NormalTok{)}
+\CommentTok{\# set up vector "y" of outcomes and matrix "x" of features}
+\NormalTok{y }\OtherTok{\textless{}{-}}\NormalTok{ biomarkers}\SpecialCharTok{$}\NormalTok{mucinous}
+\NormalTok{x }\OtherTok{\textless{}{-}}\NormalTok{ biomarkers }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{na.omit}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{select}\NormalTok{(}\FunctionTok{starts\_with}\NormalTok{(}\StringTok{"lab"}\NormalTok{), }\FunctionTok{starts\_with}\NormalTok{(}\StringTok{"cea"}\NormalTok{))}
+\NormalTok{x\_names }\OtherTok{\textless{}{-}} \FunctionTok{names}\NormalTok{(x)}
+\FunctionTok{library}\NormalTok{(}\StringTok{"mice"}\NormalTok{)}
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{20231121}\NormalTok{)}
+\NormalTok{mi\_biomarkers }\OtherTok{\textless{}{-}}\NormalTok{ mice}\SpecialCharTok{::}\FunctionTok{mice}\NormalTok{(}\AttributeTok{data =}\NormalTok{ biomarkers, }\AttributeTok{m =} \DecValTok{5}\NormalTok{, }\AttributeTok{printFlag =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{imputed\_biomarkers }\OtherTok{\textless{}{-}}\NormalTok{ mice}\SpecialCharTok{::}\FunctionTok{complete}\NormalTok{(mi\_biomarkers, }\AttributeTok{action =} \StringTok{"long"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{rename}\NormalTok{(}\AttributeTok{imp =}\NormalTok{ .imp, }\AttributeTok{id =}\NormalTok{ .id)}
+\end{Highlighting}
+\end{Shaded}
 
 \hypertarget{extrinsic-selection-with-missing-data}{%
-\subsubsection{Extrinsic selection with missing data}\label{extrinsic-selection-with-missing-data}}
+\subsubsection{Extrinsic selection with missing
+data}\label{extrinsic-selection-with-missing-data}}
 
-We can perform extrinsic variable selection using the imputed data. First, we fit a Super Learner and perform extrinsic variable selection for each imputed dataset. Then, we select a final set of variables based on those that are selected in a pre-specified number of imputed datasets (e.g., 3 of 5) (Heymans et al. 2007). Again, we use a rank of 5 for each imputed dataset to select variables.
+We can perform extrinsic variable selection using the imputed data.
+First, we fit a Super Learner and perform extrinsic variable selection
+for each imputed dataset. Then, we select a final set of variables based
+on those that are selected in a pre-specified number of imputed datasets
+(e.g., 3 of 5) {[}2{]}. Again, we use a rank of 5 for each imputed
+dataset to select variables.
 
-\begin{verbatim}
-extrinsic_learners <- c("SL.glm", "SL.ranger.imp", "SL.xgboost")
-set.seed(20231121)
-# set up a list to collect selected sets
-all_selected_vars <- vector("list", length = 5)
-# for each imputed dataset, do extrinsic selection
-for (i in 1:5) {
-  # fit a Super Learner
-  these_data <- imputed_biomarkers %>%
-    filter(imp == i)
-  this_y <- these_data$mucinous
-  this_x <- these_data %>%
-    select(starts_with("lab"), starts_with("cea"))
-  this_x_df <- as.data.frame(this_x)
-  fit <- SuperLearner::SuperLearner(Y = this_y, X = this_x_df,
-                                  SL.library = extrinsic_learners,
-                                  cvControl = list(V = V),
-                                  family = "binomial")
-  # do extrinsic selection
-  all_selected_vars[[i]] <- extrinsic_selection(
-    fit = fit, feature_names = x_names, threshold = 5, import_type = "all"
-  )$selected
-}
-# perform extrinsic variable selection
-selected_vars <- pool_selected_sets(sets = all_selected_vars, threshold = 3 / 5)
-x_names[selected_vars]
-# [1] "lab1_actb"             "lab1_molecules_score"  "lab1_telomerase_score"
-\end{verbatim}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{extrinsic\_learners }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"SL.glm"}\NormalTok{, }\StringTok{"SL.ranger.imp"}\NormalTok{, }\StringTok{"SL.xgboost"}\NormalTok{)}
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{20231121}\NormalTok{)}
+\CommentTok{\# set up a list to collect selected sets}
+\NormalTok{all\_selected\_vars }\OtherTok{\textless{}{-}} \FunctionTok{vector}\NormalTok{(}\StringTok{"list"}\NormalTok{, }\AttributeTok{length =} \DecValTok{5}\NormalTok{)}
+\CommentTok{\# for each imputed dataset, do extrinsic selection}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\DecValTok{5}\NormalTok{) \{}
+  \CommentTok{\# fit a Super Learner}
+\NormalTok{  these\_data }\OtherTok{\textless{}{-}}\NormalTok{ imputed\_biomarkers }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{filter}\NormalTok{(imp }\SpecialCharTok{==}\NormalTok{ i)}
+\NormalTok{  this\_y }\OtherTok{\textless{}{-}}\NormalTok{ these\_data}\SpecialCharTok{$}\NormalTok{mucinous}
+\NormalTok{  this\_x }\OtherTok{\textless{}{-}}\NormalTok{ these\_data }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{select}\NormalTok{(}\FunctionTok{starts\_with}\NormalTok{(}\StringTok{"lab"}\NormalTok{), }\FunctionTok{starts\_with}\NormalTok{(}\StringTok{"cea"}\NormalTok{))}
+\NormalTok{  this\_x\_df }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(this\_x)}
+\NormalTok{  fit }\OtherTok{\textless{}{-}}\NormalTok{ SuperLearner}\SpecialCharTok{::}\FunctionTok{SuperLearner}\NormalTok{(}\AttributeTok{Y =}\NormalTok{ this\_y, }\AttributeTok{X =}\NormalTok{ this\_x\_df,}
+                                  \AttributeTok{SL.library =}\NormalTok{ extrinsic\_learners,}
+                                  \AttributeTok{cvControl =} \FunctionTok{list}\NormalTok{(}\AttributeTok{V =}\NormalTok{ V),}
+                                  \AttributeTok{family =} \StringTok{"binomial"}\NormalTok{)}
+  \CommentTok{\# do extrinsic selection}
+\NormalTok{  all\_selected\_vars[[i]] }\OtherTok{\textless{}{-}} \FunctionTok{extrinsic\_selection}\NormalTok{(}
+    \AttributeTok{fit =}\NormalTok{ fit, }\AttributeTok{feature\_names =}\NormalTok{ x\_names, }\AttributeTok{threshold =} \DecValTok{5}\NormalTok{, }\AttributeTok{import\_type =} \StringTok{"all"}
+\NormalTok{  )}\SpecialCharTok{$}\NormalTok{selected}
+\NormalTok{\}}
+\CommentTok{\# perform extrinsic variable selection}
+\NormalTok{selected\_vars }\OtherTok{\textless{}{-}} \FunctionTok{pool\_selected\_sets}\NormalTok{(}\AttributeTok{sets =}\NormalTok{ all\_selected\_vars, }\AttributeTok{threshold =} \DecValTok{3} \SpecialCharTok{/} \DecValTok{5}\NormalTok{)}
+\NormalTok{x\_names[selected\_vars]}
+\CommentTok{\# [1] "lab1\_actb"             "lab1\_molecules\_score"  "lab1\_telomerase\_score"}
+\end{Highlighting}
+\end{Shaded}
 
 \hypertarget{intrinsic-selection-with-missing-data}{%
-\subsubsection{Intrinsic selection with missing data}\label{intrinsic-selection-with-missing-data}}
+\subsubsection{Intrinsic selection with missing
+data}\label{intrinsic-selection-with-missing-data}}
 
-To perform intrinsic variable selection using the imputed data, we first estimate variable importance for each imputed dataset.
+To perform intrinsic variable selection using the imputed data, we first
+estimate variable importance for each imputed dataset.
 
-\begin{verbatim}
-set.seed(20231121)
-est_lst <- lapply(as.list(1:5), function(l) {
-  this_x <- imputed_biomarkers %>%
-    filter(imp == l) %>%
-    select(starts_with("lab"), starts_with("cea"))
-  this_y <- biomarkers$mucinous
-  suppressWarnings(
-    sp_vim(Y = this_y, X = this_x, V = V, type = "auc", 
-    SL.library = learners, gamma = 0.1, alpha = 0.05, delta = 0,
-    cvControl = list(V = V), env = environment())
-  )
-})
-\end{verbatim}
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{20231121}\NormalTok{)}
+\NormalTok{est\_lst }\OtherTok{\textless{}{-}} \FunctionTok{lapply}\NormalTok{(}\FunctionTok{as.list}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\DecValTok{5}\NormalTok{), }\ControlFlowTok{function}\NormalTok{(l) \{}
+\NormalTok{  this\_x }\OtherTok{\textless{}{-}}\NormalTok{ imputed\_biomarkers }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{filter}\NormalTok{(imp }\SpecialCharTok{==}\NormalTok{ l) }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{select}\NormalTok{(}\FunctionTok{starts\_with}\NormalTok{(}\StringTok{"lab"}\NormalTok{), }\FunctionTok{starts\_with}\NormalTok{(}\StringTok{"cea"}\NormalTok{))}
+\NormalTok{  this\_y }\OtherTok{\textless{}{-}}\NormalTok{ biomarkers}\SpecialCharTok{$}\NormalTok{mucinous}
+  \FunctionTok{suppressWarnings}\NormalTok{(}
+    \FunctionTok{sp\_vim}\NormalTok{(}\AttributeTok{Y =}\NormalTok{ this\_y, }\AttributeTok{X =}\NormalTok{ this\_x, }\AttributeTok{V =}\NormalTok{ V, }\AttributeTok{type =} \StringTok{"auc"}\NormalTok{, }
+    \AttributeTok{SL.library =}\NormalTok{ learners, }\AttributeTok{gamma =} \FloatTok{0.1}\NormalTok{, }\AttributeTok{alpha =} \FloatTok{0.05}\NormalTok{, }\AttributeTok{delta =} \DecValTok{0}\NormalTok{,}
+    \AttributeTok{cvControl =} \FunctionTok{list}\NormalTok{(}\AttributeTok{V =}\NormalTok{ V), }\AttributeTok{env =} \FunctionTok{environment}\NormalTok{())}
+\NormalTok{  )}
+\NormalTok{\})}
+\end{Highlighting}
+\end{Shaded}
 
-Next, we use Rubin's rules (Rubin 2018) to combine the variable importance estimates, and use this to perform variable selection. Here, we control the probability of making more than 5 errors (the generalized family-wise error rate) at 5\%, using Holm-adjusted p-values to control the initial family-wise error rate.
+Next, we use Rubin's rules {[}26{]} to combine the variable importance
+estimates, and use this to perform variable selection. Here, we control
+the probability of making more than 5 errors (the generalized
+family-wise error rate) at 5\%, using Holm-adjusted p-values to control
+the initial family-wise error rate.
 
-\begin{verbatim}
-intrinsic_set <- intrinsic_selection(
-  spvim_ests = est_lst, sample_size = nrow(biomarkers),
-  feature_names = x_names, alpha = 0.05, 
-  control = list(quantity = "gFWER", base_method = "Holm", k = 5)
-)
-library("dplyr")
-intrinsic_set %>%
-  filter(selected)
-# A tibble: 5 × 6
-#   feature                            est p_value adjusted_p_value  rank selected
-#   <chr>                            <dbl>   <dbl>            <dbl> <dbl> <lgl>   
-# 1 lab1_actb                       0.0334   0.409                1     2 TRUE    
-# 2 lab1_telomerase_score           0.0216   0.439                1     5 TRUE    
-# 3 lab3_muc3ac_score               0.0238   0.433                1     4 TRUE    
-# 4 lab6_ab_score                   0.0241   0.433                1     3 TRUE    
-# 5 lab2_fluorescence_mucinous_call 0.0354   0.396                1     1 TRUE
-\end{verbatim}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{intrinsic\_set }\OtherTok{\textless{}{-}} \FunctionTok{intrinsic\_selection}\NormalTok{(}
+  \AttributeTok{spvim\_ests =}\NormalTok{ est\_lst, }\AttributeTok{sample\_size =} \FunctionTok{nrow}\NormalTok{(biomarkers),}
+  \AttributeTok{feature\_names =}\NormalTok{ x\_names, }\AttributeTok{alpha =} \FloatTok{0.05}\NormalTok{, }
+  \AttributeTok{control =} \FunctionTok{list}\NormalTok{(}\AttributeTok{quantity =} \StringTok{"gFWER"}\NormalTok{, }\AttributeTok{base\_method =} \StringTok{"Holm"}\NormalTok{, }\AttributeTok{k =} \DecValTok{5}\NormalTok{)}
+\NormalTok{)}
+\FunctionTok{library}\NormalTok{(}\StringTok{"dplyr"}\NormalTok{)}
+\NormalTok{intrinsic\_set }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{filter}\NormalTok{(selected)}
+\CommentTok{\# A tibble: 5 × 6}
+\CommentTok{\#   feature                            est p\_value adjusted\_p\_value  rank selected}
+\CommentTok{\#   \textless{}chr\textgreater{}                            \textless{}dbl\textgreater{}   \textless{}dbl\textgreater{}            \textless{}dbl\textgreater{} \textless{}dbl\textgreater{} \textless{}lgl\textgreater{}   }
+\CommentTok{\# 1 lab1\_actb                       0.0334   0.409                1     2 TRUE    }
+\CommentTok{\# 2 lab1\_telomerase\_score           0.0216   0.439                1     5 TRUE    }
+\CommentTok{\# 3 lab3\_muc3ac\_score               0.0238   0.433                1     4 TRUE    }
+\CommentTok{\# 4 lab6\_ab\_score                   0.0241   0.433                1     3 TRUE    }
+\CommentTok{\# 5 lab2\_fluorescence\_mucinous\_call 0.0354   0.396                1     1 TRUE}
+\end{Highlighting}
+\end{Shaded}
 
-We select five variables, here those with the top-5 estimated variable importance. The point estimates and p-values have been computed using Rubin's rules. Two of the variables are the same as those selected using extrinsic selection.
+We select five variables, here those with the top-5 estimated variable
+importance. The point estimates and p-values have been computed using
+Rubin's rules. Two of the variables are the same as those selected using
+extrinsic selection.
+
+\hypertarget{conclusion}{%
+\section{Conclusion}\label{conclusion}}
+
+add a conclusion here
 
 \hypertarget{availability}{%
 \section{Availability}\label{availability}}
 
-The \texttt{flevr} package is publicly available on \href{https://github.com/bdwilliamson/flevr}{GitHub}; stable releases are publicly available on the \href{https://cran.r-project.org/package=flevr}{Comprehensive R Archive Network}. Documentation and examples may be found in the package manual pages and vignettes, and on the \texttt{pkgdown} website (Wickham and Hesselberth 2022) at \url{https://bdwilliamson.github.io/flevr}.
+The \texttt{flevr} package is publicly available on
+\href{https://github.com/bdwilliamson/flevr}{GitHub}; stable releases
+are publicly available on the
+\href{https://cran.r-project.org/package=flevr}{Comprehensive R Archive
+Network}. Documentation and examples may be found in the package manual
+pages and vignettes, and on the \texttt{pkgdown} website {[}27{]} at
+\url{https://bdwilliamson.github.io/flevr}.
 
 \hypertarget{acknowledgements}{%
 \section{Acknowledgements}\label{acknowledgements}}
 
-The authors gratefully acknowledge bug reports and feature requests submitted by Bhavesh Borate.
-
-\hypertarget{references}{%
-\section*{References}\label{references}}
-\addcontentsline{toc}{section}{References}
+The authors gratefully acknowledge bug reports and feature requests
+submitted by Bhavesh Borate.
 
 \hypertarget{refs}{}
-\begin{CSLReferences}{1}{0}
-\leavevmode\vadjust pre{\hypertarget{ref-heymans2007}{}}%
-Heymans, Martijn W, Stef van Buuren, Dirk L Knol, Willem Van Mechelen, and Henrica CW De Vet. 2007. {``Variable Selection Under Multiple Imputation Using the Bootstrap in a Prognostic Study.''} \emph{BMC Medical Research Methodology} 7: 1--10. \url{https://doi.org/10.1186/1471-2288-7-33}.
-
-\leavevmode\vadjust pre{\hypertarget{ref-vanderlaan2007super}{}}%
-Laan, MJ van der, EC Polley, and AE Hubbard. 2007. {``Super Learner.''} \emph{Statistical Applications in Genetics and Molecular Biology} 6 (1): Online Article 25. \url{https://doi.org/10.2202/1544-6115.1309}.
-
+\begin{CSLReferences}{0}{0}
 \leavevmode\vadjust pre{\hypertarget{ref-leng2006}{}}%
-Leng, C, Y Lin, and G Wahba. 2006. {``A Note on the Lasso and Related Procedures in Model Selection.''} \emph{Statistica Sinica} 16: 1273--84. \url{https://www.jstor.org/stable/24307787}.
+\CSLLeftMargin{1. }%
+\CSLRightInline{Leng C, Lin Y, Wahba G. A note on the lasso and related
+procedures in model selection. Statistica Sinica. 2006;16: 1273--1284.
+Available: \url{https://www.jstor.org/stable/24307787}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-r_software}{}}%
-R Core Team. 2023. \emph{R: A Language and Environment for Statistical Computing}. Vienna, Austria: R Foundation for Statistical Computing. \url{https://www.R-project.org/}.
+\leavevmode\vadjust pre{\hypertarget{ref-heymans2007}{}}%
+\CSLLeftMargin{2. }%
+\CSLRightInline{Heymans MW, Buuren S van, Knol DL, Van Mechelen W, De
+Vet HC. Variable selection under multiple imputation using the bootstrap
+in a prognostic study. BMC Medical Research Methodology. 2007;7: 1--10.
+doi:\href{https://doi.org/10.1186/1471-2288-7-33}{10.1186/1471-2288-7-33}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-rubin2018}{}}%
-Rubin, Donald B. 2018. {``Multiple Imputation.''} In \emph{Flexible Imputation of Missing Data, Second Edition}, 29--62. Chapman; Hall/CRC. \url{https://doi.org/10.1201/9780429492259}.
+\leavevmode\vadjust pre{\hypertarget{ref-little1985}{}}%
+\CSLLeftMargin{3. }%
+\CSLRightInline{Little R, Schluchter M. Maximum likelihood estimation
+for mixed continuous and categorical data with missing values.
+Biometrika. 1985;72: 497--512. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-tsiatis2007}{}}%
+\CSLLeftMargin{4. }%
+\CSLRightInline{Tsiatis A. Semiparametric theory and missing data.
+Springer Science \& Business Media; 2007. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-bang2005}{}}%
+\CSLLeftMargin{5. }%
+\CSLRightInline{Bang H, Robins J. Doubly robust estimation in missing
+data and causal inference models. Biometrics. 2005;61: 962--973. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-johnson2008}{}}%
+\CSLLeftMargin{6. }%
+\CSLRightInline{Johnson B, Lin D, Zeng D. Penalized estimating functions
+and variable selection in semiparametric regression models. Journal of
+the American Statistical Association. 2008;103: 672--680. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-wolfson2012}{}}%
+\CSLLeftMargin{7. }%
+\CSLRightInline{Wolfson J. {EEB}oost: A general method for prediction
+and variable selection based on estimating equations. Journal of the
+American Statistical Association. 2011;106. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-rubin1987}{}}%
+\CSLLeftMargin{8. }%
+\CSLRightInline{Rubin D. Multiple imputation for nonresponse in surveys.
+John Wiley \& Sons; 1987. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-vanbuuren2007}{}}%
+\CSLLeftMargin{9. }%
+\CSLRightInline{Buuren S van. Multiple imputation of discrete and
+continuous data by fully conditional specification. Statistical Methods
+in Medical Research. 2007;16: 219--242. }
 
 \leavevmode\vadjust pre{\hypertarget{ref-mice2011}{}}%
-van Buuren, Stef, and Karin Groothuis-Oudshoorn. 2011. {``{mice}: Multivariate Imputation by Chained Equations in r.''} \emph{Journal of Statistical Software} 45 (3): 1--67. \url{https://doi.org/10.18637/jss.v045.i03}.
+\CSLLeftMargin{10. }%
+\CSLRightInline{van Buuren S, Groothuis-Oudshoorn K. {mice}:
+Multivariate imputation by chained equations in r. Journal of
+Statistical Software. 2011;45: 1--67.
+doi:\href{https://doi.org/10.18637/jss.v045.i03}{10.18637/jss.v045.i03}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-wickham_pkgdown}{}}%
-Wickham, Hadley, and Jay Hesselberth. 2022. \emph{{pkgdown}: Make Static HTML Documentation for a Package}. \url{https://CRAN.R-project.org/package=pkgdown}.
+\leavevmode\vadjust pre{\hypertarget{ref-glmnet}{}}%
+\CSLLeftMargin{11. }%
+\CSLRightInline{Friedman J, Hastie T, Tibshirani R, Narasimhan B, Tay K,
+Simon N, et al. {glmnet}: Lasso and elastic-net regularized generalized
+linear models. 2023. Available:
+\url{https://CRAN.R-project.org/package=glmnet}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-williamson2020spvim}{}}%
-Williamson, BD, and J Feng. 2020. {``Efficient Nonparametric Statistical Inference on Population Feature Importance Using {S}hapley Values.''} In \emph{Proceedings of the 37th International Conference on Machine Learning}, 119:10282--91. Proceedings of Machine Learning Research. \url{http://proceedings.mlr.press/v119/williamson20a.html}.
+\leavevmode\vadjust pre{\hypertarget{ref-meinshausen2010}{}}%
+\CSLLeftMargin{12. }%
+\CSLRightInline{Meinshausen N, Bühlmann P. Stability selection. Journal
+of the Royal Statistical Society: Series B (Statistical Methodology).
+2010;72: 417--473. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-Hofner:StabSel:2015}{}}%
+\CSLLeftMargin{13. }%
+\CSLRightInline{Hofner B, Boccuto L, Göker M. Controlling false
+discoveries in high-dimensional situations: Boosting with stability
+selection. {BMC Bioinformatics}. 2015;16: 144. Available:
+\url{http://dx.doi.org/10.1186/s12859-015-0575-3}}
+
+\leavevmode\vadjust pre{\hypertarget{ref-barber2015}{}}%
+\CSLLeftMargin{14. }%
+\CSLRightInline{Barber R, Candès E. Controlling the false discovery rate
+via knockoffs. Annals of Statistics. 2015;43: 2055--2085. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-knockoff}{}}%
+\CSLLeftMargin{15. }%
+\CSLRightInline{Patterson E, Sesia M. Knockoff: The knockoff filter for
+controlled variable selection. 2022. Available:
+\url{https://CRAN.R-project.org/package=knockoff}}
+
+\leavevmode\vadjust pre{\hypertarget{ref-miselect}{}}%
+\CSLLeftMargin{16. }%
+\CSLRightInline{Rix A, Du J. {miselect}: Variable selection for multiply
+imputed data. 2020. Available:
+\url{https://cran.r-project.org/package=miselect}}
+
+\leavevmode\vadjust pre{\hypertarget{ref-du2022variable}{}}%
+\CSLLeftMargin{17. }%
+\CSLRightInline{Du J, Boss J, Han P, Beesley LJ, Kleinsasser M, Goutman
+SA, et al. Variable selection with multiply-imputed datasets: Choosing
+between stacked and grouped methods. Journal of Computational and
+Graphical Statistics. 2022;31: 1063--1075. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-breiman2001}{}}%
+\CSLLeftMargin{18. }%
+\CSLRightInline{Breiman L. Random forests. Machine Learning. 2001;45:
+5--32. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-xin2012}{}}%
+\CSLLeftMargin{19. }%
+\CSLRightInline{Xin L, Zhu M. Stochastic stepwise ensembles for variable
+selection. Journal of Computational and Graphical Statistics. 2012;21:
+275--294. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-saeys2008}{}}%
+\CSLLeftMargin{20. }%
+\CSLRightInline{Saeys Y, Abeel T, Van de Peer Y. Robust feature
+selection using ensemble feature selection techniques. Joint european
+conference on machine learning and knowledge discovery in databases.
+2008. pp. 313--325. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-r_software}{}}%
+\CSLLeftMargin{21. }%
+\CSLRightInline{R Core Team. R: A language and environment for
+statistical computing. Vienna, Austria: R Foundation for Statistical
+Computing; 2023. Available: \url{https://www.R-project.org/}}
+
+\leavevmode\vadjust pre{\hypertarget{ref-vanderlaan2007super}{}}%
+\CSLLeftMargin{22. }%
+\CSLRightInline{Laan M van der, Polley E, Hubbard A. Super learner.
+Statistical Applications in Genetics and Molecular Biology. 2007;6:
+Online Article 25.
+doi:\href{https://doi.org/10.2202/1544-6115.1309}{10.2202/1544-6115.1309}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-williamson2021vim2}{}}%
-Williamson, BD, PB Gilbert, NR Simon, and M Carone. 2021. {``A General Framework for Inference on Algorithm-Agnostic Variable Importance.''} \emph{Journal of the American Statistical Association (Theory \& Methods)}. \url{https://doi.org/10.1080/01621459.2021.2003200}.
+\CSLLeftMargin{23. }%
+\CSLRightInline{Williamson B, Gilbert P, Simon N, Carone M. A general
+framework for inference on algorithm-agnostic variable importance.
+Journal of the American Statistical Association (Theory \& Methods).
+2021.
+doi:\href{https://doi.org/10.1080/01621459.2021.2003200}{10.1080/01621459.2021.2003200}}
+
+\leavevmode\vadjust pre{\hypertarget{ref-williamson2020spvim}{}}%
+\CSLLeftMargin{24. }%
+\CSLRightInline{Williamson B, Feng J. Efficient nonparametric
+statistical inference on population feature importance using {S}hapley
+values. Proceedings of the 37th international conference on machine
+learning. 2020. pp. 10282--10291. Available:
+\url{http://proceedings.mlr.press/v119/williamson20a.html}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-williamson2023flevr}{}}%
-Williamson, BD, and Y Huang. 2023. {``Flexible Variable Selection in the Presence of Missing Data.''} \emph{International Journal of Biostatistics}. \url{https://arxiv.org/abs/2202.12989}.
+\CSLLeftMargin{25. }%
+\CSLRightInline{Williamson B, Huang Y. Flexible variable selection in
+the presence of missing data. International Journal of Biostatistics.
+2023. Available: \url{https://arxiv.org/abs/2202.12989}}
+
+\leavevmode\vadjust pre{\hypertarget{ref-rubin2018}{}}%
+\CSLLeftMargin{26. }%
+\CSLRightInline{Rubin DB. Multiple imputation. Flexible imputation of
+missing data, second edition. Chapman; Hall/CRC; 2018. pp. 29--62.
+doi:\href{https://doi.org/10.1201/9780429492259}{10.1201/9780429492259}}
+
+\leavevmode\vadjust pre{\hypertarget{ref-wickham_pkgdown}{}}%
+\CSLLeftMargin{27. }%
+\CSLRightInline{Wickham H, Hesselberth J. {pkgdown}: Make static HTML
+documentation for a package. 2022. Available:
+\url{https://CRAN.R-project.org/package=pkgdown}}
 
 \end{CSLReferences}
 
-\bibliography{paper.bib}
+\nolinenumbers
 
-\address{%
-Brian D. Williamson\\
-Biostatistics Division, Kaiser Permanente Washington Health Research InstituteVaccine and Infectious Disease Division, Fred Hutchinson Cancer CenterDepartment of Biostatistics, University of Washington\\%
-Biostatistics Division\\ 1730 Minor Ave, Seattle, USA\\
-%
-\url{https://bdwilliamson.github.io}\\%
-\textit{ORCiD: \href{https://orcid.org/0000-0002-7024-548X}{0000-0002-7024-548X}}\\%
-\href{mailto:brian.d.williamson@kp.org}{\nolinkurl{brian.d.williamson@kp.org}}%
-}
 
-\address{%
-Ying Huang\\
-Vaccine and Infectious Disease Division, Fred Hutchinson Cancer CenterDepartment of Biostatistics, University of Washington\\%
-\\
-%
-%
-\textit{ORCiD: \href{https://orcid.org/0000-0002-9655-7502}{0000-0002-9655-7502}}\\%
-\href{mailto:yhuang@fredhutch.org}{\nolinkurl{yhuang@fredhutch.org}}%
-}
+
+\end{document}
