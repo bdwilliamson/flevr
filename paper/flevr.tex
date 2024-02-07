@@ -339,41 +339,40 @@ There is a substantial literature on variable selection with
 fully-observed data; software implementations are also common, with 95
 packages on the Comprehensive R Archive Network (CRAN) having ``variable
 selection'' in the title as of February 2024. Several commonly-used
-methods include the lasso {[}\textbf{tibshirani1996?}{]}, implemented in
-the R package \texttt{glmnet} {[}11{]}; stability selection {[}12{]},
-implemented in the R package \texttt{stabs}
-{[}{[}13{]};Hofner:pkg\_stabs:2021{]}; and knockoffs {[}14{]},
-implemented in the R package \texttt{knockoff} {[}15{]}. However, prior
-to our package \texttt{flevr} (described below), only one R package
-available on CRAN, \texttt{miselect} {[}16{]}, explicitly mentions
-missing data in its title. This package forces selection of the same
-variables across multiply-imputed datasets {[}17{]}; while potentially
-useful in some contexts, this may be undesirable in other contexts.
-Additionally, using a single algorithm to perform variable selection
-carries the risk that if the underlying model assumptions are not met
-(e.g., a linear regression model for the lasso), the selected variables
-might not be correct. Approaches based on ensembles of multiple
-algorithms may be more robust to this misspecification; examples include
-random forests {[}18{]}, majority vote over the ensemble {[}19{]}, and
-rank-based weighting {[}20{]}, but there is no \texttt{R} implementation
-of these approaches on CRAN.
+methods include the lasso {[}11{]}, implemented in the R package
+\texttt{glmnet} {[}12{]}; stability selection {[}13{]}, implemented in
+the R package \texttt{stabs} {[}{[}14{]};Hofner:pkg\_stabs:2021{]}; and
+knockoffs {[}15{]}, implemented in the R package \texttt{knockoff}
+{[}16{]}. However, prior to our package \texttt{flevr} (described
+below), only one R package available on CRAN, \texttt{miselect}
+{[}17{]}, explicitly mentions missing data in its title. This package
+forces selection of the same variables across multiply-imputed datasets
+{[}18{]}; while potentially useful in some contexts, this may be
+undesirable in other contexts. Additionally, using a single algorithm to
+perform variable selection carries the risk that if the underlying model
+assumptions are not met (e.g., a linear regression model for the lasso),
+the selected variables might not be correct. Approaches based on
+ensembles of multiple algorithms may be more robust to this
+misspecification; examples include random forests {[}19{]}, majority
+vote over the ensemble {[}20{]}, and rank-based weighting {[}21{]}, but
+there is no \texttt{R} implementation of these approaches on CRAN.
 
-The \texttt{flevr} package for \texttt{R} {[}21{]} provides researchers
+The \texttt{flevr} package for \texttt{R} {[}22{]} provides researchers
 with the tools necessary to perform variable selection in settings with
 missing data based on flexible prediction approaches. One approach that
-we implement is to use the Super Learner {[}22{]} to perform variable
+we implement is to use the Super Learner {[}23{]} to perform variable
 selection based on an ensemble of individual prediction algorithms, an
 approach we call \emph{extrinsic selection}. The Super Learner has
 asymptotic and finite-sample guarantees on its prediction performance
-{[}22{]}, improving robustness of selected variables to model
+{[}23{]}, improving robustness of selected variables to model
 misspecification. The second approach is to base variable selection on
-\emph{intrinsic variable importance} {[}23,24{]}, which quantifies the
+\emph{intrinsic variable importance} {[}24,25{]}, which quantifies the
 population prediction potential of features. The package facilitates
 both handling missing data using multiple imputation {[}8{]} and
 incorporating state-of-the-art machine learning algorithms to perform
 variable selection. The \emph{intrinsic selection} approach
 (\texttt{intrinsic\_selection}) is based on population variable
-importance {[}25{]}; this approach outputs a single set of selected
+importance {[}26{]}; this approach outputs a single set of selected
 variables, in contrast to other procedures that require post-hoc
 harmonization of multiple selected sets {[}2{]}. To our knowledge, this
 is the first \texttt{R} package implementing both general-purpose
@@ -400,7 +399,7 @@ cite the companion paper; add math supporting this method
 \subsection{Intrinsic variable
 selection}\label{intrinsic-variable-selection}}
 
-{[}25{]}; add math supporting this method
+{[}26{]}; add math supporting this method
 
 \hypertarget{examples}{%
 \section{Examples}\label{examples}}
@@ -444,7 +443,7 @@ and estimated in a model-agnostic manner.
 \subsection{Extrinsic variable
 selection}\label{extrinsic-variable-selection-1}}
 
-We recommend using the Super Learner {[}22{]} to do extrinsic variable
+We recommend using the Super Learner {[}23{]} to do extrinsic variable
 selection to protect against model misspecification. This requires
 specifying a \emph{library} of \emph{candidate learners} (e.g., lasso,
 random forests). We can do this in \texttt{flevr} using the following
@@ -531,7 +530,7 @@ In this case, we select only variable 2.
 selection}\label{intrinsic-variable-selection-1}}
 
 Intrinsic variable selection is based on population variable importance
-{[}23,24{]}. Intrinsic selection {[}25{]} also uses the Super Learner
+{[}24,25{]}. Intrinsic selection {[}26{]} also uses the Super Learner
 under the hood, and requires specifying a useful \emph{measure of
 predictiveness} (e.g., R-squared or classification accuracy). The first
 step in doing intrinsic selection is estimating the variable importance:
@@ -689,7 +688,7 @@ estimate variable importance for each imputed dataset.
 \end{Highlighting}
 \end{Shaded}
 
-Next, we use Rubin's rules {[}26{]} to combine the variable importance
+Next, we use Rubin's rules {[}27{]} to combine the variable importance
 estimates, and use this to perform variable selection. Here, we control
 the probability of making more than 5 errors (the generalized
 family-wise error rate) at 5\%, using Holm-adjusted p-values to control
@@ -734,7 +733,7 @@ The \texttt{flevr} package is publicly available on
 are publicly available on the
 \href{https://cran.r-project.org/package=flevr}{Comprehensive R Archive
 Network}. Documentation and examples may be found in the package manual
-pages and vignettes, and on the \texttt{pkgdown} website {[}27{]} at
+pages and vignettes, and on the \texttt{pkgdown} website {[}28{]} at
 \url{https://bdwilliamson.github.io/flevr}.
 
 \hypertarget{acknowledgements}{%
@@ -804,83 +803,89 @@ Multivariate imputation by chained equations in r. Journal of
 Statistical Software. 2011;45: 1--67.
 doi:\href{https://doi.org/10.18637/jss.v045.i03}{10.18637/jss.v045.i03}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-glmnet}{}}%
+\leavevmode\vadjust pre{\hypertarget{ref-tibshirani1996}{}}%
 \CSLLeftMargin{11. }%
+\CSLRightInline{Tibshirani R. Regression shrinkage and selection via the
+lasso. Journal of the Royal Statistical Society: Series B (Statistical
+Methodology). 1996; 267--288. }
+
+\leavevmode\vadjust pre{\hypertarget{ref-glmnet}{}}%
+\CSLLeftMargin{12. }%
 \CSLRightInline{Friedman J, Hastie T, Tibshirani R, Narasimhan B, Tay K,
 Simon N, et al. {glmnet}: Lasso and elastic-net regularized generalized
 linear models. 2023. Available:
 \url{https://CRAN.R-project.org/package=glmnet}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-meinshausen2010}{}}%
-\CSLLeftMargin{12. }%
+\CSLLeftMargin{13. }%
 \CSLRightInline{Meinshausen N, Bühlmann P. Stability selection. Journal
 of the Royal Statistical Society: Series B (Statistical Methodology).
 2010;72: 417--473. }
 
 \leavevmode\vadjust pre{\hypertarget{ref-Hofner:StabSel:2015}{}}%
-\CSLLeftMargin{13. }%
+\CSLLeftMargin{14. }%
 \CSLRightInline{Hofner B, Boccuto L, Göker M. Controlling false
 discoveries in high-dimensional situations: Boosting with stability
 selection. {BMC Bioinformatics}. 2015;16: 144. Available:
 \url{http://dx.doi.org/10.1186/s12859-015-0575-3}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-barber2015}{}}%
-\CSLLeftMargin{14. }%
+\CSLLeftMargin{15. }%
 \CSLRightInline{Barber R, Candès E. Controlling the false discovery rate
 via knockoffs. Annals of Statistics. 2015;43: 2055--2085. }
 
 \leavevmode\vadjust pre{\hypertarget{ref-knockoff}{}}%
-\CSLLeftMargin{15. }%
+\CSLLeftMargin{16. }%
 \CSLRightInline{Patterson E, Sesia M. Knockoff: The knockoff filter for
 controlled variable selection. 2022. Available:
 \url{https://CRAN.R-project.org/package=knockoff}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-miselect}{}}%
-\CSLLeftMargin{16. }%
+\CSLLeftMargin{17. }%
 \CSLRightInline{Rix A, Du J. {miselect}: Variable selection for multiply
 imputed data. 2020. Available:
 \url{https://cran.r-project.org/package=miselect}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-du2022variable}{}}%
-\CSLLeftMargin{17. }%
+\CSLLeftMargin{18. }%
 \CSLRightInline{Du J, Boss J, Han P, Beesley LJ, Kleinsasser M, Goutman
 SA, et al. Variable selection with multiply-imputed datasets: Choosing
 between stacked and grouped methods. Journal of Computational and
 Graphical Statistics. 2022;31: 1063--1075. }
 
 \leavevmode\vadjust pre{\hypertarget{ref-breiman2001}{}}%
-\CSLLeftMargin{18. }%
+\CSLLeftMargin{19. }%
 \CSLRightInline{Breiman L. Random forests. Machine Learning. 2001;45:
 5--32. }
 
 \leavevmode\vadjust pre{\hypertarget{ref-xin2012}{}}%
-\CSLLeftMargin{19. }%
+\CSLLeftMargin{20. }%
 \CSLRightInline{Xin L, Zhu M. Stochastic stepwise ensembles for variable
 selection. Journal of Computational and Graphical Statistics. 2012;21:
 275--294. }
 
 \leavevmode\vadjust pre{\hypertarget{ref-saeys2008}{}}%
-\CSLLeftMargin{20. }%
+\CSLLeftMargin{21. }%
 \CSLRightInline{Saeys Y, Abeel T, Van de Peer Y. Robust feature
 selection using ensemble feature selection techniques. Joint european
 conference on machine learning and knowledge discovery in databases.
 2008. pp. 313--325. }
 
 \leavevmode\vadjust pre{\hypertarget{ref-r_software}{}}%
-\CSLLeftMargin{21. }%
+\CSLLeftMargin{22. }%
 \CSLRightInline{R Core Team. R: A language and environment for
 statistical computing. Vienna, Austria: R Foundation for Statistical
 Computing; 2023. Available: \url{https://www.R-project.org/}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-vanderlaan2007super}{}}%
-\CSLLeftMargin{22. }%
+\CSLLeftMargin{23. }%
 \CSLRightInline{Laan M van der, Polley E, Hubbard A. Super learner.
 Statistical Applications in Genetics and Molecular Biology. 2007;6:
 Online Article 25.
 doi:\href{https://doi.org/10.2202/1544-6115.1309}{10.2202/1544-6115.1309}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-williamson2021vim2}{}}%
-\CSLLeftMargin{23. }%
+\CSLLeftMargin{24. }%
 \CSLRightInline{Williamson B, Gilbert P, Simon N, Carone M. A general
 framework for inference on algorithm-agnostic variable importance.
 Journal of the American Statistical Association (Theory \& Methods).
@@ -888,7 +893,7 @@ Journal of the American Statistical Association (Theory \& Methods).
 doi:\href{https://doi.org/10.1080/01621459.2021.2003200}{10.1080/01621459.2021.2003200}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-williamson2020spvim}{}}%
-\CSLLeftMargin{24. }%
+\CSLLeftMargin{25. }%
 \CSLRightInline{Williamson B, Feng J. Efficient nonparametric
 statistical inference on population feature importance using {S}hapley
 values. Proceedings of the 37th international conference on machine
@@ -896,19 +901,19 @@ learning. 2020. pp. 10282--10291. Available:
 \url{http://proceedings.mlr.press/v119/williamson20a.html}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-williamson2023flevr}{}}%
-\CSLLeftMargin{25. }%
+\CSLLeftMargin{26. }%
 \CSLRightInline{Williamson B, Huang Y. Flexible variable selection in
 the presence of missing data. International Journal of Biostatistics.
 2023. Available: \url{https://arxiv.org/abs/2202.12989}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-rubin2018}{}}%
-\CSLLeftMargin{26. }%
+\CSLLeftMargin{27. }%
 \CSLRightInline{Rubin DB. Multiple imputation. Flexible imputation of
 missing data, second edition. Chapman; Hall/CRC; 2018. pp. 29--62.
 doi:\href{https://doi.org/10.1201/9780429492259}{10.1201/9780429492259}}
 
 \leavevmode\vadjust pre{\hypertarget{ref-wickham_pkgdown}{}}%
-\CSLLeftMargin{27. }%
+\CSLLeftMargin{28. }%
 \CSLRightInline{Wickham H, Hesselberth J. {pkgdown}: Make static HTML
 documentation for a package. 2022. Available:
 \url{https://CRAN.R-project.org/package=pkgdown}}
