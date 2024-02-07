@@ -291,3 +291,5 @@ The `flevr` package is publicly available on [GitHub](https://github.com/bdwilli
 # Acknowledgements
 
 The authors gratefully acknowledge bug reports and feature requests submitted by Bhavesh Borate.
+
+# References
