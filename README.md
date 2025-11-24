@@ -2,7 +2,7 @@
   [![R-CMD-check](https://github.com/bdwilliamson/flevr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/bdwilliamson/flevr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-# R/`flevr`: flexible, ensemble-based variable selection
+# R/`flevr`: flexible, ensemble-based variable selection <img src="man/figures/flevr_logo.png" align="right" width="120px"/>
 
 Software author: [Brian Williamson](https://bdwilliamson.github.io)
 

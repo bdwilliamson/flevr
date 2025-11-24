@@ -27,7 +27,9 @@ address:
     address: Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center, Seattle, WA
   - code: UW
     address: Department of Biostatistics, University of Washington, Seattle, WA
-output: rticles::plos_article
+output: 
+  bookdown::pdf_book:
+    base_format: rticles::plos_article
 csl: http://www.zotero.org/styles/plos
 bibliography: flevr.bib
 ---
@@ -44,23 +46,53 @@ Often, in missing-data settings, variable selection is accomplished in one of tw
 
 There is a substantial literature on variable selection with fully-observed data; software implementations are also common, with 95 packages on the Comprehensive R Archive Network (CRAN) having "variable selection" in the title as of February 2024. Several commonly-used methods include the lasso [@tibshirani1996], implemented in the R package `glmnet` [@glmnet]; stability selection [@meinshausen2010], implemented in the R package `stabs` [@Hofner:StabSel:2015;Hofner:pkg_stabs:2021]; and knockoffs [@barber2015], implemented in the R package `knockoff` [@knockoff]. However, prior to our package `flevr` (described below), only one R package available on CRAN, `miselect` [@miselect], explicitly mentions missing data in its title. This package forces selection of the same variables across multiply-imputed datasets [@du2022variable]; while potentially useful in some contexts, this may be undesirable in other contexts. Additionally, using a single algorithm to perform variable selection carries the risk that if the underlying model assumptions are not met (e.g., a linear regression model for the lasso), the selected variables might not be correct. Approaches based on ensembles of multiple algorithms may be more robust to this misspecification; examples include random forests [@breiman2001], majority vote over the ensemble [@xin2012], and rank-based weighting [@saeys2008], but there is no `R` implementation of these approaches on CRAN. 
 
-The `flevr` package for `R` [@r_software] provides researchers with the tools necessary to perform variable selection in settings with missing data based on flexible prediction approaches. One approach that we implement is to use the Super Learner [@vanderlaan2007super] to perform variable selection based on an ensemble of individual prediction algorithms, an approach we call _extrinsic selection_. The Super Learner has asymptotic and finite-sample guarantees on its prediction performance [@vanderlaan2007super], improving robustness of selected variables to model misspecification. The second approach is to base variable selection on _intrinsic variable importance_ [@williamson2021vim2;@williamson2020spvim], which quantifies the population prediction potential of features. The package facilitates both handling missing data using multiple imputation [@rubin1987] and incorporating state-of-the-art machine learning algorithms to perform variable selection. The _intrinsic selection_ approach (`intrinsic_selection`) is based on population variable importance [@williamson2023flevr]; this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets [@heymans2007]. To our knowledge, this is the first `R` package implementing both general-purpose ensemble-based variable selection and intrinsic variable selection.
+The `flevr` package for `R` [@r_software] provides researchers with the tools necessary to perform variable selection in settings with missing data based on flexible prediction approaches. One approach that we implement is to use the super learner [@vanderlaan2007super] to perform variable selection based on an ensemble of individual prediction algorithms, an approach we call _extrinsic selection_ [@williamson2024missing]. The super learner has asymptotic and finite-sample guarantees on its prediction performance [@vanderlaan2007super], improving robustness of selected variables to model misspecification. The second approach is to base variable selection on _intrinsic variable importance_ [@williamson2021vim2;@williamson2020spvim], which quantifies the population prediction potential of features. The package facilitates both handling missing data using multiple imputation [@rubin1987] and incorporating state-of-the-art machine learning algorithms to perform variable selection. The _intrinsic selection_ approach (`intrinsic_selection`) is based on population variable importance [@williamson2023flevr]; this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets [@heymans2007]. To our knowledge, this is the first `R` package implementing both general-purpose ensemble-based variable selection and intrinsic variable selection.
 
 # Methods
 
-This section should involve some math, but not be as deep as either the original intrinsic selection paper or the companion paper
-
 ## Motivating dataset
 
-describe the dataset
+Detecting pancreatic cancer early, when treatment should be most effective, is an urgent public health goal. Routine imaging can often detect precursor lesions to pancreatic cancer, but can be prohibitively expensive in some cases and current radiographic tests have limited ability to differentiate between benign and pre-malignant lesions [@brugge2004]. Fluid biomarkers, which can be assayed using pancreatic cyst fluid that is routinely collected during clinical care, are promising for early detection efforts [@chari2020early]. 
+
+We include with the `flevr` package a dataset that is inspired by the Early Detection Research Network (EDRN), part of the National Cancer Institute of the United States National Institutes of Health. The data include 306 "samples" from pancreatic cysts from study participants and 24 columns, describing the validation site (where the fluid biomarkers for the sample were assayed), the outcomes of interest (both binary; whether the cyst was classified as mucinous or whether the cyst was classified as having high malignant potential), and 21 fluid biomarkers. The biomarkers are based on carcinoembryonic antigen [@fletcher1986carcinoembryonic] and other candidates for early detection of pancreatic cancer. The data were generated to follow similar distributions to specimen data from the EDRN. Crucially, the data have a complex missing-data pattern in the biomarkers. In Figure \@ref(fig:visualize-missing-data), we display the proportion of missing data across biomarkers. In Figure \@ref(fig:upset-plot) we illustrate the complex missing-data pattern: this plot shows the top 10 combinations of missing values across observations, ordered by observed frequency. There are many missing-data combinations that are observed only once; the maximum is observed only five times. These plots were generated using the `naniar` package [@tierney2023]. 
+
+```{r visualize-missing-data, echo = FALSE, out.width="100%", fig.cap="Missing data, along with proportions, for each observation and all biomarkers in the EDRN-inspired dataset."}
+library("flevr")
+# load the dataset
+data("biomarkers")
+library("dplyr")
+library("ggplot2")
+# set up vector "y" of outcomes and matrix "x" of features
+y <- biomarkers$mucinous
+x <- biomarkers %>%
+  select(starts_with("lab"), starts_with("cea"))
+library("naniar")
+vis_miss(x) +
+  theme(axis.text.x.top = element_text(angle = 80))
+```
+
+```{r upset-plot, echo = FALSE, out.width="100%", fig.cap="The top observed missing-data combinations in the EDRN-inspired dataset."}
+gg_miss_upset(x, nsets = 10, order.by = "freq")
+```
 
 ## Extrinsic variable selection
 
-cite the companion paper; add math supporting this method
+Extrinsic variable selection encompasses many traditional methods, including the lasso. We define _extrinsic variable importance_ as the extent to which a given algorithm makes use of a variable. Examples include the absolute value of a regression coefficient standardized by its estimated standard error for generalized linear models; the estimated coefficient from penalized regression models (e.g., the lasso); or impurity-based tree or forest measures [@breiman2001;@friedman2001].
+
+As we mentioned in the Introduction, many of these approaches have good performance in many scenarios, but may suffer when the underlying model assumptions are not met. We proposed to use the super learner ensemble for extrinsic selection [@williamson2024missing], which may guard against misspecification. 
+
+The super learner is an implementation of stacking [@wolpert1992] with both finite-sample and asymptotic guarantees on its performance [@vanderlaan2007super]. 
+The first step is to specify a _library of candidate learners_ (i.e., a set of prediction algorithms). Then, based on a chosen loss function (e.g., squared error loss for continuous outcomes or negative log likelihood loss for binary outcomes), cross-validation is used to evaluate the prediction performance of each learner in the library. Suppose that we fit a super learner with $L$ candidate learners. The _discrete_ super learner (dSL) is the algorithm with the lowest cross-validated loss; the _ensemble_ super learner (eSL) is the optimal convex combination of the individual learners, with weights $0 \leq \{w_\ell\}_{\ell = 1}^L$ chosen to minimize the cross-validated loss [@phillips2023practical]. 
+
+To use the super learner for variable selection, suppose that we have $p$ variables $(X_1, \ldots, X_p)$ and let the extrinsic importance of variable $X_j$ in learner $\ell$ be $v_{j,\ell}$. Further, let the ranked importance of variable $X_j$ in learner $\ell$ be $r_{j,\ell}$, where rank 1 denotes the variable with the largest importance in learner $\ell$. Then the eSL-based extrinsic importance is the weighted average variable importance rank across algorithms in the super learner, $r_{j} = \sum_{\ell = 1}^L w_\ell r_{j,\ell}$. The dSL-based extrinsic importance is the variable importance rank in the discrete super learner. We found that this procedure has good operating characteristics in both complete- and missing-data settings, and can be used within stability selection for further control over error rates [@williamson2024missing]. In missing-data contexts, the data are first multiply imputed (or singly imputed in each of $B$ bootstrapped datasets); then, the extrinsic selection procedure is applied to each imputed dataset; and finally, the selected sets are pooled by keeping variables that appeared in a pre-specified fraction of the imputed datasets. 
 
 ## Intrinsic variable selection
 
-[@williamson2023flevr]; add math supporting this method
+Intrinsic variable selection relies on intrinsic variable importance, which quantifies the extent to which a variable contributes to population-level predictiveness. Suppose that our observations are drawn from a distribution $P_0$. Intrinsic variable importance depends on the chosen measure of predictiveness (e.g., R-squared or classification accuracy) and the set of variables that are conditioned on [@williamson2021vim2]. To reduce the dependence on this latter quantity, one can instead use the Shapley population variable importance measure (SPVIM) [@williamson2020spvim]. For predictiveness measure $V$ and variable $X_j$, the SPVIM is
+$$\psi_{0,j}:=\sum_{s \in \{1, \ldots, p\}\setminus \{j\}}\binom{p - 1}{\lvert s \rvert}^{-1}\frac{1}{p}\{V(f_{0,s\cup j}, P_0) - V(f_{0,s}, P_0)\},$$
+where $f_{0,s}$ denotes the best population prediction function with respect to $V$ and $P_0$ (i.e., it maximizes $V$ in the population of interest). 
+
+The intrinsic variable selection algorithm involves first estimating the SPVIM values; then, employing a procedure for familywise error rate control to select an initial set of variables; and finally, augmenting the initial set with additional variables with control over a generalized error rate. In missing-data settings, either the post-hoc harmonization described above can be applied, or Rubin's rules [@rubin2018] can be applied to yield a single set of selected variables. This procedure has been shown to have both good theoretical and finite-sample behavior [@williamson2023flevr].
 
 # Examples
 
@@ -86,18 +118,18 @@ There are two main types of variable selection available in `flevr`: extrinsic a
 
 ## Extrinsic variable selection
 
-We recommend using the Super Learner [@vanderlaan2007super] to do extrinsic variable selection to protect against model misspecification. This requires specifying a _library_ of _candidate learners_ (e.g., lasso, random forests). We can do this in `flevr` using the following code:
+We recommend using the super learner [@vanderlaan2007super] to do extrinsic variable selection to protect against model misspecification. This requires specifying a _library_ of _candidate learners_ (e.g., lasso, random forests). We can do this in `flevr` using the following code:
 ```r
 library("flevr")
 set.seed(1234)
-# fit a Super Learner ensemble; note its simplicity, for speed
+# fit a super learner ensemble; note its simplicity, for speed
 library("SuperLearner")
 learners <- c("SL.glm", "SL.mean")
 V <- 2
 fit <- SuperLearner::SuperLearner(Y = y, X = x_df,
                                   SL.library = learners,
                                   cvControl = list(V = V))
-# extract importance based on the whole Super Learner
+# extract importance based on the whole super learner
 sl_importance_all <- extract_importance_SL(
   fit = fit, feature_names = x_names, import_type = "all"
 )
@@ -109,7 +141,7 @@ sl_importance_all
 # 1 V2       1.01
 # 2 V1       1.99
 ```
-These results suggest that feature 2 is more important than feature 1 within the Super Learner ensemble (since a lower rank is better). If we want to scrutinize the importance of features within the best-fitting algorithm in the Super Learner ensemble, we can do the following:
+These results suggest that feature 2 is more important than feature 1 within the super learner ensemble (since a lower rank is better). If we want to scrutinize the importance of features within the best-fitting algorithm in the super learner ensemble, we can do the following:
 ```r
 # check the best-fitting learner
 fit
@@ -148,7 +180,7 @@ In this case, we select only variable 2.
 
 ## Intrinsic variable selection
 
-Intrinsic variable selection is based on population variable importance [@williamson2021vim2;@williamson2020spvim]. Intrinsic selection [@williamson2023flevr] also uses the Super Learner under the hood, and requires specifying a useful _measure of predictiveness_ (e.g., R-squared or classification accuracy). The first step in doing intrinsic selection is estimating the variable importance:
+Intrinsic variable selection is based on population variable importance [@williamson2021vim2;@williamson2020spvim]. Intrinsic selection [@williamson2023flevr] also uses the super learner under the hood, and requires specifying a useful _measure of predictiveness_ (e.g., R-squared or classification accuracy). The first step in doing intrinsic selection is estimating the variable importance:
 ```r
 set.seed(1234)
 
@@ -210,7 +242,7 @@ imputed_biomarkers <- mice::complete(mi_biomarkers, action = "long") %>%
 
 ### Extrinsic selection with missing data
 
-We can perform extrinsic variable selection using the imputed data. First, we fit a Super Learner and perform extrinsic variable selection for each imputed dataset. Then, we select a final set of variables based on those that are selected in a pre-specified number of imputed datasets (e.g., 3 of 5) [@heymans2007]. Again, we use a rank of 5 for each imputed dataset to select variables.
+We can perform extrinsic variable selection using the imputed data. First, we fit a super learner and perform extrinsic variable selection for each imputed dataset. Then, we select a final set of variables based on those that are selected in a pre-specified number of imputed datasets (e.g., 3 of 5) [@heymans2007]. Again, we use a rank of 5 for each imputed dataset to select variables.
 
 ```r
 extrinsic_learners <- c("SL.glm", "SL.ranger.imp", "SL.xgboost")
@@ -219,7 +251,7 @@ set.seed(20231121)
 all_selected_vars <- vector("list", length = 5)
 # for each imputed dataset, do extrinsic selection
 for (i in 1:5) {
-  # fit a Super Learner
+  # fit a super learner
   these_data <- imputed_biomarkers %>%
     filter(imp == i)
   this_y <- these_data$mucinous
@@ -282,7 +314,7 @@ We select five variables, here those with the top-5 estimated variable importanc
 
 # Conclusion
 
-add a conclusion here
+While many methods for performing variable selection with missing data exist, few have been implemented in publicly-available, open-source software. In this paper, we present the `R` package `flevr`, which implements two flavors of ensemble-based variable selection. The first, extrinsic variable selection, generalizes many commonly-used techniques (e.g., the lasso), and uses cross-validation to select variables that have high importance rank across learners in an ensemble. This can guard against model misspecification. The second approach, intrinsic variable selection, selects features based on their population prediction potential. Both approaches can be used with missing data; however, only intrinsic variable selection allows for the use of Rubin's rules to return a single set of selected variables without the need for post-hoc harmonization of selected sets from many imputed datasets.
 
 # Availability
 

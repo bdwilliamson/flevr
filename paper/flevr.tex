@@ -213,31 +213,48 @@
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
+% From pandoc table feature
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
 
 % Pandoc citation processing
+%From Pandoc 3.1.8
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
 \newlength{\cslhangindent}
 \setlength{\cslhangindent}{1.5em}
 \newlength{\csllabelwidth}
 \setlength{\csllabelwidth}{3em}
-\newlength{\cslentryspacingunit} % times entry-spacing
-\setlength{\cslentryspacingunit}{\parskip}
-% for Pandoc 2.8 to 2.10.1
-\newenvironment{cslreferences}%
-  {}%
-  {\par}
-% For Pandoc 2.11+
-\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
- {% don't indent paragraphs
-  \setlength{\parindent}{0pt}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
   % turn on hanging indent if param 1 is 1
   \ifodd #1
-  \let\oldpar\par
-  \def\par{\hangindent=\cslhangindent\oldpar}
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
   \fi
   % set entry spacing
-  \setlength{\parskip}{#2\cslentryspacingunit}
- }%
- {}
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
 \usepackage{calc}
 \newcommand{\CSLBlock}[1]{#1\hfill\break}
 \newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
@@ -265,38 +282,23 @@
 % Title must be 250 characters or less.
 \begin{flushleft}
 {\Large
-\textbf\newline{flevr: Flexible, Ensemble-based Variable Selection in
-R} % Please use "sentence case" for title and headings (capitalize only the first word in a title (or heading), the first word in a subtitle (or subheading), and any proper nouns).
+\textbf\newline{flevr: Flexible, Ensemble-based Variable Selection in R} % Please use "sentence case" for title and headings (capitalize only the first word in a title (or heading), the first word in a subtitle (or subheading), and any proper nouns).
 }
 \newline
 % Insert author names, affiliations and corresponding author email (do not include titles, positions, or degrees).
 \\
-Brian D. Williamson\textsuperscript{\getAff{KPWHRI}, \getAff{Fred
-Hutch}, \getAff{UW}}\textsuperscript{*},
+Brian D. Williamson\textsuperscript{\getAff{KPWHRI}, \getAff{Fred Hutch}, \getAff{UW}}\textsuperscript{*},
 Ying Huang\textsuperscript{\getAff{Fred Hutch}, \getAff{UW}}\\
 \bigskip
-\textbf{\getAff{KPWHRI}}Biostatistics Division, Kaiser Permanente
-Washington Health Research Institute, Seattle, WA\\
-\textbf{\getAff{Fred Hutch}}Vaccine and Infectious Disease Division,
-Fred Hutchinson Cancer Center, Seattle, WA\\
-\textbf{\getAff{UW}}Department of Biostatistics, University of
-Washington, Seattle, WA\\
+\textbf{\getAff{KPWHRI}}Biostatistics Division, Kaiser Permanente Washington Health Research Institute, Seattle, WA\\
+\textbf{\getAff{Fred Hutch}}Vaccine and Infectious Disease Division, Fred Hutchinson Cancer Center, Seattle, WA\\
+\textbf{\getAff{UW}}Department of Biostatistics, University of Washington, Seattle, WA\\
 \bigskip
 * Corresponding author: brian.d.williamson@kp.org\\
 \end{flushleft}
 % Please keep the abstract below 300 words
 \section*{Abstract}
-Variable selection in missing-data contexts is complicated by two
-issues: (i) a desire for the results to be robust to departures from
-simplifying modelling assumptions, and (ii) the need to incorporate a
-missing-data approach. Often, researchers turn to machine learning to
-increase robustness, but the options for missing-data variable selection
-when machine learning tools have been used are neither easily
-interpretable nor implemented in easy-to-use software. The flevr R
-package provides an open-source tool for performing variable selection
-using flexible, ensemble machine learning algorithms. An intrinsic
-selection approach based on population variable importance solves these
-issues. We illustrate the use of the package with several examples.
+Variable selection in missing-data contexts is complicated by two issues: (i) a desire for the results to be robust to departures from simplifying modelling assumptions, and (ii) the need to incorporate a missing-data approach. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are neither easily interpretable nor implemented in easy-to-use software. The flevr R package provides an open-source tool for performing variable selection using flexible, ensemble machine learning algorithms. An intrinsic selection approach based on population variable importance solves these issues. We illustrate the use of the package with several examples.
 
 % Please keep the Author Summary between 150 and 200 words
 % Use first person. PLOS ONE authors please skip this step.
@@ -305,108 +307,54 @@ issues. We illustrate the use of the package with several examples.
 \linenumbers
 
 % Use "Eq" instead of "Equation" for equation citations.
-\hypertarget{introduction}{%
-\section{Introduction}\label{introduction}}
+\section{Introduction}\label{introduction}
 
-Variable selection is a common goal in biomedical research, among other
-fields. Traditional tools for variable selection are generally not
-robust to departures from possibly restrictive modelling assumptions
-{[}1{]}. Often, researchers turn to machine learning to increase
-robustness, but the options for missing-data variable selection when
-machine learning tools have been used are not easily interpretable.
-However, in settings with missing data, procedures to combine variable
-selection results across imputed datasets become more difficult to
-interpret when machine learning tools are used {[}2{]}.
+Variable selection is a common goal in biomedical research, among other fields. Traditional tools for variable selection are generally not robust to departures from possibly restrictive modelling assumptions {[}1{]}. Often, researchers turn to machine learning to increase robustness, but the options for missing-data variable selection when machine learning tools have been used are not easily interpretable. However, in settings with missing data, procedures to combine variable selection results across imputed datasets become more difficult to interpret when machine learning tools are used {[}2{]}.
 
-Often, in missing-data settings, variable selection is accomplished in
-one of two ways. Methods for variable selection with full observation of
-all variables can be adapted to the missing-data setting by using
-likelihood-based methods {[}3{]} or methods based on inverse probability
-weighting {[}4--7{]}. While these approaches can be quite useful, they
-are often tailored to specific data-generating or missing-data
-processes, rendering their implementation in software difficult. In
-contrast, approaches based on multiple imputation
-{[}8,9{]}---implemented in the R package \texttt{mice} {[}10{]}, among
-other packages---are easy to incorporate into analysis pipelines and
-therefore are widely used. After the missing data are multiply imputed,
-any variable selection method can be used on the imputed datasets.
-However, the selected variables across different imputed datasets may be
-different, and thus must be harmonized across all imputed datasets;
-often, variables that are selected in some large proportion of datasets
-are retained in the final selected set {[}2{]}.
+Often, in missing-data settings, variable selection is accomplished in one of two ways. Methods for variable selection with full observation of all variables can be adapted to the missing-data setting by using likelihood-based methods {[}3{]} or methods based on inverse probability weighting {[}4--7{]}. While these approaches can be quite useful, they are often tailored to specific data-generating or missing-data processes, rendering their implementation in software difficult. In contrast, approaches based on multiple imputation {[}8,9{]}---implemented in the R package \texttt{mice} {[}10{]}, among other packages---are easy to incorporate into analysis pipelines and therefore are widely used. After the missing data are multiply imputed, any variable selection method can be used on the imputed datasets. However, the selected variables across different imputed datasets may be different, and thus must be harmonized across all imputed datasets; often, variables that are selected in some large proportion of datasets are retained in the final selected set {[}2{]}.
 
-There is a substantial literature on variable selection with
-fully-observed data; software implementations are also common, with 95
-packages on the Comprehensive R Archive Network (CRAN) having ``variable
-selection'' in the title as of February 2024. Several commonly-used
-methods include the lasso {[}11{]}, implemented in the R package
-\texttt{glmnet} {[}12{]}; stability selection {[}13{]}, implemented in
-the R package \texttt{stabs} {[}{[}14{]};Hofner:pkg\_stabs:2021{]}; and
-knockoffs {[}15{]}, implemented in the R package \texttt{knockoff}
-{[}16{]}. However, prior to our package \texttt{flevr} (described
-below), only one R package available on CRAN, \texttt{miselect}
-{[}17{]}, explicitly mentions missing data in its title. This package
-forces selection of the same variables across multiply-imputed datasets
-{[}18{]}; while potentially useful in some contexts, this may be
-undesirable in other contexts. Additionally, using a single algorithm to
-perform variable selection carries the risk that if the underlying model
-assumptions are not met (e.g., a linear regression model for the lasso),
-the selected variables might not be correct. Approaches based on
-ensembles of multiple algorithms may be more robust to this
-misspecification; examples include random forests {[}19{]}, majority
-vote over the ensemble {[}20{]}, and rank-based weighting {[}21{]}, but
-there is no \texttt{R} implementation of these approaches on CRAN.
+There is a substantial literature on variable selection with fully-observed data; software implementations are also common, with 95 packages on the Comprehensive R Archive Network (CRAN) having ``variable selection'' in the title as of February 2024. Several commonly-used methods include the lasso {[}11{]}, implemented in the R package \texttt{glmnet} {[}12{]}; stability selection {[}13{]}, implemented in the R package \texttt{stabs} {[}{[}14{]};Hofner:pkg\_stabs:2021{]}; and knockoffs {[}15{]}, implemented in the R package \texttt{knockoff} {[}16{]}. However, prior to our package \texttt{flevr} (described below), only one R package available on CRAN, \texttt{miselect} {[}17{]}, explicitly mentions missing data in its title. This package forces selection of the same variables across multiply-imputed datasets {[}18{]}; while potentially useful in some contexts, this may be undesirable in other contexts. Additionally, using a single algorithm to perform variable selection carries the risk that if the underlying model assumptions are not met (e.g., a linear regression model for the lasso), the selected variables might not be correct. Approaches based on ensembles of multiple algorithms may be more robust to this misspecification; examples include random forests {[}19{]}, majority vote over the ensemble {[}20{]}, and rank-based weighting {[}21{]}, but there is no \texttt{R} implementation of these approaches on CRAN.
 
-The \texttt{flevr} package for \texttt{R} {[}22{]} provides researchers
-with the tools necessary to perform variable selection in settings with
-missing data based on flexible prediction approaches. One approach that
-we implement is to use the Super Learner {[}23{]} to perform variable
-selection based on an ensemble of individual prediction algorithms, an
-approach we call \emph{extrinsic selection}. The Super Learner has
-asymptotic and finite-sample guarantees on its prediction performance
-{[}23{]}, improving robustness of selected variables to model
-misspecification. The second approach is to base variable selection on
-\emph{intrinsic variable importance} {[}24,25{]}, which quantifies the
-population prediction potential of features. The package facilitates
-both handling missing data using multiple imputation {[}8{]} and
-incorporating state-of-the-art machine learning algorithms to perform
-variable selection. The \emph{intrinsic selection} approach
-(\texttt{intrinsic\_selection}) is based on population variable
-importance {[}26{]}; this approach outputs a single set of selected
-variables, in contrast to other procedures that require post-hoc
-harmonization of multiple selected sets {[}2{]}. To our knowledge, this
-is the first \texttt{R} package implementing both general-purpose
-ensemble-based variable selection and intrinsic variable selection.
+The \texttt{flevr} package for \texttt{R} {[}22{]} provides researchers with the tools necessary to perform variable selection in settings with missing data based on flexible prediction approaches. One approach that we implement is to use the super learner {[}23{]} to perform variable selection based on an ensemble of individual prediction algorithms, an approach we call \emph{extrinsic selection} {[}24{]}. The super learner has asymptotic and finite-sample guarantees on its prediction performance {[}23{]}, improving robustness of selected variables to model misspecification. The second approach is to base variable selection on \emph{intrinsic variable importance} {[}25,26{]}, which quantifies the population prediction potential of features. The package facilitates both handling missing data using multiple imputation {[}8{]} and incorporating state-of-the-art machine learning algorithms to perform variable selection. The \emph{intrinsic selection} approach (\texttt{intrinsic\_selection}) is based on population variable importance {[}27{]}; this approach outputs a single set of selected variables, in contrast to other procedures that require post-hoc harmonization of multiple selected sets {[}2{]}. To our knowledge, this is the first \texttt{R} package implementing both general-purpose ensemble-based variable selection and intrinsic variable selection.
 
-\hypertarget{methods}{%
-\section{Methods}\label{methods}}
+\section{Methods}\label{methods}
 
-This section should involve some math, but not be as deep as either the
-original intrinsic selection paper or the companion paper
+\subsection{Motivating dataset}\label{motivating-dataset}
 
-\hypertarget{motivating-dataset}{%
-\subsection{Motivating dataset}\label{motivating-dataset}}
+Detecting pancreatic cancer early, when treatment should be most effective, is an urgent public health goal. Routine imaging can often detect precursor lesions to pancreatic cancer, but can be prohibitively expensive in some cases and current radiographic tests have limited ability to differentiate between benign and pre-malignant lesions {[}28{]}. Fluid biomarkers, which can be assayed using pancreatic cyst fluid that is routinely collected during clinical care, are promising for early detection efforts {[}29{]}.
 
-describe the dataset
+We include with the \texttt{flevr} package a dataset that is inspired by the Early Detection Research Network (EDRN), part of the National Cancer Institute of the United States National Institutes of Health. The data include 306 ``samples'' from pancreatic cysts from study participants and 24 columns, describing the validation site (where the fluid biomarkers for the sample were assayed), the outcomes of interest (both binary; whether the cyst was classified as mucinous or whether the cyst was classified as having high malignant potential), and 21 fluid biomarkers. The biomarkers are based on carcinoembryonic antigen {[}30{]} and other candidates for early detection of pancreatic cancer. The data were generated to follow similar distributions to specimen data from the EDRN. Crucially, the data have a complex missing-data pattern in the biomarkers. In Figure \ref{fig:visualize-missing-data}, we display the proportion of missing data across biomarkers. In Figure \ref{fig:upset-plot} we illustrate the complex missing-data pattern: this plot shows the top 10 combinations of missing values across observations, ordered by observed frequency. There are many missing-data combinations that are observed only once; the maximum is observed only five times. These plots were generated using the \texttt{naniar} package {[}31{]}.
 
-\hypertarget{extrinsic-variable-selection}{%
-\subsection{Extrinsic variable
-selection}\label{extrinsic-variable-selection}}
+\begin{figure}
+\includegraphics[width=1\linewidth]{flevr_files/figure-latex/visualize-missing-data-1} \caption{Missing data, along with proportions, for each observation and all biomarkers in the EDRN-inspired dataset.}\label{fig:visualize-missing-data}
+\end{figure}
 
-cite the companion paper; add math supporting this method
+\begin{figure}
+\includegraphics[width=1\linewidth]{flevr_files/figure-latex/upset-plot-1} \caption{The top observed missing-data combinations in the EDRN-inspired dataset.}\label{fig:upset-plot}
+\end{figure}
 
-\hypertarget{intrinsic-variable-selection}{%
-\subsection{Intrinsic variable
-selection}\label{intrinsic-variable-selection}}
+\subsection{Extrinsic variable selection}\label{extrinsic-variable-selection}
 
-{[}26{]}; add math supporting this method
+Extrinsic variable selection encompasses many traditional methods, including the lasso. We define \emph{extrinsic variable importance} as the extent to which a given algorithm makes use of a variable. Examples include the absolute value of a regression coefficient standardized by its estimated standard error for generalized linear models; the estimated coefficient from penalized regression models (e.g., the lasso); or impurity-based tree or forest measures {[}19,32{]}.
 
-\hypertarget{examples}{%
-\section{Examples}\label{examples}}
+As we mentioned in the Introduction, many of these approaches have good performance in many scenarios, but may suffer when the underlying model assumptions are not met. We proposed to use the super learner ensemble for extrinsic selection {[}24{]}, which may guard against misspecification.
 
-This section should serve as a guide to using the \texttt{flevr} package
---- we will cover the main functions for doing extrinsic and intrinsic
-variable selection using a simulated data example.
+The super learner is an implementation of stacking {[}33{]} with both finite-sample and asymptotic guarantees on its performance {[}23{]}.
+The first step is to specify a \emph{library of candidate learners} (i.e., a set of prediction algorithms). Then, based on a chosen loss function (e.g., squared error loss for continuous outcomes or negative log likelihood loss for binary outcomes), cross-validation is used to evaluate the prediction performance of each learner in the library. Suppose that we fit a super learner with \(L\) candidate learners. The \emph{discrete} super learner (dSL) is the algorithm with the lowest cross-validated loss; the \emph{ensemble} super learner (eSL) is the optimal convex combination of the individual learners, with weights \(0 \leq \{w_\ell\}_{\ell = 1}^L\) chosen to minimize the cross-validated loss {[}34{]}.
+
+To use the super learner for variable selection, suppose that we have \(p\) variables \((X_1, \ldots, X_p)\) and let the extrinsic importance of variable \(X_j\) in learner \(\ell\) be \(v_{j,\ell}\). Further, let the ranked importance of variable \(X_j\) in learner \(\ell\) be \(r_{j,\ell}\), where rank 1 denotes the variable with the largest importance in learner \(\ell\). Then the eSL-based extrinsic importance is the weighted average variable importance rank across algorithms in the super learner, \(r_{j} = \sum_{\ell = 1}^L w_\ell r_{j,\ell}\). The dSL-based extrinsic importance is the variable importance rank in the discrete super learner. We found that this procedure has good operating characteristics in both complete- and missing-data settings, and can be used within stability selection for further control over error rates {[}24{]}. In missing-data contexts, the data are first multiply imputed (or singly imputed in each of \(B\) bootstrapped datasets); then, the extrinsic selection procedure is applied to each imputed dataset; and finally, the selected sets are pooled by keeping variables that appeared in a pre-specified fraction of the imputed datasets.
+
+\subsection{Intrinsic variable selection}\label{intrinsic-variable-selection}
+
+Intrinsic variable selection relies on intrinsic variable importance, which quantifies the extent to which a variable contributes to population-level predictiveness. Suppose that our observations are drawn from a distribution \(P_0\). Intrinsic variable importance depends on the chosen measure of predictiveness (e.g., R-squared or classification accuracy) and the set of variables that are conditioned on {[}25{]}. To reduce the dependence on this latter quantity, one can instead use the Shapley population variable importance measure (SPVIM) {[}26{]}. For predictiveness measure \(V\) and variable \(X_j\), the SPVIM is
+\[\psi_{0,j}:=\sum_{s \in \{1, \ldots, p\}\setminus \{j\}}\binom{p - 1}{\lvert s \rvert}^{-1}\frac{1}{p}\{V(f_{0,s\cup j}, P_0) - V(f_{0,s}, P_0)\},\]
+where \(f_{0,s}\) denotes the best population prediction function with respect to \(V\) and \(P_0\) (i.e., it maximizes \(V\) in the population of interest).
+
+The intrinsic variable selection algorithm involves first estimating the SPVIM values; then, employing a procedure for familywise error rate control to select an initial set of variables; and finally, augmenting the initial set with additional variables with control over a generalized error rate. In missing-data settings, either the post-hoc harmonization described above can be applied, or Rubin's rules {[}35{]} can be applied to yield a single set of selected variables. This procedure has been shown to have both good theoretical and finite-sample behavior {[}27{]}.
+
+\section{Examples}\label{examples}
+
+This section should serve as a guide to using the \texttt{flevr} package --- we will cover the main functions for doing extrinsic and intrinsic variable selection using a simulated data example.
 
 First, we create some data:
 
@@ -425,42 +373,26 @@ First, we create some data:
 \end{Highlighting}
 \end{Shaded}
 
-This creates a matrix of covariates \texttt{x} with 2 columns and a
-vector \texttt{y} of normally-distributed outcome values for a sample of
-\texttt{n\ =\ 500} study participants.
+This creates a matrix of covariates \texttt{x} with 2 columns and a vector \texttt{y} of normally-distributed outcome values for a sample of \texttt{n\ =\ 500} study participants.
 
-There are two main types of variable selection available in
-\texttt{flevr}: extrinsic and intrinsic. Extrinsic selection is the most
-common type of variable selection: in this approach, a given algorithm
-(and perhaps its associated algorithm-specific variable importance) is
-used for variable selection. The lasso is a widely-used example of
-extrinsic selection. Intrinsic selection, on the other hand, uses
-estimated intrinsic variable importance (a population quantity) to
-perform variable selection. This intrinsic importance is both defined
-and estimated in a model-agnostic manner.
+There are two main types of variable selection available in \texttt{flevr}: extrinsic and intrinsic. Extrinsic selection is the most common type of variable selection: in this approach, a given algorithm (and perhaps its associated algorithm-specific variable importance) is used for variable selection. The lasso is a widely-used example of extrinsic selection. Intrinsic selection, on the other hand, uses estimated intrinsic variable importance (a population quantity) to perform variable selection. This intrinsic importance is both defined and estimated in a model-agnostic manner.
 
-\hypertarget{extrinsic-variable-selection-1}{%
-\subsection{Extrinsic variable
-selection}\label{extrinsic-variable-selection-1}}
+\subsection{Extrinsic variable selection}\label{extrinsic-variable-selection-1}
 
-We recommend using the Super Learner {[}23{]} to do extrinsic variable
-selection to protect against model misspecification. This requires
-specifying a \emph{library} of \emph{candidate learners} (e.g., lasso,
-random forests). We can do this in \texttt{flevr} using the following
-code:
+We recommend using the super learner {[}23{]} to do extrinsic variable selection to protect against model misspecification. This requires specifying a \emph{library} of \emph{candidate learners} (e.g., lasso, random forests). We can do this in \texttt{flevr} using the following code:
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{library}\NormalTok{(}\StringTok{"flevr"}\NormalTok{)}
 \FunctionTok{set.seed}\NormalTok{(}\DecValTok{1234}\NormalTok{)}
-\CommentTok{\# fit a Super Learner ensemble; note its simplicity, for speed}
+\CommentTok{\# fit a super learner ensemble; note its simplicity, for speed}
 \FunctionTok{library}\NormalTok{(}\StringTok{"SuperLearner"}\NormalTok{)}
 \NormalTok{learners }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"SL.glm"}\NormalTok{, }\StringTok{"SL.mean"}\NormalTok{)}
 \NormalTok{V }\OtherTok{\textless{}{-}} \DecValTok{2}
 \NormalTok{fit }\OtherTok{\textless{}{-}}\NormalTok{ SuperLearner}\SpecialCharTok{::}\FunctionTok{SuperLearner}\NormalTok{(}\AttributeTok{Y =}\NormalTok{ y, }\AttributeTok{X =}\NormalTok{ x\_df,}
                                   \AttributeTok{SL.library =}\NormalTok{ learners,}
                                   \AttributeTok{cvControl =} \FunctionTok{list}\NormalTok{(}\AttributeTok{V =}\NormalTok{ V))}
-\CommentTok{\# extract importance based on the whole Super Learner}
+\CommentTok{\# extract importance based on the whole super learner}
 \NormalTok{sl\_importance\_all }\OtherTok{\textless{}{-}} \FunctionTok{extract\_importance\_SL}\NormalTok{(}
   \AttributeTok{fit =}\NormalTok{ fit, }\AttributeTok{feature\_names =}\NormalTok{ x\_names, }\AttributeTok{import\_type =} \StringTok{"all"}
 \NormalTok{)}
@@ -474,10 +406,7 @@ code:
 \end{Highlighting}
 \end{Shaded}
 
-These results suggest that feature 2 is more important than feature 1
-within the Super Learner ensemble (since a lower rank is better). If we
-want to scrutinize the importance of features within the best-fitting
-algorithm in the Super Learner ensemble, we can do the following:
+These results suggest that feature 2 is more important than feature 1 within the super learner ensemble (since a lower rank is better). If we want to scrutinize the importance of features within the best-fitting algorithm in the super learner ensemble, we can do the following:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -504,10 +433,7 @@ algorithm in the Super Learner ensemble, we can do the following:
 \end{Highlighting}
 \end{Shaded}
 
-Finally, to do variable selection, we need to select a threshold for the
-variable importance rank (ideally before looking at the data). In this
-case, since there are only two variables, we choose a threshold of 1.5,
-which means we will select only one variable:
+Finally, to do variable selection, we need to select a threshold for the variable importance rank (ideally before looking at the data). In this case, since there are only two variables, we choose a threshold of 1.5, which means we will select only one variable:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -525,15 +451,9 @@ which means we will select only one variable:
 
 In this case, we select only variable 2.
 
-\hypertarget{intrinsic-variable-selection-1}{%
-\subsection{Intrinsic variable
-selection}\label{intrinsic-variable-selection-1}}
+\subsection{Intrinsic variable selection}\label{intrinsic-variable-selection-1}
 
-Intrinsic variable selection is based on population variable importance
-{[}24,25{]}. Intrinsic selection {[}26{]} also uses the Super Learner
-under the hood, and requires specifying a useful \emph{measure of
-predictiveness} (e.g., R-squared or classification accuracy). The first
-step in doing intrinsic selection is estimating the variable importance:
+Intrinsic variable selection is based on population variable importance {[}25,26{]}. Intrinsic selection {[}27{]} also uses the super learner under the hood, and requires specifying a useful \emph{measure of predictiveness} (e.g., R-squared or classification accuracy). The first step in doing intrinsic selection is estimating the variable importance:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -559,16 +479,9 @@ step in doing intrinsic selection is estimating the variable importance:
 \end{Highlighting}
 \end{Shaded}
 
-This procedure again shows (correctly) that variable 2 is more important
-than variable 1 in this population, since the point estimate of variable
-importance is larger.
+This procedure again shows (correctly) that variable 2 is more important than variable 1 in this population, since the point estimate of variable importance is larger.
 
-The next step is to choose an error rate to control and a method for
-controlling the family-wise error rate. Here, we choose to control the
-generalized family-wise error rate, setting \texttt{k\ =\ 1} and
-\texttt{alpha\ =\ 0.2} (so controlling the probability of making more
-than 1 type I error at 20\%), and choose Holm-adjusted p-values to
-control the initial family-wise error rate:
+The next step is to choose an error rate to control and a method for controlling the family-wise error rate. Here, we choose to control the generalized family-wise error rate, setting \texttt{k\ =\ 1} and \texttt{alpha\ =\ 0.2} (so controlling the probability of making more than 1 type I error at 20\%), and choose Holm-adjusted p-values to control the initial family-wise error rate:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -587,21 +500,9 @@ control the initial family-wise error rate:
 
 In this case, we select both variables.
 
-\hypertarget{variable-selection-with-missing-data}{%
-\subsection{Variable selection with missing
-data}\label{variable-selection-with-missing-data}}
+\subsection{Variable selection with missing data}\label{variable-selection-with-missing-data}
 
-Settings with missing data render variable selection more challenging.
-In this section, we consider a simulated dataset inspired by data
-collected by the Early Detection Research Network. Biomarkers developed
-at six ``labs'' are validated at at least one of four ``validation
-sites'' on 306 cysts. The data also include two binary outcome
-variables: whether or not the cyst was classified as mucinous, and
-whether or not the cyst was determined to have high malignant potential.
-The data contain some missing information, which complicates variable
-selection; only 212 cysts have complete information. We will use AUC to
-measure intrinsic importance. We begin by loading the data and
-performing multiple imputation.
+Settings with missing data render variable selection more challenging. In this section, we consider a simulated dataset inspired by data collected by the Early Detection Research Network. Biomarkers developed at six ``labs'' are validated at at least one of four ``validation sites'' on 306 cysts. The data also include two binary outcome variables: whether or not the cyst was classified as mucinous, and whether or not the cyst was determined to have high malignant potential. The data contain some missing information, which complicates variable selection; only 212 cysts have complete information. We will use AUC to measure intrinsic importance. We begin by loading the data and performing multiple imputation.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -622,16 +523,9 @@ performing multiple imputation.
 \end{Highlighting}
 \end{Shaded}
 
-\hypertarget{extrinsic-selection-with-missing-data}{%
-\subsubsection{Extrinsic selection with missing
-data}\label{extrinsic-selection-with-missing-data}}
+\subsubsection{Extrinsic selection with missing data}\label{extrinsic-selection-with-missing-data}
 
-We can perform extrinsic variable selection using the imputed data.
-First, we fit a Super Learner and perform extrinsic variable selection
-for each imputed dataset. Then, we select a final set of variables based
-on those that are selected in a pre-specified number of imputed datasets
-(e.g., 3 of 5) {[}2{]}. Again, we use a rank of 5 for each imputed
-dataset to select variables.
+We can perform extrinsic variable selection using the imputed data. First, we fit a super learner and perform extrinsic variable selection for each imputed dataset. Then, we select a final set of variables based on those that are selected in a pre-specified number of imputed datasets (e.g., 3 of 5) {[}2{]}. Again, we use a rank of 5 for each imputed dataset to select variables.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -641,7 +535,7 @@ dataset to select variables.
 \NormalTok{all\_selected\_vars }\OtherTok{\textless{}{-}} \FunctionTok{vector}\NormalTok{(}\StringTok{"list"}\NormalTok{, }\AttributeTok{length =} \DecValTok{5}\NormalTok{)}
 \CommentTok{\# for each imputed dataset, do extrinsic selection}
 \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\DecValTok{5}\NormalTok{) \{}
-  \CommentTok{\# fit a Super Learner}
+  \CommentTok{\# fit a super learner}
 \NormalTok{  these\_data }\OtherTok{\textless{}{-}}\NormalTok{ imputed\_biomarkers }\SpecialCharTok{\%\textgreater{}\%}
     \FunctionTok{filter}\NormalTok{(imp }\SpecialCharTok{==}\NormalTok{ i)}
 \NormalTok{  this\_y }\OtherTok{\textless{}{-}}\NormalTok{ these\_data}\SpecialCharTok{$}\NormalTok{mucinous}
@@ -664,12 +558,9 @@ dataset to select variables.
 \end{Highlighting}
 \end{Shaded}
 
-\hypertarget{intrinsic-selection-with-missing-data}{%
-\subsubsection{Intrinsic selection with missing
-data}\label{intrinsic-selection-with-missing-data}}
+\subsubsection{Intrinsic selection with missing data}\label{intrinsic-selection-with-missing-data}
 
-To perform intrinsic variable selection using the imputed data, we first
-estimate variable importance for each imputed dataset.
+To perform intrinsic variable selection using the imputed data, we first estimate variable importance for each imputed dataset.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -688,11 +579,7 @@ estimate variable importance for each imputed dataset.
 \end{Highlighting}
 \end{Shaded}
 
-Next, we use Rubin's rules {[}27{]} to combine the variable importance
-estimates, and use this to perform variable selection. Here, we control
-the probability of making more than 5 errors (the generalized
-family-wise error rate) at 5\%, using Holm-adjusted p-values to control
-the initial family-wise error rate.
+Next, we use Rubin's rules {[}35{]} to combine the variable importance estimates, and use this to perform variable selection. Here, we control the probability of making more than 5 errors (the generalized family-wise error rate) at 5\%, using Holm-adjusted p-values to control the initial family-wise error rate.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -715,208 +602,168 @@ the initial family-wise error rate.
 \end{Highlighting}
 \end{Shaded}
 
-We select five variables, here those with the top-5 estimated variable
-importance. The point estimates and p-values have been computed using
-Rubin's rules. Two of the variables are the same as those selected using
-extrinsic selection.
+We select five variables, here those with the top-5 estimated variable importance. The point estimates and p-values have been computed using Rubin's rules. Two of the variables are the same as those selected using extrinsic selection.
 
-\hypertarget{conclusion}{%
-\section{Conclusion}\label{conclusion}}
+\section{Conclusion}\label{conclusion}
 
-add a conclusion here
+While many methods for performing variable selection with missing data exist, few have been implemented in publicly-available, open-source software. In this paper, we present the \texttt{R} package \texttt{flevr}, which implements two flavors of ensemble-based variable selection. The first, extrinsic variable selection, generalizes many commonly-used techniques (e.g., the lasso), and uses cross-validation to select variables that have high importance rank across learners in an ensemble. This can guard against model misspecification. The second approach, intrinsic variable selection, selects features based on their population prediction potential. Both approaches can be used with missing data; however, only intrinsic variable selection allows for the use of Rubin's rules to return a single set of selected variables without the need for post-hoc harmonization of selected sets from many imputed datasets.
 
-\hypertarget{availability}{%
-\section{Availability}\label{availability}}
+\section{Availability}\label{availability}
 
-The \texttt{flevr} package is publicly available on
-\href{https://github.com/bdwilliamson/flevr}{GitHub}; stable releases
-are publicly available on the
-\href{https://cran.r-project.org/package=flevr}{Comprehensive R Archive
-Network}. Documentation and examples may be found in the package manual
-pages and vignettes, and on the \texttt{pkgdown} website {[}28{]} at
-\url{https://bdwilliamson.github.io/flevr}.
+The \texttt{flevr} package is publicly available on \href{https://github.com/bdwilliamson/flevr}{GitHub}; stable releases are publicly available on the \href{https://cran.r-project.org/package=flevr}{Comprehensive R Archive Network}. Documentation and examples may be found in the package manual pages and vignettes, and on the \texttt{pkgdown} website {[}36{]} at \url{https://bdwilliamson.github.io/flevr}.
 
-\hypertarget{acknowledgements}{%
-\section{Acknowledgements}\label{acknowledgements}}
+\section{Acknowledgements}\label{acknowledgements}
 
-The authors gratefully acknowledge bug reports and feature requests
-submitted by Bhavesh Borate.
+The authors gratefully acknowledge bug reports and feature requests submitted by Bhavesh Borate.
 
-\hypertarget{refs}{}
-\begin{CSLReferences}{0}{0}
-\leavevmode\vadjust pre{\hypertarget{ref-leng2006}{}}%
+\section*{References}\label{references}
+\addcontentsline{toc}{section}{References}
+
+\phantomsection\label{refs}
+\begin{CSLReferences}{0}{1}
+\bibitem[\citeproctext]{ref-leng2006}
 \CSLLeftMargin{1. }%
-\CSLRightInline{Leng C, Lin Y, Wahba G. A note on the lasso and related
-procedures in model selection. Statistica Sinica. 2006;16: 1273--1284.
-Available: \url{https://www.jstor.org/stable/24307787}}
+\CSLRightInline{Leng C, Lin Y, Wahba G. A note on the lasso and related procedures in model selection. Statistica Sinica. 2006;16: 1273--1284. Available: \url{https://www.jstor.org/stable/24307787}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-heymans2007}{}}%
+\bibitem[\citeproctext]{ref-heymans2007}
 \CSLLeftMargin{2. }%
-\CSLRightInline{Heymans MW, Buuren S van, Knol DL, Van Mechelen W, De
-Vet HC. Variable selection under multiple imputation using the bootstrap
-in a prognostic study. BMC Medical Research Methodology. 2007;7: 1--10.
-doi:\href{https://doi.org/10.1186/1471-2288-7-33}{10.1186/1471-2288-7-33}}
+\CSLRightInline{Heymans MW, Buuren S van, Knol DL, Van Mechelen W, De Vet HC. Variable selection under multiple imputation using the bootstrap in a prognostic study. BMC Medical Research Methodology. 2007;7: 1--10. doi:\href{https://doi.org/10.1186/1471-2288-7-33}{10.1186/1471-2288-7-33}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-little1985}{}}%
+\bibitem[\citeproctext]{ref-little1985}
 \CSLLeftMargin{3. }%
-\CSLRightInline{Little R, Schluchter M. Maximum likelihood estimation
-for mixed continuous and categorical data with missing values.
-Biometrika. 1985;72: 497--512. }
+\CSLRightInline{Little R, Schluchter M. Maximum likelihood estimation for mixed continuous and categorical data with missing values. Biometrika. 1985;72: 497--512. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-tsiatis2007}{}}%
+\bibitem[\citeproctext]{ref-tsiatis2007}
 \CSLLeftMargin{4. }%
-\CSLRightInline{Tsiatis A. Semiparametric theory and missing data.
-Springer Science \& Business Media; 2007. }
+\CSLRightInline{Tsiatis A. Semiparametric theory and missing data. Springer Science \& Business Media; 2007. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-bang2005}{}}%
+\bibitem[\citeproctext]{ref-bang2005}
 \CSLLeftMargin{5. }%
-\CSLRightInline{Bang H, Robins J. Doubly robust estimation in missing
-data and causal inference models. Biometrics. 2005;61: 962--973. }
+\CSLRightInline{Bang H, Robins J. Doubly robust estimation in missing data and causal inference models. Biometrics. 2005;61: 962--973. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-johnson2008}{}}%
+\bibitem[\citeproctext]{ref-johnson2008}
 \CSLLeftMargin{6. }%
-\CSLRightInline{Johnson B, Lin D, Zeng D. Penalized estimating functions
-and variable selection in semiparametric regression models. Journal of
-the American Statistical Association. 2008;103: 672--680. }
+\CSLRightInline{Johnson B, Lin D, Zeng D. Penalized estimating functions and variable selection in semiparametric regression models. Journal of the American Statistical Association. 2008;103: 672--680. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-wolfson2012}{}}%
+\bibitem[\citeproctext]{ref-wolfson2012}
 \CSLLeftMargin{7. }%
-\CSLRightInline{Wolfson J. {EEB}oost: A general method for prediction
-and variable selection based on estimating equations. Journal of the
-American Statistical Association. 2011;106. }
+\CSLRightInline{Wolfson J. {EEB}oost: A general method for prediction and variable selection based on estimating equations. Journal of the American Statistical Association. 2011;106. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-rubin1987}{}}%
+\bibitem[\citeproctext]{ref-rubin1987}
 \CSLLeftMargin{8. }%
-\CSLRightInline{Rubin D. Multiple imputation for nonresponse in surveys.
-John Wiley \& Sons; 1987. }
+\CSLRightInline{Rubin D. Multiple imputation for nonresponse in surveys. John Wiley \& Sons; 1987. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-vanbuuren2007}{}}%
+\bibitem[\citeproctext]{ref-vanbuuren2007}
 \CSLLeftMargin{9. }%
-\CSLRightInline{Buuren S van. Multiple imputation of discrete and
-continuous data by fully conditional specification. Statistical Methods
-in Medical Research. 2007;16: 219--242. }
+\CSLRightInline{Buuren S van. Multiple imputation of discrete and continuous data by fully conditional specification. Statistical Methods in Medical Research. 2007;16: 219--242. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-mice2011}{}}%
+\bibitem[\citeproctext]{ref-mice2011}
 \CSLLeftMargin{10. }%
-\CSLRightInline{van Buuren S, Groothuis-Oudshoorn K. {mice}:
-Multivariate imputation by chained equations in r. Journal of
-Statistical Software. 2011;45: 1--67.
-doi:\href{https://doi.org/10.18637/jss.v045.i03}{10.18637/jss.v045.i03}}
+\CSLRightInline{van Buuren S, Groothuis-Oudshoorn K. {mice}: Multivariate imputation by chained equations in r. Journal of Statistical Software. 2011;45: 1--67. doi:\href{https://doi.org/10.18637/jss.v045.i03}{10.18637/jss.v045.i03}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-tibshirani1996}{}}%
+\bibitem[\citeproctext]{ref-tibshirani1996}
 \CSLLeftMargin{11. }%
-\CSLRightInline{Tibshirani R. Regression shrinkage and selection via the
-lasso. Journal of the Royal Statistical Society: Series B (Statistical
-Methodology). 1996; 267--288. }
+\CSLRightInline{Tibshirani R. Regression shrinkage and selection via the lasso. Journal of the Royal Statistical Society: Series B (Statistical Methodology). 1996; 267--288. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-glmnet}{}}%
+\bibitem[\citeproctext]{ref-glmnet}
 \CSLLeftMargin{12. }%
-\CSLRightInline{Friedman J, Hastie T, Tibshirani R, Narasimhan B, Tay K,
-Simon N, et al. {glmnet}: Lasso and elastic-net regularized generalized
-linear models. 2023. Available:
-\url{https://CRAN.R-project.org/package=glmnet}}
+\CSLRightInline{Friedman J, Hastie T, Tibshirani R, Narasimhan B, Tay K, Simon N, et al. {glmnet}: Lasso and elastic-net regularized generalized linear models. 2023. Available: \url{https://CRAN.R-project.org/package=glmnet}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-meinshausen2010}{}}%
+\bibitem[\citeproctext]{ref-meinshausen2010}
 \CSLLeftMargin{13. }%
-\CSLRightInline{Meinshausen N, Bühlmann P. Stability selection. Journal
-of the Royal Statistical Society: Series B (Statistical Methodology).
-2010;72: 417--473. }
+\CSLRightInline{Meinshausen N, Bühlmann P. Stability selection. Journal of the Royal Statistical Society: Series B (Statistical Methodology). 2010;72: 417--473. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-Hofner:StabSel:2015}{}}%
+\bibitem[\citeproctext]{ref-Hofner:StabSel:2015}
 \CSLLeftMargin{14. }%
-\CSLRightInline{Hofner B, Boccuto L, Göker M. Controlling false
-discoveries in high-dimensional situations: Boosting with stability
-selection. {BMC Bioinformatics}. 2015;16: 144. Available:
-\url{http://dx.doi.org/10.1186/s12859-015-0575-3}}
+\CSLRightInline{Hofner B, Boccuto L, Göker M. Controlling false discoveries in high-dimensional situations: Boosting with stability selection. {BMC Bioinformatics}. 2015;16: 144. Available: \url{http://dx.doi.org/10.1186/s12859-015-0575-3}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-barber2015}{}}%
+\bibitem[\citeproctext]{ref-barber2015}
 \CSLLeftMargin{15. }%
-\CSLRightInline{Barber R, Candès E. Controlling the false discovery rate
-via knockoffs. Annals of Statistics. 2015;43: 2055--2085. }
+\CSLRightInline{Barber R, Candès E. Controlling the false discovery rate via knockoffs. Annals of Statistics. 2015;43: 2055--2085. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-knockoff}{}}%
+\bibitem[\citeproctext]{ref-knockoff}
 \CSLLeftMargin{16. }%
-\CSLRightInline{Patterson E, Sesia M. Knockoff: The knockoff filter for
-controlled variable selection. 2022. Available:
-\url{https://CRAN.R-project.org/package=knockoff}}
+\CSLRightInline{Patterson E, Sesia M. Knockoff: The knockoff filter for controlled variable selection. 2022. Available: \url{https://CRAN.R-project.org/package=knockoff}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-miselect}{}}%
+\bibitem[\citeproctext]{ref-miselect}
 \CSLLeftMargin{17. }%
-\CSLRightInline{Rix A, Du J. {miselect}: Variable selection for multiply
-imputed data. 2020. Available:
-\url{https://cran.r-project.org/package=miselect}}
+\CSLRightInline{Rix A, Du J. {miselect}: Variable selection for multiply imputed data. 2020. Available: \url{https://cran.r-project.org/package=miselect}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-du2022variable}{}}%
+\bibitem[\citeproctext]{ref-du2022variable}
 \CSLLeftMargin{18. }%
-\CSLRightInline{Du J, Boss J, Han P, Beesley LJ, Kleinsasser M, Goutman
-SA, et al. Variable selection with multiply-imputed datasets: Choosing
-between stacked and grouped methods. Journal of Computational and
-Graphical Statistics. 2022;31: 1063--1075. }
+\CSLRightInline{Du J, Boss J, Han P, Beesley LJ, Kleinsasser M, Goutman SA, et al. Variable selection with multiply-imputed datasets: Choosing between stacked and grouped methods. Journal of Computational and Graphical Statistics. 2022;31: 1063--1075. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-breiman2001}{}}%
+\bibitem[\citeproctext]{ref-breiman2001}
 \CSLLeftMargin{19. }%
-\CSLRightInline{Breiman L. Random forests. Machine Learning. 2001;45:
-5--32. }
+\CSLRightInline{Breiman L. Random forests. Machine Learning. 2001;45: 5--32. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-xin2012}{}}%
+\bibitem[\citeproctext]{ref-xin2012}
 \CSLLeftMargin{20. }%
-\CSLRightInline{Xin L, Zhu M. Stochastic stepwise ensembles for variable
-selection. Journal of Computational and Graphical Statistics. 2012;21:
-275--294. }
+\CSLRightInline{Xin L, Zhu M. Stochastic stepwise ensembles for variable selection. Journal of Computational and Graphical Statistics. 2012;21: 275--294. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-saeys2008}{}}%
+\bibitem[\citeproctext]{ref-saeys2008}
 \CSLLeftMargin{21. }%
-\CSLRightInline{Saeys Y, Abeel T, Van de Peer Y. Robust feature
-selection using ensemble feature selection techniques. Joint european
-conference on machine learning and knowledge discovery in databases.
-2008. pp. 313--325. }
+\CSLRightInline{Saeys Y, Abeel T, Van de Peer Y. Robust feature selection using ensemble feature selection techniques. Joint european conference on machine learning and knowledge discovery in databases. 2008. pp. 313--325. }
 
-\leavevmode\vadjust pre{\hypertarget{ref-r_software}{}}%
+\bibitem[\citeproctext]{ref-r_software}
 \CSLLeftMargin{22. }%
-\CSLRightInline{R Core Team. R: A language and environment for
-statistical computing. Vienna, Austria: R Foundation for Statistical
-Computing; 2023. Available: \url{https://www.R-project.org/}}
+\CSLRightInline{R Core Team. R: A language and environment for statistical computing. Vienna, Austria: R Foundation for Statistical Computing; 2023. Available: \url{https://www.R-project.org/}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-vanderlaan2007super}{}}%
+\bibitem[\citeproctext]{ref-vanderlaan2007super}
 \CSLLeftMargin{23. }%
-\CSLRightInline{Laan M van der, Polley E, Hubbard A. Super learner.
-Statistical Applications in Genetics and Molecular Biology. 2007;6:
-Online Article 25.
-doi:\href{https://doi.org/10.2202/1544-6115.1309}{10.2202/1544-6115.1309}}
+\CSLRightInline{Laan M van der, Polley E, Hubbard A. Super learner. Statistical Applications in Genetics and Molecular Biology. 2007;6: Online Article 25. doi:\href{https://doi.org/10.2202/1544-6115.1309}{10.2202/1544-6115.1309}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-williamson2021vim2}{}}%
+\bibitem[\citeproctext]{ref-williamson2024missing}
 \CSLLeftMargin{24. }%
-\CSLRightInline{Williamson B, Gilbert P, Simon N, Carone M. A general
-framework for inference on algorithm-agnostic variable importance.
-Journal of the American Statistical Association (Theory \& Methods).
-2021.
-doi:\href{https://doi.org/10.1080/01621459.2021.2003200}{10.1080/01621459.2021.2003200}}
+\CSLRightInline{Williamson B, Huang Y. Comparing ensemble-based approaches to variable selection in missing-data contexts. arXiv. 2024. Available: \url{https://arxiv.org/abs/}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-williamson2020spvim}{}}%
+\bibitem[\citeproctext]{ref-williamson2021vim2}
 \CSLLeftMargin{25. }%
-\CSLRightInline{Williamson B, Feng J. Efficient nonparametric
-statistical inference on population feature importance using {S}hapley
-values. Proceedings of the 37th international conference on machine
-learning. 2020. pp. 10282--10291. Available:
-\url{http://proceedings.mlr.press/v119/williamson20a.html}}
+\CSLRightInline{Williamson B, Gilbert P, Simon N, Carone M. A general framework for inference on algorithm-agnostic variable importance. Journal of the American Statistical Association (Theory \& Methods). 2023. doi:\href{https://doi.org/10.1080/01621459.2021.2003200}{10.1080/01621459.2021.2003200}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-williamson2023flevr}{}}%
+\bibitem[\citeproctext]{ref-williamson2020spvim}
 \CSLLeftMargin{26. }%
-\CSLRightInline{Williamson B, Huang Y. Flexible variable selection in
-the presence of missing data. International Journal of Biostatistics.
-2023. Available: \url{https://arxiv.org/abs/2202.12989}}
+\CSLRightInline{Williamson B, Feng J. Efficient nonparametric statistical inference on population feature importance using {S}hapley values. Proceedings of the 37th international conference on machine learning. 2020. pp. 10282--10291. Available: \url{http://proceedings.mlr.press/v119/williamson20a.html}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-rubin2018}{}}%
+\bibitem[\citeproctext]{ref-williamson2023flevr}
 \CSLLeftMargin{27. }%
-\CSLRightInline{Rubin DB. Multiple imputation. Flexible imputation of
-missing data, second edition. Chapman; Hall/CRC; 2018. pp. 29--62.
-doi:\href{https://doi.org/10.1201/9780429492259}{10.1201/9780429492259}}
+\CSLRightInline{Williamson B, Huang Y. Flexible variable selection in the presence of missing data. International Journal of Biostatistics. 2023. Available: \url{https://arxiv.org/abs/2202.12989}}
 
-\leavevmode\vadjust pre{\hypertarget{ref-wickham_pkgdown}{}}%
+\bibitem[\citeproctext]{ref-brugge2004}
 \CSLLeftMargin{28. }%
-\CSLRightInline{Wickham H, Hesselberth J. {pkgdown}: Make static HTML
-documentation for a package. 2022. Available:
-\url{https://CRAN.R-project.org/package=pkgdown}}
+\CSLRightInline{Brugge W, Lewandrowski K, Lee-Lewandrowski E, Centeno B, Szydlo T, Regan S, et al. Diagnosis of pancreatic cystic neoplasms: A report of the cooperative pancreatic cyst study. Gastroenterology. 2004;126: 1330--1336. }
+
+\bibitem[\citeproctext]{ref-chari2020early}
+\CSLLeftMargin{29. }%
+\CSLRightInline{Chari ST, Sharma A, Maitra A. Early detection of sporadic pancreatic ductal adenocarcinoma: Problems, promise, and prospects. Annals of Internal Medicine. 2020. pp. 558--559. }
+
+\bibitem[\citeproctext]{ref-fletcher1986carcinoembryonic}
+\CSLLeftMargin{30. }%
+\CSLRightInline{Fletcher RH. Carcinoembryonic antigen. Annals of Internal Medicine. 1986;104: 66--73. }
+
+\bibitem[\citeproctext]{ref-tierney2023}
+\CSLLeftMargin{31. }%
+\CSLRightInline{Tierney N, Cook D. Expanding tidy data principles to facilitate missing data exploration, visualization and assessment of imputations. Journal of Statistical Software. 2023;105: 1--31. doi:\href{https://doi.org/10.18637/jss.v105.i07}{10.18637/jss.v105.i07}}
+
+\bibitem[\citeproctext]{ref-friedman2001}
+\CSLLeftMargin{32. }%
+\CSLRightInline{Friedman J, Tibshirani R, Hastie T. Regularization paths for generalized linear models via coordinate descent. Journal of Statistical Software. 2010;33: 1--22. doi:\href{https://doi.org/10.18637/jss.v033.i01}{10.18637/jss.v033.i01}}
+
+\bibitem[\citeproctext]{ref-wolpert1992}
+\CSLLeftMargin{33. }%
+\CSLRightInline{Wolpert D. Stacked generalization. Neural Networks. 1992;5: 241--259. }
+
+\bibitem[\citeproctext]{ref-phillips2023practical}
+\CSLLeftMargin{34. }%
+\CSLRightInline{Phillips RV, Laan MJ van der, Lee H, Gruber S. Practical considerations for specifying a super learner. International Journal of Epidemiology. 2023;52: 1276--1285. }
+
+\bibitem[\citeproctext]{ref-rubin2018}
+\CSLLeftMargin{35. }%
+\CSLRightInline{Rubin DB. Multiple imputation. Flexible imputation of missing data, second edition. Chapman; Hall/CRC; 2018. pp. 29--62. doi:\href{https://doi.org/10.1201/9780429492259}{10.1201/9780429492259}}
+
+\bibitem[\citeproctext]{ref-wickham_pkgdown}
+\CSLLeftMargin{36. }%
+\CSLRightInline{Wickham H, Hesselberth J. {pkgdown}: Make static HTML documentation for a package. 2022. Available: \url{https://CRAN.R-project.org/package=pkgdown}}
 
 \end{CSLReferences}
 
