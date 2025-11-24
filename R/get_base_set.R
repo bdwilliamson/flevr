@@ -7,7 +7,7 @@
 #' @param test_statistics the test statistics (used with "maxT")
 #' @param p_values (used with "minP" or "Holm")
 #' @param alpha the alpha level
-#' @param method the method (one of "maxT", "minP", or "Holm")
+#' @param method the method (one of "none", "BY", "maxT", "minP", or "Holm")
 #' @param B the number of resamples (for minP or maxT)
 #' @param Sigma the estimated covariance matrix for the test statistics
 #' @param q the false discovery rate (for method = "BY")
@@ -53,16 +53,19 @@ get_base_set <- function(test_statistics = NULL, p_values = NULL, alpha = 0.05,
   # get the reversed order
   reverse_ord <- switch((method == "maxT") + 1, rank(ranks_p), rank(-ranks_t))
   p <- length(ranked_t)
-  if (method == "BY") {
+  if (method == "none") {
+    decision <- as.numeric(p_values <= alpha)
+    ret_lst <- list(decision = decision, p_values = p_values)
+  } else if (method == "BY") {
     # sort p-values in increasing order
     ranked_p <- sort(p_values, decreasing = FALSE)
     denom <- sum(sapply(1:p, function(i) 1 / i))
     # find k
     all_k <- sapply(1:length(ranked_p), function(i) ranked_p[i] <= (i * q) / (p * denom))
-    if (!any(all_k)) {
-      k <- 0
-    } else {
+    if (isTRUE(any(all_k))) {
       k <- max(which(all_k))
+    } else {
+      k <- 0
     }
     decision <- rep(0, length(p_values))
     if (k > 0) {
