@@ -59,7 +59,7 @@ test_that("algorithm-specific importance extraction works", {
   expect_equal(ranger_importance$feature, c("V2", "V1"))
   svm_importance <- extract_importance_svm(
     fit = fit$fitLibrary$SL.ksvm_All$object, coef = fit$coef[grepl("svm", coef_nms)],
-    feature_names = x_names, x = x_df, y = y
+    feature_names = x_names, x = x_df, y = y, K = 5
   )
   expect_equal(svm_importance$feature, c("V2", "V1"))
   polymars_importance <- extract_importance_polymars(

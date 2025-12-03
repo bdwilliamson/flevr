@@ -17,7 +17,7 @@
 #' @section See Also:
 #' Papers:
 #' \itemize{
-#'   \item{\url{https://arxiv.org/abs/2202.12989}}
+#'   \item{\url{https://doi.org/10.1515/ijb-2023-0059}}
 #' }
 #'
 #' Other useful links:
@@ -38,6 +38,5 @@
 #' testthat and covr help with unit tests; and
 #' knitr, rmarkdown,and RCurl help with the vignettes and examples.
 #'
-#' @docType package
-#' @name flevr
-NULL
+#' @keywords internal
+"_PACKAGE"

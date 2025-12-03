@@ -6,8 +6,9 @@
 #' @param fit the \code{svm} object.
 #' @param x the features
 #' @param y the outcome
+#' @param K the number of cross-validation folds
 #' @inheritParams extract_importance_glm
-#' 
+#'
 #' @examples
 #' data("biomarkers")
 #' # subset to complete cases for illustration
@@ -18,7 +19,7 @@
 #' x <- as.data.frame(dat_cc[, !(names(dat_cc) %in% c("mucinous", "high_malignancy"))])
 #' x_mat <- as.matrix(x)
 #' feature_nms <- names(x)
-#' # get the fit 
+#' # get the fit
 #' set.seed(20231129)
 #' fit <- kernlab::ksvm(x_mat, y)
 #' # extract importance
@@ -28,7 +29,7 @@
 #' @inherit extract_importance_glm return
 #' @importFrom kernlab kpar kernelf param
 #' @export
-extract_importance_svm <- function(fit = NULL, feature_names = "", coef = 0, x = NULL, y = NULL) {
+extract_importance_svm <- function(fit = NULL, feature_names = "", coef = 0, x = NULL, y = NULL, K = 10) {
   if (!inherits(fit, "ksvm")) {
     stop("This is not an svm object. Please use a different importance extraction function.")
   } else {
@@ -38,8 +39,10 @@ extract_importance_svm <- function(fit = NULL, feature_names = "", coef = 0, x =
     } else {
       stop("The entered kernel is not currently supported.")
     }
+    control <- caret::trainControl(method = "cv", number = K)
     svm_train <- caret::train(x = x, y = y,
-                              method = caret_mod, tuneGrid = param_df)
+                              method = caret_mod, tuneGrid = param_df,
+                              trControl = control)
     svm_imp <- caret::varImp(svm_train, useModel = FALSE, value = "gcv")
     imp_dt <- tibble::tibble(algorithm = "svm", feature = rownames(svm_imp$importance),
                              importance = svm_imp$importance$Overall, rank = rank(-abs(svm_imp$importance)),

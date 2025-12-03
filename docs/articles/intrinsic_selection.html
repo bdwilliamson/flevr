@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Intrinsic variable selection • flevr</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">flevr</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.5</span>
       </span>
     </div>
 
@@ -96,7 +96,9 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/bdwilliamson/flevr" class="external-link">"flevr"</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; flevr version 0.0.4: Flexible, Ensemble-Based Variable Selection with Potentially Missing Data</span></span></code></pre></div>
+<span><span class="co">#&gt; Warning: package 'flevr' was built under R version 4.4.2</span></span>
+<span><span class="co">#&gt; flevr version 0.0.4: Flexible, Ensemble-Based Variable Selection with Potentially</span></span>
+<span><span class="co">#&gt; Missing Data</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -145,8 +147,8 @@ I will use AUC to measure intrinsic importance.</p>
 <span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">biomarkers</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">biomarkers</span><span class="op">$</span><span class="va">mucinous</span></span>
 <span><span class="va">y_cc</span> <span class="op">&lt;-</span> <span class="va">y</span><span class="op">[</span><span class="va">cc</span><span class="op">]</span></span>
-<span><span class="va">x_cc</span> <span class="op">&lt;-</span> <span class="va">biomarkers</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.omit</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">x_cc</span> <span class="op">&lt;-</span> <span class="va">biomarkers</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.omit</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"lab"</span><span class="op">)</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"cea"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">x_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">x_cc</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -176,12 +178,12 @@ only; in practice, I suggest using a large library of learners).</p>
 <span><span class="co">#&gt; Loading required package: gam</span></span>
 <span><span class="co">#&gt; Loading required package: splines</span></span>
 <span><span class="co">#&gt; Loading required package: foreach</span></span>
-<span><span class="co">#&gt; Loaded gam 1.22-2</span></span>
+<span><span class="co">#&gt; Loaded gam 1.22-3</span></span>
 <span><span class="co">#&gt; Super Learner</span></span>
-<span><span class="co">#&gt; Version: 2.0-28.1</span></span>
-<span><span class="co">#&gt; Package created on 2021-05-04</span></span>
+<span><span class="co">#&gt; Version: 2.0-29</span></span>
+<span><span class="co">#&gt; Package created on 2024-02-06</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://bdwilliamson.github.io/vimp/" class="external-link">"vimp"</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; vimp version 2.3.1: Perform Inference on Algorithm-Agnostic Variable Importance</span></span>
+<span><span class="co">#&gt; vimp version 2.3.7: Perform Inference on Algorithm-Agnostic Variable Importance</span></span>
 <span><span class="va">est</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="http://bdwilliamson.github.io/vimp/reference/sp_vim.html" class="external-link">sp_vim</a></span><span class="op">(</span>Y <span class="op">=</span> <span class="va">y_cc</span>, X <span class="op">=</span> <span class="va">x_cc</span>, V <span class="op">=</span> <span class="va">V</span>, type <span class="op">=</span> <span class="st">"auc"</span>,</span>
 <span>              SL.library <span class="op">=</span> <span class="va">learners</span>, gamma <span class="op">=</span> <span class="fl">.1</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, delta <span class="op">=</span> <span class="fl">0</span>,</span>
@@ -201,7 +203,7 @@ only; in practice, I suggest using a large library of learners).</p>
 <span><span class="co">#&gt; s = 9  0.000000e+00 0.05425335 [0, 0.10041316] FALSE    0.5000000</span></span>
 <span><span class="co">#&gt; s = 10 2.070649e-02 0.07993317 [0, 0.17737263] FALSE    0.4492960</span></span>
 <span><span class="co">#&gt; s = 11 0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span>
-<span><span class="co">#&gt; s = 12 0.000000e+00 0.05157831 [0, 0.10109163] FALSE    0.5000000</span></span>
+<span><span class="co">#&gt; s = 12 7.632783e-17 0.05157831 [0, 0.10109163] FALSE    0.5000000</span></span>
 <span><span class="co">#&gt; s = 13 6.410256e-03 0.02006046 [0, 0.04572804] FALSE    0.4832894</span></span>
 <span><span class="co">#&gt; s = 14 0.000000e+00 0.06751652 [0, 0.12712006] FALSE    0.5000000</span></span>
 <span><span class="co">#&gt; s = 15 0.000000e+00 0.04733026 [0, 0.09196796] FALSE    0.5000000</span></span>
@@ -224,16 +226,16 @@ p-values to control the individual family-wise error rate:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 6</span></span></span>
 <span><span class="co">#&gt;    feature                       est p_value adjusted_p_value  rank selected</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_actb               0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab1_molecules_score    0.042<span style="text-decoration: underline;">2</span>      0.413                1     1 TRUE    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab1_telomerase_score   0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab2_fluorescence_score 0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab3_muc3ac_score       0.000<span style="text-decoration: underline;">061</span>9   0.500                1     6 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab3_muc5ac_score       0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab4_areg_score         0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab4_glucose_score      0.007<span style="text-decoration: underline;">75</span>     0.482                1     3 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab5_mucinous_call      0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab5_neoplasia_v1_call  0.020<span style="text-decoration: underline;">7</span>      0.449                1     2 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_actb               0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab1_molecules_score    0.042<span style="text-decoration: underline;">2</span>      0.413                1   1   TRUE    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab1_telomerase_score   0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab2_fluorescence_score 0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab3_muc3ac_score       0.000<span style="text-decoration: underline;">061</span>9   0.500                1   6   FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab3_muc5ac_score       0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab4_areg_score         0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab4_glucose_score      0.007<span style="text-decoration: underline;">75</span>     0.482                1   3   FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab5_mucinous_call      0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab5_neoplasia_v1_call  0.020<span style="text-decoration: underline;">7</span>      0.449                1   2   FALSE   </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
 <p>I could also choose to control the false discovery rate (FDR), again
 using Holm-adjusted p-values to control the individual family-wise error
@@ -247,16 +249,16 @@ rate:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21 × 6</span></span></span>
 <span><span class="co">#&gt;    feature                       est p_value adjusted_p_value  rank selected</span></span>
 <span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;lgl&gt;</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_actb               0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab1_molecules_score    0.042<span style="text-decoration: underline;">2</span>      0.413                1     1 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab1_telomerase_score   0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab2_fluorescence_score 0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab3_muc3ac_score       0.000<span style="text-decoration: underline;">061</span>9   0.500                1     6 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab3_muc5ac_score       0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab4_areg_score         0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab4_glucose_score      0.007<span style="text-decoration: underline;">75</span>     0.482                1     3 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab5_mucinous_call      0           0.5                  1    14 FALSE   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab5_neoplasia_v1_call  0.020<span style="text-decoration: underline;">7</span>      0.449                1     2 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> lab1_actb               0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> lab1_molecules_score    0.042<span style="text-decoration: underline;">2</span>      0.413                1   1   FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> lab1_telomerase_score   0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lab2_fluorescence_score 0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lab3_muc3ac_score       0.000<span style="text-decoration: underline;">061</span>9   0.500                1   6   FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lab3_muc5ac_score       0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lab4_areg_score         0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> lab4_glucose_score      0.007<span style="text-decoration: underline;">75</span>     0.482                1   3   FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> lab5_mucinous_call      0           0.500                1  14.5 FALSE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> lab5_neoplasia_v1_call  0.020<span style="text-decoration: underline;">7</span>      0.449                1   2   FALSE   </span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 11 more rows</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -272,15 +274,15 @@ imputations (in practice, more imputations may be better).</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/amices/mice" class="external-link">"mice"</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20231121</span><span class="op">)</span></span>
 <span><span class="va">mi_biomarkers</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://amices.org/mice/reference/mice.html" class="external-link">mice</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">biomarkers</span>, m <span class="op">=</span> <span class="va">n_imp</span>, printFlag <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">imputed_biomarkers</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tidyr/man/complete.html" class="external-link">complete</a></span><span class="op">(</span><span class="va">mi_biomarkers</span>, action <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">imputed_biomarkers</span> <span class="op">&lt;-</span> <span class="fu">mice</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/complete.html" class="external-link">complete</a></span><span class="op">(</span><span class="va">mi_biomarkers</span>, action <span class="op">=</span> <span class="st">"long"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>imp <span class="op">=</span> <span class="va">.imp</span>, id <span class="op">=</span> <span class="va">.id</span><span class="op">)</span></span></code></pre></div>
 <p>We can perform intrinsic variable selection using the imputed data.
 First, we estimate variable importance for each imputed dataset.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20231121</span><span class="op">)</span></span>
 <span><span class="va">est_lst</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n_imp</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">l</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">this_x</span> <span class="op">&lt;-</span> <span class="va">imputed_biomarkers</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">imp</span> <span class="op">==</span> <span class="va">l</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/pkg/magrittr/man/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="va">this_x</span> <span class="op">&lt;-</span> <span class="va">imputed_biomarkers</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">imp</span> <span class="op">==</span> <span class="va">l</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"lab"</span><span class="op">)</span>, <span class="fu"><a href="https://tidyselect.r-lib.org/reference/starts_with.html" class="external-link">starts_with</a></span><span class="op">(</span><span class="st">"cea"</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="va">this_y</span> <span class="op">&lt;-</span> <span class="va">biomarkers</span><span class="op">$</span><span class="va">mucinous</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/warning.html" class="external-link">suppressWarnings</a></span><span class="op">(</span></span>
@@ -304,7 +306,7 @@ family-wise error rate.</p>
 <p>We select five variables, here those with the top-5 estimated
 variable importance. The point estimates and p-values have been computed
 using Rubin’s rules.</p>
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-mice" class="csl-entry">
 Buuren, S van, K Groothuis-Oudshoorn, and others. 2023. <em><span class="nocase">mice</span>: Multivariate Imputation by Chained
 Equations</em>. <a href="https://CRAN.R-project.org/package=mice" class="external-link">https://CRAN.R-project.org/package=mice</a>.
@@ -371,7 +373,7 @@ Biostatistics</em>. <a href="https://arxiv.org/abs/2202.12989" class="external-l
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
 </div>
 
       </footer>
