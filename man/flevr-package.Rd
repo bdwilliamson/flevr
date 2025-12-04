@@ -26,7 +26,7 @@ Methodology authors:
 
 Papers:
 \itemize{
-\item{\url{https://doi.org/10.1515/ijb-2023-0059}}
+\item{\doi{10.1515/ijb-2023-0059}}
 }
 
 Other useful links:

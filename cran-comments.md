@@ -1,3 +1,7 @@
+## Resubmission
+
+This is a resubmission, fixing the CRAN check NOTE regarding DOIs and decreasing test time.
+
 ## Test environments
 * local windows-x86_64, R 4.3.1
 * R-hub windows-x86_64-devel (r-devel)
@@ -12,5 +16,5 @@ In all environments, running tests takes less than 15 seconds and building vigne
 
 0 errors | 0 warnings | 1 note
 
-* This is a new release.
+* Maintainer is Brian D. Williamson.
 
