@@ -21,7 +21,7 @@ get_base_set(
 
 \item{alpha}{the alpha level}
 
-\item{method}{the method (one of "maxT", "minP", or "Holm")}
+\item{method}{the method (one of "none", "BY", "maxT", "minP", or "Holm")}
 
 \item{B}{the number of resamples (for minP or maxT)}
 

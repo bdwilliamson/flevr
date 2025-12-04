@@ -76,7 +76,8 @@ along with the importance rank.</p>
 <span>  feature_names <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  coef <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  x <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  y <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  y <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  K <span class="op">=</span> <span class="fl">10</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -100,6 +101,10 @@ along with the importance rank.</p>
 
 <dt>y</dt>
 <dd><p>the outcome</p></dd>
+
+
+<dt>K</dt>
+<dd><p>the number of cross-validation folds</p></dd>
 
 </dl></div>
     <div id="value">
@@ -126,7 +131,7 @@ rank, with 1 indicating the most important feature), and <code>weight</code></p>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">dat_cc</span><span class="op">[</span>, <span class="op">!</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">dat_cc</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mucinous"</span>, <span class="st">"high_malignancy"</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">x_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">feature_nms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># get the fit </span></span></span>
+<span class="r-in"><span><span class="co"># get the fit</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20231129</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">kernlab</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kernlab/man/ksvm.html" class="external-link">ksvm</a></span><span class="op">(</span><span class="va">x_mat</span>, <span class="va">y</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># extract importance</span></span></span>

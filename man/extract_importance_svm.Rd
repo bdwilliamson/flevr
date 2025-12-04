@@ -9,7 +9,8 @@ extract_importance_svm(
   feature_names = "",
   coef = 0,
   x = NULL,
-  y = NULL
+  y = NULL,
+  K = 10
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ extract_importance_svm(
 \item{x}{the features}
 
 \item{y}{the outcome}
+
+\item{K}{the number of cross-validation folds}
 }
 \value{
 a tibble, with columns \code{algorithm} (the fitted algorithm),
@@ -44,7 +47,7 @@ y <- dat_cc$mucinous
 x <- as.data.frame(dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))])
 x_mat <- as.matrix(x)
 feature_nms <- names(x)
-# get the fit 
+# get the fit
 set.seed(20231129)
 fit <- kernlab::ksvm(x_mat, y)
 # extract importance
