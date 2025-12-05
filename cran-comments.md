@@ -1,6 +1,6 @@
 ## Resubmission
 
-This is a resubmission, fixing the CRAN check NOTE regarding DOIs and decreasing test time.
+This is a resubmission, fixing the CRAN check NOTE regarding DOIs and decreasing test time, and fixing the error in \donttest regarding xgboost.
 
 ## Test environments
 * local windows-x86_64, R 4.3.1

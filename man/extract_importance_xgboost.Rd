@@ -25,7 +25,6 @@ Extract the individual-algorithm extrinsic importance from an xgboost object,
 along with the importance rank.
 }
 \examples{
-\donttest{
 data("biomarkers")
 # subset to complete cases for illustration
 cc <- complete.cases(biomarkers)
@@ -36,11 +35,14 @@ x <- as.matrix(dat_cc[, !(names(dat_cc) \%in\% c("mucinous", "high_malignancy"))
 feature_nms <- names(x)
 set.seed(20231129)
 xgbmat <- xgboost::xgb.DMatrix(data = x, label = y)
-# get the fit, using a small number of rounds for illustration only 
-fit <- xgboost::xgboost(data = xgbmat, objective = "binary:logistic", nthread = 1, nrounds = 10)
+# get the fit, using a small number of rounds for illustration only
+fit <- xgboost::xgb.train(
+  data = xgbmat, nrounds = 10,
+  params = list("objective" = "binary:logistic",
+                "nthread" = 1, "max_depth" = 1)
+)
 # extract importance
 importance <- extract_importance_xgboost(fit = fit, feature_names = feature_nms)
 importance
-}
 
 }

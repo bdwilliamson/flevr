@@ -1,3 +1,12 @@
+# v0.0.5
+
+## Major changes
+None
+
+## Minor changes
+* Updated documentation to use `\doi` for manuscript links
+* Updated documentation for `extract_importance_xgboost` to be version-agnostic
+
 # v0.0.4
 
 ## Major changes

@@ -5,9 +5,8 @@
 #'
 #' @param fit the \code{xgboost} object.
 #' @inheritParams extract_importance_glm
-#' 
+#'
 #' @examples
-#' \donttest{
 #' data("biomarkers")
 #' # subset to complete cases for illustration
 #' cc <- complete.cases(biomarkers)
@@ -18,12 +17,15 @@
 #' feature_nms <- names(x)
 #' set.seed(20231129)
 #' xgbmat <- xgboost::xgb.DMatrix(data = x, label = y)
-#' # get the fit, using a small number of rounds for illustration only 
-#' fit <- xgboost::xgboost(data = xgbmat, objective = "binary:logistic", nthread = 1, nrounds = 10)
+#' # get the fit, using a small number of rounds for illustration only
+#' fit <- xgboost::xgb.train(
+#'   data = xgbmat, nrounds = 10,
+#'   params = list("objective" = "binary:logistic",
+#'                 "nthread" = 1, "max_depth" = 1)
+#' )
 #' # extract importance
 #' importance <- extract_importance_xgboost(fit = fit, feature_names = feature_nms)
 #' importance
-#' }
 #'
 #' @inherit extract_importance_glm return
 #' @export
